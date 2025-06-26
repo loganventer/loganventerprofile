@@ -147,7 +147,7 @@ class ParticleSystem {
             PROXIMITY_LINE_WIDTH: 0.8,
             PROXIMITY_LINE_ROUGHNESS: 6,
             FIRING_CHANCE: 0.0003,
-            FIRING_DURATION: 100, // Increased duration to see bounces
+            FIRING_DURATION: 60, // Increased duration to see bounces
             PROPAGATION_CHANCE: 0.9,
             FIRING_LINE_WIDTH: 3, 
             FIRING_LINE_ROUGHNESS: 12,
