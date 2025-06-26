@@ -134,8 +134,8 @@ class ParticleSystem {
         this.ctx = this.canvas.getContext('2d');
         this.config = {
             PARTICLE_COLOR: '#38BDF8',
-            MIN_RADIUS: 3,
-            MAX_RADIUS: 5,
+            MIN_RADIUS: 2,
+            MAX_RADIUS: 4,
             INITIAL_VELOCITY_RANGE: 0.35,
             PARTICLES_PER_PIXEL_DENSITY: 35000,
             MAX_CONNECTION_DISTANCE: 250,
@@ -147,7 +147,7 @@ class ParticleSystem {
             PROXIMITY_LINE_WIDTH: 0.8,
             PROXIMITY_LINE_ROUGHNESS: 6,
             FIRING_CHANCE: 0.0003,
-            FIRING_DURATION: 120, // Increased duration to see bounces
+            FIRING_DURATION: 100, // Increased duration to see bounces
             PROPAGATION_CHANCE: 0.9,
             FIRING_LINE_WIDTH: 3, 
             FIRING_LINE_ROUGHNESS: 12,
@@ -156,7 +156,7 @@ class ParticleSystem {
             PARTICLE_FLASH_GLOW_BOOST: 15,
             WOBBLE_SPEED: 0.002,
             SIGNAL_STYLE: 'dot', 
-            SIGNAL_HEAD_LENGTH: 0.35,
+            SIGNAL_HEAD_LENGTH: 0.05,
             SIGNAL_HEAD_WIDTH: 5,
             SIGNAL_HEAD_COLOR: 'rgba(255, 255, 255, 1)',
             SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.9)',
