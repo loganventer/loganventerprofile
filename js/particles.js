@@ -147,7 +147,7 @@ class ParticleSystem {
             PROXIMITY_LINE_WIDTH: 0.8,
             PROXIMITY_LINE_ROUGHNESS: 6,
             FIRING_CHANCE: 0.0003,
-            FIRING_DURATION: 60, // Slowed down 3x (was 120)
+            FIRING_DURATION: 30, // Slowed down 3x (was 120)
             PROPAGATION_CHANCE: 0.5,
             FIRING_LINE_WIDTH: 3, 
             FIRING_LINE_ROUGHNESS: 12,
