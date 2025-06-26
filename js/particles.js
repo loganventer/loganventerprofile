@@ -7,14 +7,13 @@
  * Performance Fixes:
  * 1.  **Quadtree Implementation:** Replaced the O(n^2) collision detection.
  * 2.  **Particle Pre-Rendering:** Pre-rendered particle sprites for faster drawing.
- * 3.  **Hierarchical Dendrites:** Dendrite structures are built as traceable paths.
  *
- * FINAL FEATURE IMPLEMENTATION:
- * 4.  **Illuminated Signal Pathways:** Dendrites are now completely invisible by
- * default. A dendrite branch is only rendered when a signal is actively
- * propagating along it. The branch appears as a faint, illuminated path, with
- * a bright signal "head" traveling its length. Once the signal finishes, the
- * path disappears, creating a clean and dynamic visualization of activity.
+ * FEATURE CORRECTION:
+ * 3.  **Static Background with Dynamic Signals:** This version restores the
+ * persistent, faint background dendrite network. On top of this static layer,
+ * fast-moving, bright signals propagate along the dendrite paths during a
+ * "firing" event, achieving the originally intended effect. Signal speed has
+ * been significantly increased for a more dynamic feel.
  */
 
 // --- Quadtree Helper Classes ---
@@ -120,6 +119,7 @@ class ParticleSystem {
             PARTICLES_PER_PIXEL_DENSITY: 35000,
             MAX_CONNECTION_DISTANCE: 250,
             MOBILE_BREAKPOINT: 768,
+            STATIC_DENDRITE_OPACITY: 0.18, // <-- RESTORED for background
             STATIC_DENDRITE_LIFESPAN: 60,
             STATIC_DENDRITE_BRANCH_CHANCE: 0.1,
             PROXIMITY_LINE_OPACITY: 0.5,
@@ -133,15 +133,13 @@ class ParticleSystem {
             PARTICLE_FLASH_RADIUS_BOOST: 3,
             PARTICLE_FLASH_GLOW_BOOST: 15,
             WOBBLE_SPEED: 0.002,
-            // --- UPDATED & NEW Signal/Pathway Config ---
-            SIGNAL_SPEED: 0.05,
-            SIGNAL_HEAD_LENGTH: 0.15, // As a percentage of segment length
+            // --- Signal Config ---
+            SIGNAL_SPEED: 0.12, // <-- INCREASED SPEED
+            SIGNAL_HEAD_LENGTH: 0.15,
             SIGNAL_HEAD_WIDTH: 2.0,
             SIGNAL_HEAD_COLOR: 'rgba(255, 255, 255, 1)',
             SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.8)',
             SIGNAL_HEAD_GLOW_BLUR: 12,
-            ACTIVE_PATH_WIDTH: 0.8,
-            ACTIVE_PATH_COLOR: 'rgba(56, 189, 248, 0.25)' // Faint color for the active path
         };
 
         this.particlesArray = [];
@@ -179,6 +177,8 @@ class ParticleSystem {
         this._animate();
     }
 
+
+
     _initParticles() {
         this.particlesArray = [];
         this.dendriteSignals = [];
@@ -204,10 +204,14 @@ class ParticleSystem {
             qtree.insert(new Point(p.x, p.y, p));
         }
 
+        // The draw() call inside update() now handles the static dendrites
         this.particlesArray.forEach(p => p.update());
+        
         this._handleConnections(qtree);
         this._drawFiringConnections();
+        // This method now ONLY draws the moving signal heads
         this._updateAndDrawDendriteSignals();
+        
         this.animationFrameId = requestAnimationFrame(this._animate);
     }
 
@@ -255,14 +259,13 @@ class ParticleSystem {
     _drawFiringConnections() {
         for (let i = this.firingConnections.length - 1; i >= 0; i--) {
             const conn = this.firingConnections[i];
-            const opacity = conn.alpha * 0.9;
             this.ctx.shadowColor = 'rgba(125, 211, 252, 1)';
             this.ctx.shadowBlur = 15;
             this._drawJaggedLine(conn.from, conn.to, {
                 color: 'rgba(200, 240, 255, OPACITY)',
                 lineWidth: this.config.FIRING_LINE_WIDTH,
                 roughness: this.config.FIRING_LINE_ROUGHNESS,
-                opacity: opacity
+                opacity: conn.alpha
             });
             this.ctx.shadowBlur = 0;
             conn.duration--;
@@ -271,7 +274,7 @@ class ParticleSystem {
         }
     }
 
-    // --- HEAVILY REVISED to draw both the path and the signal head ---
+    // --- REVISED to ONLY draw the signal head ---
     _updateAndDrawDendriteSignals() {
         this.ctx.save();
         this.ctx.lineCap = 'round';
@@ -285,27 +288,15 @@ class ParticleSystem {
                 continue;
             }
 
-            // --- Pass 1: Draw the faint, active pathway ---
-            this.ctx.strokeStyle = this.config.ACTIVE_PATH_COLOR;
-            this.ctx.lineWidth = this.config.ACTIVE_PATH_WIDTH;
-            this.ctx.shadowBlur = 0;
-            this.ctx.beginPath();
-            for (const seg of branch) {
-                this.ctx.moveTo(seg.fromX, seg.fromY);
-                this.ctx.lineTo(seg.toX, seg.toY);
-            }
-            this.ctx.stroke();
+            // --- REMOVED Pass 1. We NO LONGER draw the faint path here. ---
 
-            // --- Pass 2: Draw the bright, glowing signal head ---
+            // --- ONLY draw the bright, glowing signal head ---
             const segment = branch[signal.segmentIndex];
             const fromX = segment.fromX, fromY = segment.fromY;
             const toX = segment.toX, toY = segment.toY;
             
-            // Calculate current position of the head
             const headX = fromX + (toX - fromX) * signal.progress;
             const headY = fromY + (toY - fromY) * signal.progress;
-
-            // Calculate position of the tail
             const tailProgress = signal.progress - this.config.SIGNAL_HEAD_LENGTH;
             const tailX = fromX + (toX - fromX) * Math.max(0, tailProgress);
             const tailY = fromY + (toY - fromY) * Math.max(0, tailProgress);
@@ -326,7 +317,7 @@ class ParticleSystem {
                 signal.progress = 0;
                 signal.segmentIndex++;
                 if (signal.segmentIndex >= branch.length) {
-                    this.dendriteSignals.splice(i, 1); // Signal ends, path will vanish
+                    this.dendriteSignals.splice(i, 1);
                 }
             }
         }
@@ -420,18 +411,15 @@ class Particle {
 
         const growBranch = (x, y, angle, life, currentBranch) => {
             if (life <= 0) return;
-
             const newX = x + Math.cos(angle) * 5;
             const newY = y + Math.sin(angle) * 5;
             currentBranch.push({ fromX: x, fromY: y, toX: newX, toY: newY });
-
             if (Math.random() < config.STATIC_DENDRITE_BRANCH_CHANCE && life > 10) {
                 const forkBranch = [];
                 const branchAngle = angle + (Math.random() > 0.5 ? 1 : -1) * 0.7;
                 growBranch(newX, newY, branchAngle, life * 0.5, forkBranch);
                 if (forkBranch.length > 0) { branches.push(forkBranch); }
             }
-            
             const nextAngle = angle + (Math.random() - 0.5) * 0.5;
             growBranch(newX, newY, nextAngle, life - 1, currentBranch);
         };
@@ -446,7 +434,20 @@ class Particle {
     }
 
     draw() {
-        // --- REMOVED: Static dendrite drawing is gone. They are now only drawn dynamically. ---
+        // --- RESTORED: Draw the static, faint dendrite network on every frame ---
+        this.ctx.save();
+        this.ctx.globalAlpha = this.config.STATIC_DENDRITE_OPACITY;
+        this.ctx.strokeStyle = this.config.PARTICLE_COLOR;
+        this.ctx.lineWidth = 0.5;
+        this.ctx.beginPath();
+        for (const branch of this.dendrites) {
+            for (const seg of branch) {
+                this.ctx.moveTo(seg.fromX, seg.fromY);
+                this.ctx.lineTo(seg.toX, seg.toY);
+            }
+        }
+        this.ctx.stroke();
+        this.ctx.restore();
 
         // Draw particle core
         const flashProgress = this.flashTTL > 0 ? this.flashTTL / this.config.FIRING_DURATION : 0;
