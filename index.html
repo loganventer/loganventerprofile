@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logan Venter | Senior Software Developer</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="antialiased">
+
+    <canvas id="neural-canvas"></canvas>
+
+    <header class="header shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="flex items-center text-2xl font-bold text-white hover:text-sky-300 transition-colors duration-300" onclick="showSection('about')">
+                <svg class="w-8 h-8 mr-3" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g id="Favicon_Complex">
+                        <line x1="32" y1="40" x2="32" y2="60" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                        <circle cx="32" cy="62" r="2" fill="currentColor"></circle>
+                        <circle cx="32" cy="32" r="9" fill="currentColor"></circle>
+                        <line x1="32" y1="23" x2="32" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                        <circle cx="32" cy="2" r="2" fill="currentColor"></circle>
+                        <line x1="42.36" y1="38" x2="57.9" y2="46" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                        <circle cx="59.9" cy="47" r="2" fill="currentColor"></circle>
+                        <line x1="21.64" y1="38" x2="6.1" y2="46" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                        <circle cx="4.1" cy="47" r="2" fill="currentColor"></circle>
+                        <line x1="40" y1="21.64" x2="49" y2="8.1" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                        <circle cx="50" cy="6.1" r="2" fill="currentColor"></circle>
+                        <line x1="24" y1="21.64" x2="15" y2="8.1" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                        <circle cx="14" cy="6.1" r="2" fill="currentColor"></circle>
+                    </g>
+                </svg>
+                <span>Logan Venter</span>
+            </a>
+            <div class="hidden lg:flex items-center space-x-6">
+                <a href="#" class="nav-item nav-item-active" onclick="showSection('about', this)">About Me</a>
+                <div class="dropdown relative">
+                    <button class="nav-item focus:outline-none">Professional Experience <i class="fas fa-chevron-down fa-xs"></i></button>
+                    <div class="dropdown-content">
+                        <a href="#" onclick="showSection('exp-derivco', this)">Senior Software Developer | Derivco</a>
+                        <a href="#" onclick="showSection('exp-dvt', this)">Senior Software Developer | DVT</a>
+                        <a href="#" onclick="showSection('exp-seecrypt', this)">Software Developer/Team Lead | Seecrypt</a>
+                        <a href="#" onclick="showSection('exp-covariant', this)">Director | Covariant Consulting</a>
+                        <a href="#" onclick="showSection('exp-ud', this)">Software Developer | UD Trucks</a>
+                        <a href="#" onclick="showSection('exp-enermatics', this)">Software Developer | Enermatics</a>
+                        <a href="#" onclick="showSection('exp-infotech', this)">Software Developer | Infotech</a>
+                        <a href="#" onclick="showSection('exp-itw', this)">Programmer | Information Trade World</a>
+                        <a href="#" onclick="showSection('exp-cot', this)">Administrative Officer | City of Tshwane</a>
+                        <a href="#" onclick="showSection('exp-marnet', this)">Graphic Designer | Marnet Signs</a>
+                        <a href="#" onclick="showSection('exp-books', this)">Data Capturing Clerk | Books-u-profit</a>
+                        <a href="#" onclick="showSection('exp-nexor', this)">Graphic Designer | Nexor Signs</a>
+                    </div>
+                </div>
+                <div class="dropdown relative">
+                    <button class="nav-item focus:outline-none">Education <i class="fas fa-chevron-down fa-xs"></i></button>
+                    <div class="dropdown-content">
+                        <a href="#" onclick="showSection('edu-intec', this)">Diploma in C++ Programming</a>
+                        <a href="#" onclick="showSection('edu-matric', this)">Grade 12 (Matric with Merit)</a>
+                    </div>
+                </div>
+                <div class="dropdown relative">
+                    <button class="nav-item focus:outline-none">Technical Skills <i class="fas fa-chevron-down fa-xs"></i></button>
+                    <div class="dropdown-content">
+                        <a href="#" onclick="showSection('skills-languages', this)">Languages</a>
+                        <a href="#" onclick="showSection('skills-frameworks', this)">Frameworks &amp; Methodologies</a>
+                        <a href="#" onclick="showSection('skills-concepts', this)">Architectural Concepts</a>
+                    </div>
+                </div>
+                <a href="#" class="nav-item" onclick="showSection('personal-interests', this)">Interests &amp; Projects</a>
+                <a href="#" class="nav-item" onclick="showSection('references', this)">References</a>
+                <a href="assets/documents/Logan Venter Curriculum Vitae 13-06-2025.pdf" download="Logan Venter CV.pdf" class="btn-primary text-white font-bold py-2 px-4 rounded-lg">
+                    <i class="fas fa-download mr-2"></i>Download CV
+                </a>
+            </div>
+            <div class="lg:hidden">
+                <button id="mobile-menu-button" class="text-white focus:outline-none">
+                    <i class="fas fa-bars fa-lg"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <div id="mobile-menu-container">
+        <div id="mobile-menu">
+            <div id="mobile-menu-close">×</div>
+            <a href="#" class="block py-3 text-white text-xl" onclick="showSection('about', this); toggleMobileMenu();">About Me</a>
+            <h3 class="text-gray-400 mt-6 mb-2 font-bold">Professional Experience</h3>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-derivco', this); toggleMobileMenu();">Derivco</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-dvt', this); toggleMobileMenu();">DVT</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-seecrypt', this); toggleMobileMenu();">Seecrypt</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-covariant', this); toggleMobileMenu();">Covariant Consulting</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-ud', this); toggleMobileMenu();">UD Trucks</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-enermatics', this); toggleMobileMenu();">Enermatics</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-infotech', this); toggleMobileMenu();">Infotech</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-itw', this); toggleMobileMenu();">Information Trade World</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-cot', this); toggleMobileMenu();">City of Tshwane</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-marnet', this); toggleMobileMenu();">Marnet Signs</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-books', this); toggleMobileMenu();">Books-u-profit</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-nexor', this); toggleMobileMenu();">Nexor Signs</a>
+            
+            <h3 class="text-gray-400 mt-6 mb-2 font-bold">Education</h3>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('edu-intec', this); toggleMobileMenu();">Diploma in C++ Programming</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('edu-matric', this); toggleMobileMenu();">Grade 12 (Matric)</a>
+
+            <h3 class="text-gray-400 mt-6 mb-2 font-bold">Technical Skills</h3>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('skills-languages', this); toggleMobileMenu();">Languages</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('skills-frameworks', this); toggleMobileMenu();">Frameworks &amp; Methodologies</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('skills-concepts', this); toggleMobileMenu();">Architectural Concepts</a>
+            
+            <a href="#" class="block py-3 text-white text-xl mt-4" onclick="showSection('personal-interests', this); toggleMobileMenu();">Interests &amp; Projects</a>
+            <a href="#" class="block py-3 text-white text-xl" onclick="showSection('references', this); toggleMobileMenu();">References</a>
+            <a href="assets/documents/Logan Venter Curriculum Vitae 13-06-2025.pdf" download="Logan Venter CV.pdf" class="mt-8 inline-block btn-primary text-white font-bold py-3 px-5 rounded-lg">
+                <i class="fas fa-download mr-2"></i>Download CV
+            </a>
+        </div>
+    </div>
+
+    <main class="container mx-auto p-6 lg:p-12">
+        
+        <section id="about" class="section active">
+            <div class="content-card p-8 flow-root">
+                <div class="float-right ml-6 mb-4 text-center">
+                    <img src="assets/images/image.jpg" alt="A photo of Logan Venter" class="profile-pic rounded-full w-32 h-32 md:w-48 md:h-48 mx-auto object-cover shadow-lg border-2 border-sky-500">
+                    <a href="assets/documents/Logan Venter Curriculum Vitae 13-06-2025.pdf" download="Logan Venter CV.pdf" class="btn-primary inline-block lg:hidden text-white font-bold py-2 px-4 rounded-lg mt-4">
+                        <i class="fas fa-download mr-2"></i>Download CV
+                    </a>
+                </div>
+                <h1 class="text-4xl font-bold mb-4">About Me</h1>
+                <p class="text-lg leading-relaxed mb-4">
+                    Highly analytical Senior Software Developer with over two decades of experience, specializing in C# and robust back-end API development. Possesses a deep passion for continuous learning and intellectual inquiry, notably demonstrated by pioneering an AI-driven application for dynamic prompt generation and execution on OpenAI's API. 
+                </p>
+                <p class="text-lg leading-relaxed mb-4">
+                    This groundbreaking system interpreted JSON definition files to create executable steps, interpret C# code call chains and models, and build custom, reusable prompts from further JSON components. It featured a flexible factory pattern for swapping source components (e.g., C#, plain text, SQL queries), recursive chaining of steps for complex AI queries, and support for diverse data sources (HTTP, disk, memory).
+                </p>
+                <p class="text-lg leading-relaxed mb-4">
+                    This experimental work significantly advanced automation testing by generating tests from various data and code contexts, effectively lifting a substantial burden from Quality Assurance efforts.
+                </p>
+                <p class="text-lg leading-relaxed">
+                    A proven track record of delivering scalable, secure, and performant solutions is complemented by advanced training in system architecture through Juval Löwy's prestigious Architect's Master Class. Adept at problem-solving, applying iDesign principles, implementing Domain-Driven Design (DDD), and providing technical leadership with a focus on driving project success and fostering team growth.
+                </p>
+                <div class="mt-8 text-center lg:text-left">
+                    <a href="mailto:logan.venter@outlook.com" class="text-sky-400 text-lg hover:underline"><i class="fas fa-envelope mr-2"></i>logan.venter@outlook.com</a>
+                    <span class="mx-4 text-gray-500 hidden md:inline">|</span>
+                    <div class="inline-block mt-2 md:mt-0">
+                        <a href="tel:0609742113" class="text-sky-400 text-lg hover:underline"><i class="fas fa-phone mr-2"></i>060 974 2113</a>
+                        <span class="mx-2 text-gray-500">/</span>
+                        <a href="tel:0764140083" class="text-sky-400 text-lg hover:underline">076 414 0083</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="exp-derivco" class="section">
+             <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Senior Software Developer</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.derivco.com/" target="_blank" class="hover:underline">Derivco</a> | Nov 2018 - Jun 2025</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <ul class="list-disc list-inside space-y-3 md:col-span-2">
+                        <li>Led the technical development, release, and maintenance of end-to-end software systems.</li>
+                        <li>Drove continuous integration and continuous delivery pipelines.</li>
+                        <li>Defined and drove the technical roadmap for multiple software products.</li>
+                        <li>Assessed complexity, scope, risk, and engineering effort for significant software development projects.</li>
+                        <li>Contributed to architecture roadmaps, ensuring adherence to established standards and principles.</li>
+                        <li>Ensured overarching software quality across systems.</li>
+                        <li>Mentored junior developers, providing guidance and support.</li>
+                        <li>Collaborated with cross-functional teams to ensure seamless project delivery.</li>
+                        <li>Troubleshot and resolved complex technical issues.</li>
+                        <li>Stayed abreast of industry trends and emerging technologies.</li>
+                    </ul>
+                    <div class="md:border-l md:pl-8 border-gray-400">
+                        <h4 class="text-lg font-bold mb-2">Key References:</h4>
+                         <ul class="space-y-1">
+                            <li>Chris Coetzee: <a href="tel:0825488817" class="text-sky-400 hover:underline">082 548 8817</a></li>
+                            <li>Ockert Du Preez: <a href="tel:0728290170" class="text-sky-400 hover:underline">072 829 0170</a></li>
+                            <li>Paul Kotze: <a href="tel:0829017953" class="text-sky-400 hover:underline">082 901 7953</a></li>
+                            <li>Albie van Zyl: <a href="tel:0794925393" class="text-sky-400 hover:underline">079 492 5393</a></li>
+                            <li>Gopi Kistasami: <a href="tel:0836161371" class="text-sky-400 hover:underline">083 616 1371</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="exp-dvt" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Senior Software Developer GMIC.Net (Consultant)</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.dvt.co.za/" target="_blank" class="hover:underline">Dynamic Visual Technologies (Pty) Ltd</a> | May 2016 - Nov 2018</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <ul class="list-disc list-inside space-y-3 md:col-span-2">
+                        <li>Developed new features and implemented critical bug fixes as per client requirements.</li>
+                        <li>Handled continuous integration (build) processes on clients' preferred platform.</li>
+                        <li>Managed branches and releases using Git.</li>
+                        <li>Orchestrated releases to live when sign-off was achieved from Quality Assurance.</li>
+                        <li>Collaborated closely with Quality Assurance on quality-related problems and bugs.</li>
+                        <li>Supplied Quality Assurance with builds and drove regular communication to achieve sign-off and sprint goals.</li>
+                        <li>Managed sprint goals and workload in coordination with project manager, product owner, and team capacity.</li>
+                        <li>Provided essential debugging and new feature assistance to team members as needed.</li>
+                        <li>Executed integrations between various systems at client sites.</li>
+                        <li>Assisted support when needed to deal with client problems.</li>
+                        <li>Participated in technical discussions and design sessions relating to product development.</li>
+                    </ul>
+                    <div class="md:border-l md:pl-8 border-gray-400">
+                        <h4 class="text-lg font-bold mb-2">Key Reference:</h4>
+                        <ul>
+                            <li>Khumo Jele: <a href="tel:0814479732" class="text-sky-400 hover:underline">081 447 9732</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="exp-seecrypt" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Software Developer/Windows Team Lead</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://seecrypt.com/" target="_blank" class="hover:underline">Seecrypt (Pty) Ltd</a> | Apr 2015 - May 2016</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <ul class="list-disc list-inside space-y-3 md:col-span-2">
+                        <li>Developed new features and bug-fixes on the Seecrypt SC3 encrypted communications application.</li>
+                        <li>Utilized C#, C++, SQLite-SQLCipher, WPF, Silverlight.</li>
+                        <li>Handled continuous integration (build) processes utilizing Bamboo build server.</li>
+                        <li>Managed branches and releases on Stash (Bitbucket) server using Git.</li>
+                        <li>Released to Windows store when sign-off was achieved from Quality Assurance.</li>
+                        <li>Worked closely with Quality Assurance on quality-related problems and bugs.</li>
+                        <li>Supplied Quality Assurance with builds and drove regular "bug-bashes".</li>
+                        <li>Management of sprint goals and workload in coordination with scrum master and product owner.</li>
+                        <li>Assisted team members with debugging and new features as and when needed.</li>
+                        <li>Attended and contributed to meetings and design sessions with other team leaders.</li>
+                        <li>Assisted support when needed to deal with client problems.</li>
+                    </ul>
+                     <div class="md:border-l md:pl-8 border-gray-400">
+                        <h4 class="text-lg font-bold mb-2">Key References:</h4>
+                        <ul class="space-y-1">
+                            <li>Annalinde Singh: <a href="tel:0766404766" class="text-sky-400 hover:underline">076 640 4766</a></li>
+                            <li>Dino Fizzotti: <a href="tel:+447340415199" class="text-sky-400 hover:underline">+44 734 041 5199</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="exp-covariant" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Director</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400">Covariant Consulting (Pty) Ltd | Jun 2014 - Mar 2015</h3>
+                 <div class="grid md:grid-cols-3 gap-8">
+                    <ul class="list-disc list-inside space-y-3 md:col-span-2">
+                        <li>Attended and assisted in design meetings regarding the implementation of the UDCS system.</li>
+                        <li>Integrated the UDCS front-ends and back-ends into Syspro for finance, inventory, and reporting purposes.</li>
+                        <li>Implemented database, data-access, business logic, and rules for the full UDCS system.</li>
+                        <li>Performed testing and verification of all implemented code on a standalone QA system.</li>
+                        <li>Managed deployment and verification of new functionality and bug fixes after QA sign-off.</li>
+                        <li>Maintained software and data fixes as needed and provided dealer support.</li>
+                    </ul>
+                    <div class="md:border-l md:pl-8 border-gray-400">
+                        <h4 class="text-lg font-bold mb-2">Key Reference:</h4>
+                        <ul>
+                            <li>Ronete McKenzie: <a href="tel:0616822350" class="text-sky-400 hover:underline">061 682 2350</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="exp-ud" class="section">
+             <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Software Developer</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.udtrucks.com/southafrica" target="_blank" class="hover:underline">UD Trucks Southern Africa (Pty) Ltd</a> | Mar 2012 - May 2014</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <ul class="list-disc list-inside space-y-3 md:col-span-2">
+                        <li>Attended and assisted in design meetings regarding the implementation of the UDCS system.</li>
+                        <li>Integrated UDCS front-ends and back-ends into Syspro for finance, inventory, and reporting.</li>
+                        <li>Implemented database, data-access, business logic, and rules for the UDCS system.</li>
+                        <li>Performed testing and verification of all implemented code on a standalone QA system.</li>
+                        <li>Managed deployment and verification of new functionality and bug fixes after QA sign-off.</li>
+                        <li>Maintained software and data fixes as needed and provided dealer support.</li>
+                    </ul>
+                    <div class="md:border-l md:pl-8 border-gray-400">
+                        <h4 class="text-lg font-bold mb-2">Key Reference:</h4>
+                        <ul>
+                            <li>Ronete McKenzie: <a href="tel:0616822350" class="text-sky-400 hover:underline">061 682 2350</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="exp-enermatics" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Software Developer</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.urbantechsystems.co.za/" target="_blank" class="hover:underline">Enermatics (Pty) Ltd</a> | Jun 2011 - Mar 2012</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <ul class="list-disc list-inside space-y-3 md:col-span-2">
+                        <li>Attended and assisted in design meetings regarding the implementation of the Wattkeeper system.</li>
+                        <li>Implemented database, data-access, business logic, and rules for Wattkeeper front-end and back-end.</li>
+                        <li>Performed testing and verification of all implemented code on a standalone QA system.</li>
+                        <li>Adhered to protocol as set out by device engineers when communicating with devices.</li>
+                        <li>Managed deployment and verification of new functionality using Hudson build server.</li>
+                        <li>Assisted with client queries and billing cycles.</li>
+                    </ul>
+                    <div class="md:border-l md:pl-8 border-gray-400">
+                        <h4 class="text-lg font-bold mb-2">Key Reference:</h4>
+                        <ul>
+                            <li>Melissa Wittstock: <a href="tel:0827500065" class="text-sky-400 hover:underline">082 750 0065</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="exp-infotech" class="section">
+             <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Software Developer</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.infotech.co.za/" target="_blank" class="hover:underline">Infotech (Pty) Ltd</a> | Jun 2009 - May 2011</h3>
+                 <div class="grid md:grid-cols-3 gap-8">
+                    <ul class="list-disc list-inside space-y-3 md:col-span-2">
+                        <li>Attended and assisted in design meetings regarding the implementation of the Wattkeeper system.</li>
+                        <li>Implemented database, data-access, business logic, and rules for Wattkeeper front-end and back-end.</li>
+                        <li>Performed testing and verification of all implemented code on a standalone QA system.</li>
+                        <li>Adhered to protocol as set out by device engineers when communicating with devices.</li>
+                        <li>Managed deployment and verification of new functionality using Hudson build server.</li>
+                    </ul>
+                    <div class="md:border-l md:pl-8 border-gray-400">
+                        <h4 class="text-lg font-bold mb-2">Key Reference:</h4>
+                        <ul>
+                            <li>Melissa Wittstock: <a href="tel:0827500065" class="text-sky-400 hover:underline">082 750 0065</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="exp-itw" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Programmer</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400">Information Trade World | Feb 2007 - May 2009</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <ul class="list-disc list-inside space-y-3 md:col-span-2">
+                        <li>Managed projects.</li>
+                        <li>Performed Visual Basic, Delphi, and Website development.</li>
+                        <li>Designed, developed, implemented, and maintained COBOL Programs as per client requirements.</li>
+                        <li>Handled client system management, including receiving, scheduling, and planning of client jobs and projects, and writing progress reports.</li>
+                        <li>Performed general programming functions.</li>
+                    </ul>
+                    <div class="md:border-l md:pl-8 border-gray-400">
+                        <h4 class="text-lg font-bold mb-2">Key Reference:</h4>
+                         <ul>
+                            <li>Maria Jacobs: <a href="tel:0742546027" class="text-sky-400 hover:underline">074 254 6027</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="exp-cot" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Administrative Officer</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.tshwane.gov.za/" target="_blank" class="hover:underline">City of Tshwane Metropolitan Municipality</a> | Mar 2004 - Feb 2007</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <ul class="list-disc list-inside space-y-3 md:col-span-2">
+                        <li>Checked and controlled payment vouchers for goods and services, ensuring all legal documents were attached and correct.</li>
+                        <li>Ensured contracts with retention monies complied with General Conditions of Contract.</li>
+                        <li>Verified correct foreign exchange covers were obtained.</li>
+                        <li>Ensured all payments including retention monies were correctly paid in accordance with contract conditions.</li>
+                        <li>Provided a counter service to internal departments for cheque collection.</li>
+                        <li>Printed cheques as required.</li>
+                        <li>Oversaw the overall status of filed documents and managed contents, archiving when necessary.</li>
+                        <li>Assisted departments with queries regarding payment status.</li>
+                        <li>Assisted with all IT related problems, sometimes resolving them immediately.</li>
+                        <li>Performed general administrative services.</li>
+                    </ul>
+                    <div class="md:border-l md:pl-8 border-gray-400">
+                        <h4 class="text-lg font-bold mb-2">Key Reference:</h4>
+                        <ul>
+                            <li>Martie J. Matthee: <a href="tel:0123588269" class="text-sky-400 hover:underline">012 358 8269</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="exp-marnet" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Graphic Designer / Sign Writer</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400">Marnet Signs | Nov 2003 - Feb 2004</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <ul class="list-disc list-inside space-y-3 md:col-span-2">
+                        <li>Created signboards and vehicle signage with graphical processing software.</li>
+                        <li>Incised vinyl for signs using a graphical plotter.</li>
+                        <li>Weeded superfluous vinyl from backing sheets.</li>
+                        <li>Applied vinyl onto various boards and vehicles to create the actual sign.</li>
+                        <li>Ordered materials required for projects as necessary.</li>
+                        <li>Obtained materials from various suppliers with personal vehicle.</li>
+                        <li>Oversaw and helped with the actual erection of signage.</li>
+                    </ul>
+                    <div class="md:border-l md:pl-8 border-gray-400">
+                        <h4 class="text-lg font-bold mb-2">Key Reference:</h4>
+                        <ul>
+                            <li>Martie Roberts or Eddie Bekker: <a href="tel:0127344990" class="text-sky-400 hover:underline">012 734 4990</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="exp-books" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Data Capturing Clerk</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400">Books-u-profit | Apr 2003 - Jul 2003</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <ul class="list-disc list-inside space-y-3 md:col-span-2">
+                        <li>Performed general administration services (filing, arranging appointments, etc.).</li>
+                        <li>Captured all invoices, receipts, and financial documents of clients onto a computer, using Pastel 6 accounting software.</li>
+                    </ul>
+                    <div class="md:border-l md:pl-8 border-gray-400">
+                        <h4 class="text-lg font-bold mb-2">Key Reference:</h4>
+                        <ul>
+                            <li>Dries Venter: Tel: <a href="tel:0128003327" class="text-sky-400 hover:underline">012 800 3327</a>, Cell: <a href="tel:0834497047" class="text-sky-400 hover:underline">083 449 7047</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="exp-nexor" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Graphic Designer / Sign Writer</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400">Nexor Signs | Dec 2002 - Mar 2003</h3>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <ul class="list-disc list-inside space-y-3 md:col-span-2">
+                        <li>Created signboards and vehicle signage with graphical processing software.</li>
+                        <li>Incised vinyl for signs using a graphical plotter.</li>
+                        <li>Weeded superfluous vinyl from backing sheets.</li>
+                        <li>Applied vinyl onto various boards and vehicles to create the actual sign.</li>
+                        <li>Assisted with actual erection of signage.</li>
+                    </ul>
+                    <div class="md:border-l md:pl-8 border-gray-400">
+                        <h4 class="text-lg font-bold mb-2">Key Reference:</h4>
+                        <ul>
+                            <li>Dries du Plessis: <a href="tel:0123333384" class="text-sky-400 hover:underline">012 333 3384</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="edu-intec" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Diploma in C++ Programming</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400">Intec College</h3>
+                <p class="mb-4">Maintained an average of 73.1%, the highest score obtained in the history of the institution as of 2006.</p>
+                <h4 class="text-lg font-bold mb-2">Subjects:</h4>
+                <ul class="list-disc list-inside space-y-2">
+                    <li>Introduction to programming</li>
+                    <li>Introduction to C++</li>
+                    <li>C++ Programming</li>
+                    <li>Advanced C++ Programming</li>
+                    <li>Systems Analysis &amp; Design</li>
+                    <li>Management Information Systems.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="edu-matric" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Grade 12 (Matric with Merit)</h2>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400">Goudrif High and Elsburg Primary</h3>
+                <h4 class="text-lg font-bold mb-2">Subjects:</h4>
+                 <ul class="list-disc list-inside space-y-2">
+                    <li>Afrikaans: First Language HG - C</li>
+                    <li>English: Second Language HG - A</li>
+                    <li>Physical Science - D</li>
+                    <li>Accounting - C</li>
+                    <li>Computer Studies - B</li>
+                    <li>Mathematics - E</li>
+                 </ul>
+                 <p class="mt-4">Recipient of the Computer Training Institute floating trophy for the best student in computer studies (2002).</p>
+                 <p class="mt-2">Completed entire Matric Computer Studies syllabus in Grade 10 and coded first primitive graphics program in the same year.</p>
+            </div>
+        </section>
+
+        <section id="skills-languages" class="section">
+             <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-4">Programming Languages</h2>
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">C# &amp; .NET Ecosystem</h3>
+                        <p>Architecting and developing high-performance, scalable back-end services and APIs as my primary specialty. Deep, expert-level proficiency across the full framework, from legacy systems to .NET 8.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">SQL (T-SQL/General)</h3>
+                        <p>Designing and implementing complex database schemas, writing optimized queries, and ensuring data integrity for mission-critical financial and communication systems.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">C++</h3>
+                        <p>Utilized for performance-critical components in secure communications applications, interfacing directly with low-level libraries and protocols.</p>
+                    </div>
+                     <div>
+                        <h3 class="text-xl font-semibold text-sky-600">Web Technologies (ASP.NET, Javascript)</h3>
+                        <p>Building and maintaining both the front-end and back-end logic for comprehensive web-based enterprise systems.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">Legacy &amp; Other (COBOL, Delphi, VB)</h3>
+                        <p>Foundational experience in maintaining and developing for legacy systems, demonstrating a broad and adaptable understanding of different programming paradigms.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="skills-frameworks" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-4">Frameworks &amp; Methodologies</h2>
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">Back-end &amp; API Development</h3>
+                        <p>Specializing in the design and implementation of robust, secure, and scalable RESTful APIs for complex domains like fund management and secure communications.</p>
+                    </div>
+                     <div>
+                        <h3 class="text-xl font-semibold text-sky-600">AI &amp; LLM Integration</h3>
+                        <p>Pioneering the design and implementation of AI-driven applications. Extensive hands-on experience with dynamic prompt generation and execution, leveraging models from OpenAI, Ollama, and DeepSeek. Architected systems for interpreting JSON definitions, recursive chaining for complex queries, and building flexible, reusable prompt components.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">CI/CD &amp; DevOps</h3>
+                        <p>Driving the implementation and maintenance of full continuous integration and continuous delivery pipelines using tools like Bamboo and Azure DevOps to streamline workflows and improve release velocity.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="skills-concepts" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-4">Architectural Concepts</h2>
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">iDesign &amp; Domain-Driven Design (DDD)</h3>
+                        <p>Formally trained in advanced system architecture through Juval Löwy's Architect's Master Class. Proficient in applying the iDesign methodology and Domain-Driven Design principles to decompose complex systems and build robust, maintainable, and scalable software.</p>
+                    </div>
+                     <div>
+                        <h3 class="text-xl font-semibold text-sky-600">Microservices &amp; Scalable Architectures</h3>
+                        <p>Experience in architecting and decomposing monolithic systems into scalable, independently deployable microservices, leveraging Azure for orchestration and deployment.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">Authentication &amp; Security</h3>
+                        <p>Implementing and enforcing robust security protocols, including token-based authentication (JWT), and integrating with various authentication providers to secure critical data.</p>
+                    </div>
+                     <div>
+                        <h3 class="text-xl font-semibold text-sky-600">Database Integration &amp; Optimization</h3>
+                        <p>Expertise in integrating applications with SQL databases, optimizing data access patterns with techniques like caching (Redis, in-memory) to ensure high performance and low latency.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="personal-interests" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-6">Personal Interests &amp; Projects</h2>
+                
+                <h3 class="text-2xl font-bold mb-3 text-sky-400">Software Development</h3>
+                <p class="text-lg leading-relaxed mb-6">
+                    Passionate about programming, finding it exhilarating and rewarding to solve particularly hard problems. Currently developing a C# engine for text-based RPG campaigns (DnD-like mechanics), integrating Ollama and DeepSeek for advanced storytelling, with a campaign editor, and using JSON for data storage.
+                </p>
+
+                <h3 class="text-2xl font-bold mb-3 text-sky-400">Tech Innovations</h3>
+                <ul class="list-disc list-inside space-y-3 mb-6">
+                    <li>Developed a mobile game for the Windows phone store which received 8000 downloads.</li>
+                    <li>Developed another Windows phone app for the Eskom load shedding situation, monitoring grid status and notifying users of changes, which received 1200 downloads in two weeks.</li>
+                    <li>Built a backlight for his television which changes color according to the average perceived pixel color, greatly improving the viewing ambience.</li>
+                </ul>
+
+                <h3 class="text-2xl font-bold mb-3 text-sky-400">Music</h3>
+                <p class="text-lg leading-relaxed">
+                    Highly interested in music, plays the guitar and sings at home and in public. Has written many of his own songs and performed at various venues after one of his songs was played on Jacaranda, and recorded his own album.
+                </p>
+            </div>
+        </section>
+        
+        <section id="references" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-6">All References</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div>
+                        <h3 class="font-bold text-sky-400"><a href="https://www.derivco.com/" target="_blank" class="hover:underline">Derivco</a></h3>
+                        <p>Chris Coetzee: <a href="tel:0825488817" class="text-sky-400 hover:underline">082 548 8817</a></p>
+                        <p>Ockert Du Preez: <a href="tel:0728290170" class="text-sky-400 hover:underline">072 829 0170</a></p>
+                        <p>Paul Kotze: <a href="tel:0829017953" class="text-sky-400 hover:underline">082 901 7953</a></p>
+                        <p>Albie van Zyl: <a href="tel:0794925393" class="text-sky-400 hover:underline">079 492 5393</a></p>
+                        <p>Gopi Kistasami: <a href="tel:0836161371" class="text-sky-400 hover:underline">083 616 1371</a></p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sky-400"><a href="https://www.dvt.co.za/" target="_blank" class="hover:underline">Dynamic Visual Technologies</a></h3>
+                        <p>Khumo Jele: <a href="tel:0814479732" class="text-sky-400 hover:underline">081 447 9732</a></p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sky-400"><a href="https://seecrypt.com/" target="_blank" class="hover:underline">Seecrypt (Pty) Ltd</a></h3>
+                        <p>Annalinde Singh: <a href="tel:0766404766" class="text-sky-400 hover:underline">076 640 4766</a></p>
+                        <p>Dino Fizzotti: <a href="tel:+447340415199" class="text-sky-400 hover:underline">+44 734 041 5199</a></p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sky-400"><a href="https://www.udtrucks.com/southafrica" target="_blank" class="hover:underline">UD Trucks</a> / Covariant Consulting</h3>
+                        <p>Ronete McKenzie: <a href="tel:0616822350" class="text-sky-400 hover:underline">061 682 2350</a></p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sky-400"><a href="https://www.infotech.co.za/" target="_blank" class="hover:underline">Infotech</a>/<a href="https://www.urbantechsystems.co.za/" target="_blank" class="hover:underline">Enermatics</a></h3>
+                        <p>Melissa Wittstock: <a href="tel:0827500065" class="text-sky-400 hover:underline">082 750 0065</a></p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sky-400">Information Trade World</h3>
+                        <p>Maria Jacobs: <a href="tel:0742546027" class="text-sky-400 hover:underline">074 254 6027</a></p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sky-400"><a href="https://www.tshwane.gov.za/" target="_blank" class="hover:underline">City of Tshwane</a></h3>
+                        <p>Martie J. Matthee: <a href="tel:0123588269" class="text-sky-400 hover:underline">012 358 8269</a></p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sky-400">Marnet Signs</h3>
+                        <p>Martie Roberts or Eddie Bekker: <a href="tel:0127344990" class="text-sky-400 hover:underline">012 734 4990</a></p>
+                    </div>
+                     <div>
+                        <h3 class="font-bold text-sky-400">Books-u-profit</h3>
+                        <p>Dries Venter: Tel: <a href="tel:0128003327" class="text-sky-400 hover:underline">012 800 3327</a>, Cell: <a href="tel:0834497047" class="text-sky-400 hover:underline">083 449 7047</a></p>
+                    </div>
+                     <div>
+                        <h3 class="font-bold text-sky-400">Nexor Signs</h3>
+                        <p>Dries du Plessis: <a href="tel:0123333384" class="text-sky-400 hover:underline">012 333 3384</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="js/particles.js" defer></script>
+    <script src="js/main.js" defer></script>
+</body>
+</html>
