@@ -266,9 +266,8 @@ class ParticleSystem {
                             progress: 0,
                             alpha: 1,
                             isPrimary: true,
-                            // --- MODIFIED: Add bounce properties ---
-                            bounces: Math.floor(Math.random() * 4) + 2, // 2 to 5 bounces
-                            direction: 1, // 1 for forward, -1 for backward
+                            bounces: Math.floor(Math.random() * 4) + 2,
+                            direction: 1,
                             hasPropagated: false,
                         });
                         pA.flashTTL = this.config.FIRING_DURATION;
@@ -283,21 +282,15 @@ class ParticleSystem {
         for (let i = this.firingConnections.length - 1; i >= 0; i--) {
             const conn = this.firingConnections[i];
             
-            // --- MODIFIED: Update logic for bouncing signal ---
-            
-            // 1. Update overall lifetime and alpha fade
             conn.duration--;
             conn.alpha = conn.duration / conn.initialDuration;
 
-            // 2. Calculate signal speed based on total bounces and update progress
             const speed = conn.bounces / conn.initialDuration;
             conn.progress += speed * conn.direction;
 
-            // 3. Handle bounces and propagation
             if (conn.direction === 1 && conn.progress >= 1) {
-                conn.progress = 1; // Clamp position
-                conn.direction = -1; // Reverse direction
-                // Trigger propagation to other neurons on the first arrival only
+                conn.progress = 1;
+                conn.direction = -1;
                 if (!conn.hasPropagated && conn.isPrimary) {
                     const propagator = conn.to;
                     const numToFire = Math.floor(Math.random() * 2) + 1;
@@ -324,14 +317,13 @@ class ParticleSystem {
                         propagator.flashTTL = this.config.FIRING_DURATION;
                         nextTarget.flashTTL = this.config.FIRING_DURATION;
                     }
-                    conn.hasPropagated = true; // Ensure it only propagates once
+                    conn.hasPropagated = true;
                 }
             } else if (conn.direction === -1 && conn.progress <= 0) {
-                conn.progress = 0; // Clamp position
-                conn.direction = 1; // Reverse direction
+                conn.progress = 0;
+                conn.direction = 1;
             }
 
-            // 4. Draw the connection line and the signal itself
             this._drawJaggedLine(conn, {
                 color: `rgba(200, 240, 255, OPACITY)`,
                 lineWidth: this.config.FIRING_LINE_WIDTH,
@@ -339,7 +331,6 @@ class ParticleSystem {
                 opacity: conn.alpha * 0.9
             });
 
-            // 5. Remove the connection when its lifetime expires
             if (conn.duration <= 0) {
                 this.firingConnections.splice(i, 1);
             }
@@ -397,7 +388,7 @@ class ParticleSystem {
         for(const point of path) this.ctx.lineTo(point.x, point.y);
         this.ctx.stroke();
         
-        if (progress >= 0 && progress <= 1) { // Ensure progress is valid
+        if (progress >= 0 && progress <= 1) { 
             const headIndex = Math.min(path.length - 1, Math.floor(progress * (path.length - 1)));
             const pulse = Math.sin(conn.progress * this.config.SIGNAL_PULSE_FREQUENCY) * this.config.SIGNAL_PULSE_AMPLITUDE;
 
@@ -406,7 +397,8 @@ class ParticleSystem {
                 if (dotPos) {
                     const radius = (this.config.SIGNAL_HEAD_WIDTH / 2) + pulse;
                     this.ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-                    this.ctx.shadowColor = this.config.SIGNAL_HEAD_G LOW_COLOR;
+                    // --- FIX: Corrected typo in variable name ---
+                    this.ctx.shadowColor = this.config.SIGNAL_HEAD_GLOW_COLOR;
                     this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR + (pulse * 2);
                     this.ctx.beginPath();
                     this.ctx.arc(dotPos.x, dotPos.y, Math.max(0, radius), 0, Math.PI * 2);
