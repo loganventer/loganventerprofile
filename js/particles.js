@@ -5,22 +5,16 @@
  * major computational and rendering bottlenecks.
  *
  * Performance Fixes:
- * 1.  **Quadtree Implementation:** Replaced the O(n^2) collision detection in
- * `_handleConnections` with a Quadtree. This dramatically reduces the number of
- * particle-pair checks, making the simulation scale much better.
- * 2.  **Particle Pre-Rendering:** Instead of creating expensive radial gradients and
- * shadows for every particle on every frame, particles are now pre-rendered to
- * off-screen canvases. The main loop uses the much faster `drawImage` to stamp
- * these sprites, significantly reducing rendering overhead.
- * 3.  **Bug Fix:** The `_createDendriteTree` method is now correctly implemented,
- * restoring the static background dendrite effect.
+ * 1.  **Quadtree Implementation:** Replaced the O(n^2) collision detection.
+ * 2.  **Particle Pre-Rendering:** Pre-rendered particle sprites for faster drawing.
+ * 3.  **Hierarchical Dendrites:** Dendrite structures are built as traceable paths.
  *
- * NEW FEATURE:
- * 4.  **Dendrite Signal Propagation:** When particles "fire," a visual signal
- * is now generated. This signal travels along the particle's own dendrite
- * branches, creating a visible representation of neural activity propagating
- * through the network. This is achieved by restructuring dendrites into
- * traceable paths and managing active signals in the main animation loop.
+ * FINAL FEATURE IMPLEMENTATION:
+ * 4.  **Illuminated Signal Pathways:** Dendrites are now completely invisible by
+ * default. A dendrite branch is only rendered when a signal is actively
+ * propagating along it. The branch appears as a faint, illuminated path, with
+ * a bright signal "head" traveling its length. Once the signal finishes, the
+ * path disappears, creating a clean and dynamic visualization of activity.
  */
 
 // --- Quadtree Helper Classes ---
@@ -28,7 +22,7 @@ class Point {
     constructor(x, y, data) {
         this.x = x;
         this.y = y;
-        this.data = data; // Associate data (the particle object) with the point
+        this.data = data;
     }
 }
 
@@ -80,17 +74,13 @@ class Quadtree {
     }
 
     insert(point) {
-        if (!this.boundary.contains(point)) {
-            return false;
-        }
+        if (!this.boundary.contains(point)) { return false; }
 
         if (this.points.length < this.capacity) {
             this.points.push(point);
             return true;
         } else {
-            if (!this.divided) {
-                this.subdivide();
-            }
+            if (!this.divided) { this.subdivide(); }
             this.northeast.insert(point);
             this.northwest.insert(point);
             this.southeast.insert(point);
@@ -99,23 +89,17 @@ class Quadtree {
     }
 
     query(range, found) {
-        if (!found) {
-            found = [];
+        if (!found) { found = []; }
+        if (!this.boundary.intersects(range)) { return found; }
+
+        for (let p of this.points) {
+            if (range.contains(p)) { found.push(p.data); }
         }
-        if (!this.boundary.intersects(range)) {
-            return found;
-        } else {
-            for (let p of this.points) {
-                if (range.contains(p)) {
-                    found.push(p.data);
-                }
-            }
-            if (this.divided) {
-                this.northwest.query(range, found);
-                this.northeast.query(range, found);
-                this.southwest.query(range, found);
-                this.southeast.query(range, found);
-            }
+        if (this.divided) {
+            this.northwest.query(range, found);
+            this.northeast.query(range, found);
+            this.southwest.query(range, found);
+            this.southeast.query(range, found);
         }
         return found;
     }
@@ -131,13 +115,11 @@ class ParticleSystem {
         this.ctx = this.canvas.getContext('2d');
         this.config = {
             PARTICLE_COLOR: '#38BDF8',
-            MIN_RADIUS: 3,
-            MAX_RADIUS: 5,
+            MIN_RADIUS: 3, MAX_RADIUS: 5,
             INITIAL_VELOCITY_RANGE: 0.35,
             PARTICLES_PER_PIXEL_DENSITY: 35000,
             MAX_CONNECTION_DISTANCE: 250,
             MOBILE_BREAKPOINT: 768,
-            STATIC_DENDRITE_OPACITY: 0.18,
             STATIC_DENDRITE_LIFESPAN: 60,
             STATIC_DENDRITE_BRANCH_CHANCE: 0.1,
             PROXIMITY_LINE_OPACITY: 0.5,
@@ -151,17 +133,20 @@ class ParticleSystem {
             PARTICLE_FLASH_RADIUS_BOOST: 3,
             PARTICLE_FLASH_GLOW_BOOST: 15,
             WOBBLE_SPEED: 0.002,
-            // --- NEW CONFIG FOR DENDRITE SIGNALS ---
-            SIGNAL_SPEED: 0.04,          // Progress per frame (0 to 1)
-            SIGNAL_LINE_WIDTH: 1.5,
-            SIGNAL_COLOR: 'rgba(255, 255, 255, 1)',
-            SIGNAL_GLOW_COLOR: 'rgba(255, 255, 255, 0.8)',
-            SIGNAL_GLOW_BLUR: 10
+            // --- UPDATED & NEW Signal/Pathway Config ---
+            SIGNAL_SPEED: 0.05,
+            SIGNAL_HEAD_LENGTH: 0.15, // As a percentage of segment length
+            SIGNAL_HEAD_WIDTH: 2.0,
+            SIGNAL_HEAD_COLOR: 'rgba(255, 255, 255, 1)',
+            SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.8)',
+            SIGNAL_HEAD_GLOW_BLUR: 12,
+            ACTIVE_PATH_WIDTH: 0.8,
+            ACTIVE_PATH_COLOR: 'rgba(56, 189, 248, 0.25)' // Faint color for the active path
         };
 
         this.particlesArray = [];
         this.firingConnections = [];
-        this.dendriteSignals = []; // <<< NEW: To manage active signals
+        this.dendriteSignals = [];
         this.animationFrameId = null;
         this.time = 0;
         this._handleResize = this._debounce(this._handleResize.bind(this), 250);
@@ -177,11 +162,9 @@ class ParticleSystem {
     }
 
     destroy() {
-        if (this.animationFrameId) {
-            cancelAnimationFrame(this.animationFrameId);
-        }
+        if (this.animationFrameId) { cancelAnimationFrame(this.animationFrameId); }
         window.removeEventListener('resize', this._handleResize);
-        console.log("Particle system destroyed and resources cleaned up.");
+        console.log("Particle system destroyed.");
     }
 
     _resizeCanvas() {
@@ -190,9 +173,7 @@ class ParticleSystem {
     }
 
     _handleResize() {
-        if (this.animationFrameId) {
-            cancelAnimationFrame(this.animationFrameId);
-        }
+        if (this.animationFrameId) { cancelAnimationFrame(this.animationFrameId); }
         this._resizeCanvas();
         this._initParticles();
         this._animate();
@@ -200,11 +181,9 @@ class ParticleSystem {
 
     _initParticles() {
         this.particlesArray = [];
-        this.dendriteSignals = []; // Clear signals on resize
+        this.dendriteSignals = [];
         let num = Math.floor((this.canvas.width * this.canvas.height) / this.config.PARTICLES_PER_PIXEL_DENSITY);
-        if (window.innerWidth < this.config.MOBILE_BREAKPOINT) {
-            num *= 2;
-        }
+        if (window.innerWidth < this.config.MOBILE_BREAKPOINT) { num *= 2; }
         for (let i = 0; i < num; i++) {
             const r = Math.random() * (this.config.MAX_RADIUS - this.config.MIN_RADIUS) + this.config.MIN_RADIUS;
             const x = Math.random() * (this.canvas.width - r * 2) + r;
@@ -228,7 +207,7 @@ class ParticleSystem {
         this.particlesArray.forEach(p => p.update());
         this._handleConnections(qtree);
         this._drawFiringConnections();
-        this._updateAndDrawDendriteSignals(); // <<< NEW: Animate our signals
+        this._updateAndDrawDendriteSignals();
         this.animationFrameId = requestAnimationFrame(this._animate);
     }
 
@@ -255,20 +234,15 @@ class ParticleSystem {
                     });
 
                     if (Math.random() < this.config.FIRING_CHANCE) {
-                        this.firingConnections.push({
-                            from: pA, to: pB,
-                            duration: this.config.FIRING_DURATION, alpha: 1
-                        });
+                        this.firingConnections.push({ from: pA, to: pB, duration: this.config.FIRING_DURATION, alpha: 1 });
                         pA.flashTTL = this.config.FIRING_DURATION;
                         pB.flashTTL = this.config.FIRING_DURATION;
 
-                        // --- NEW: Trigger a dendrite signal on the firing particle ---
                         if (pA.dendrites.length > 0) {
                             this.dendriteSignals.push({
                                 particle: pA,
                                 branchIndex: Math.floor(Math.random() * pA.dendrites.length),
-                                segmentIndex: 0,
-                                progress: 0, // Starts at the beginning of the segment
+                                segmentIndex: 0, progress: 0,
                                 speed: this.config.SIGNAL_SPEED
                             });
                         }
@@ -293,56 +267,66 @@ class ParticleSystem {
             this.ctx.shadowBlur = 0;
             conn.duration--;
             conn.alpha = conn.duration / this.config.FIRING_DURATION;
-            if (conn.duration <= 0) {
-                this.firingConnections.splice(i, 1);
-            }
+            if (conn.duration <= 0) { this.firingConnections.splice(i, 1); }
         }
     }
 
-    // --- NEW: Method to update and render the traveling signals ---
+    // --- HEAVILY REVISED to draw both the path and the signal head ---
     _updateAndDrawDendriteSignals() {
         this.ctx.save();
         this.ctx.lineCap = 'round';
-        this.ctx.strokeStyle = this.config.SIGNAL_COLOR;
-        this.ctx.lineWidth = this.config.SIGNAL_LINE_WIDTH;
-        this.ctx.shadowColor = this.config.SIGNAL_GLOW_COLOR;
-        this.ctx.shadowBlur = this.config.SIGNAL_GLOW_BLUR;
 
         for (let i = this.dendriteSignals.length - 1; i >= 0; i--) {
             const signal = this.dendriteSignals[i];
-            const particle = signal.particle;
-            const branch = particle.dendrites[signal.branchIndex];
+            const branch = signal.particle.dendrites[signal.branchIndex];
 
             if (!branch || !branch[signal.segmentIndex]) {
-                // Branch or segment doesn't exist, remove signal
                 this.dendriteSignals.splice(i, 1);
                 continue;
             }
 
-            const segment = branch[signal.segmentIndex];
-
-            // Draw the signal path for the current segment
-            const travelDx = (segment.toX - segment.fromX) * signal.progress;
-            const travelDy = (segment.toY - segment.fromY) * signal.progress;
-            const currentX = segment.fromX + travelDx;
-            const currentY = segment.fromY + travelDy;
-
+            // --- Pass 1: Draw the faint, active pathway ---
+            this.ctx.strokeStyle = this.config.ACTIVE_PATH_COLOR;
+            this.ctx.lineWidth = this.config.ACTIVE_PATH_WIDTH;
+            this.ctx.shadowBlur = 0;
             this.ctx.beginPath();
-            this.ctx.moveTo(segment.fromX, segment.fromY);
-            this.ctx.lineTo(currentX, currentY);
+            for (const seg of branch) {
+                this.ctx.moveTo(seg.fromX, seg.fromY);
+                this.ctx.lineTo(seg.toX, seg.toY);
+            }
             this.ctx.stroke();
 
-            // Update signal progress
-            signal.progress += signal.speed;
+            // --- Pass 2: Draw the bright, glowing signal head ---
+            const segment = branch[signal.segmentIndex];
+            const fromX = segment.fromX, fromY = segment.fromY;
+            const toX = segment.toX, toY = segment.toY;
+            
+            // Calculate current position of the head
+            const headX = fromX + (toX - fromX) * signal.progress;
+            const headY = fromY + (toY - fromY) * signal.progress;
 
-            // If signal reaches end of segment, move to the next one
+            // Calculate position of the tail
+            const tailProgress = signal.progress - this.config.SIGNAL_HEAD_LENGTH;
+            const tailX = fromX + (toX - fromX) * Math.max(0, tailProgress);
+            const tailY = fromY + (toY - fromY) * Math.max(0, tailProgress);
+            
+            this.ctx.strokeStyle = this.config.SIGNAL_HEAD_COLOR;
+            this.ctx.lineWidth = this.config.SIGNAL_HEAD_WIDTH;
+            this.ctx.shadowColor = this.config.SIGNAL_HEAD_GLOW_COLOR;
+            this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR;
+            
+            this.ctx.beginPath();
+            this.ctx.moveTo(tailX, tailY);
+            this.ctx.lineTo(headX, headY);
+            this.ctx.stroke();
+
+            // --- Update signal state ---
+            signal.progress += signal.speed;
             if (signal.progress >= 1) {
                 signal.progress = 0;
                 signal.segmentIndex++;
-
-                // If signal reaches end of the branch, remove it
                 if (signal.segmentIndex >= branch.length) {
-                    this.dendriteSignals.splice(i, 1);
+                    this.dendriteSignals.splice(i, 1); // Signal ends, path will vanish
                 }
             }
         }
@@ -351,14 +335,11 @@ class ParticleSystem {
 
     _drawJaggedLine(start, end, lineConfig) {
         const { color, lineWidth, roughness, opacity } = lineConfig;
-        const dx = end.x - start.x;
-        const dy = end.y - start.y;
+        const dx = end.x - start.x, dy = end.y - start.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         const numSegments = Math.max(1, Math.floor(distance / 15));
-        const vecX = dx / distance;
-        const vecY = dy / distance;
-        const perpX = -vecY;
-        const perpY = vecX;
+        const vecX = dx / distance, vecY = dy / distance;
+        const perpX = -vecY, perpY = vecX;
         const wobbleSeed = start.x + end.y;
 
         this.ctx.strokeStyle = color.replace('OPACITY', opacity.toString());
@@ -397,19 +378,16 @@ class Particle {
         this.x = x; this.y = y; this.vx = vx; this.vy = vy;
         this.radius = radius; this.canvas = canvas; this.ctx = ctx;
         this.config = config; this.flashTTL = 0;
-        // --- MODIFIED: Create and store dendrites with new structure ---
         this.dendrites = this._createDendriteTree();
         this.intRadius = Math.round(radius);
     }
 
     static preRenderParticles(config) {
         for (let r = config.MIN_RADIUS; r <= config.MAX_RADIUS; r++) {
-            const baseKey = `${r}_base`;
+            const baseKey = `${r}_base`, flashKey = `${r}_flash`;
             if (!this.renderedParticles.has(baseKey)) {
                 this.renderedParticles.set(baseKey, this._createParticleCanvas(r, 0, config));
             }
-
-            const flashKey = `${r}_flash`;
             if (!this.renderedParticles.has(flashKey)) {
                 this.renderedParticles.set(flashKey, this._createParticleCanvas(r, 1, config));
             }
@@ -422,9 +400,7 @@ class Particle {
         const currentRadius = radius + (config.PARTICLE_FLASH_RADIUS_BOOST * flashMultiplier);
         const currentShadowBlur = config.PARTICLE_SHADOW_BLUR + (config.PARTICLE_FLASH_GLOW_BOOST * flashMultiplier);
         const size = (currentRadius + currentShadowBlur) * 2;
-        pCanvas.width = size;
-        pCanvas.height = size;
-
+        pCanvas.width = size; pCanvas.height = size;
         pCtx.shadowColor = config.PARTICLE_COLOR;
         pCtx.shadowBlur = currentShadowBlur;
         const gradient = pCtx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, currentRadius);
@@ -438,9 +414,8 @@ class Particle {
         return pCanvas;
     }
 
-    // --- RESTRUCTURED METHOD to return an array of branches ---
     _createDendriteTree() {
-        const branches = []; // Will hold arrays of segments (each array is a branch)
+        const branches = [];
         const config = this.config;
 
         const growBranch = (x, y, angle, life, currentBranch) => {
@@ -448,52 +423,30 @@ class Particle {
 
             const newX = x + Math.cos(angle) * 5;
             const newY = y + Math.sin(angle) * 5;
-            // A segment knows its start and end points
             currentBranch.push({ fromX: x, fromY: y, toX: newX, toY: newY });
 
-            // Chance to fork into a NEW branch
             if (Math.random() < config.STATIC_DENDRITE_BRANCH_CHANCE && life > 10) {
-                const forkBranch = []; // Create a new array for the new branch
+                const forkBranch = [];
                 const branchAngle = angle + (Math.random() > 0.5 ? 1 : -1) * 0.7;
                 growBranch(newX, newY, branchAngle, life * 0.5, forkBranch);
-                if (forkBranch.length > 0) {
-                    branches.push(forkBranch); // Add the completed new branch to the main list
-                }
+                if (forkBranch.length > 0) { branches.push(forkBranch); }
             }
             
-            // Continue growing the CURRENT branch
             const nextAngle = angle + (Math.random() - 0.5) * 0.5;
             growBranch(newX, newY, nextAngle, life - 1, currentBranch);
         };
 
         const initialBranches = 1 + Math.floor(Math.random() * 3);
         for (let i = 0; i < initialBranches; i++) {
-            const rootBranch = []; // Each initial growth is a new root branch
+            const rootBranch = [];
             growBranch(this.x, this.y, Math.random() * Math.PI * 2, config.STATIC_DENDRITE_LIFESPAN, rootBranch);
-            if (rootBranch.length > 0) {
-                branches.push(rootBranch);
-            }
+            if (rootBranch.length > 0) { branches.push(rootBranch); }
         }
         return branches;
     }
 
     draw() {
-        // --- MODIFIED: Draw dendrites from the new hierarchical structure ---
-        this.ctx.save();
-        this.ctx.globalAlpha = this.config.STATIC_DENDRITE_OPACITY;
-        this.ctx.strokeStyle = this.config.PARTICLE_COLOR;
-        this.ctx.lineWidth = 0.5;
-        this.ctx.beginPath();
-        // Iterate through each branch
-        for (const branch of this.dendrites) {
-            // Iterate through each segment in the branch
-            for (const seg of branch) {
-                this.ctx.moveTo(seg.fromX, seg.fromY);
-                this.ctx.lineTo(seg.toX, seg.toY);
-            }
-        }
-        this.ctx.stroke();
-        this.ctx.restore();
+        // --- REMOVED: Static dendrite drawing is gone. They are now only drawn dynamically. ---
 
         // Draw particle core
         const flashProgress = this.flashTTL > 0 ? this.flashTTL / this.config.FIRING_DURATION : 0;
@@ -508,17 +461,14 @@ class Particle {
     }
 
     update() {
-        // Bounce off walls
         if (this.x + this.radius > this.canvas.width || this.x - this.radius < 0) { this.vx = -this.vx; }
         if (this.y + this.radius > this.canvas.height || this.y - this.radius < 0) { this.vy = -this.vy; }
         
-        // --- MODIFIED: Update particle and all its dendrite segments ---
         const dx = this.vx;
         const dy = this.vy;
         this.x += dx;
         this.y += dy;
 
-        // Move the entire dendrite structure with the particle
         for (const branch of this.dendrites) {
             for (const seg of branch) {
                 seg.fromX += dx;
@@ -529,11 +479,9 @@ class Particle {
         }
 
         if (this.flashTTL > 0) this.flashTTL--;
-
         this.draw();
     }
 }
-
 
 document.addEventListener('DOMContentLoaded', () => {
     const particleSystem = new ParticleSystem('neural-canvas');
