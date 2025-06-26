@@ -5,16 +5,15 @@
  * major computational and rendering bottlenecks.
  *
  * FINAL FEATURE IMPLEMENTATION:
- * 1.  **Signal Propagation:** When a primary signal (triggered by an
- * inter-particle flash) reaches the end of its dendrite, it now triggers a
- * new, secondary flash on the receiving particle. This secondary flash, in
- * turn, launches up to two new signals along the receiving particle's own
- * dendrites, creating a visible chain reaction of neural firing.
- * 2.  **Synchronized Timing:** The speed of primary signals is dynamically
- * calculated to match the flash duration, ensuring a perfect sync between
- * the inter-particle flash and the signal's arrival.
- * 3.  **Increased Prominence:** Signal length has been increased for better
- * visibility against the static background dendrite network.
+ * 1.  **Restored Visual Flash:** The inter-particle "firing connection" (the
+ * bright, jagged line) is restored to full prominence, serving as a clear
+ * visual trigger for the subsequent signal propagation.
+ * 2.  **Signal Propagation:** When a primary signal (triggered by the flash)
+ * reaches the end of its dendrite, it triggers up to two new signals on the
+ * receiving particle, creating a visible chain reaction.
+ * 3.  **Synchronized Timing & Prominence:** Signal speed is dynamically
+ * calculated to match the flash duration, and signal length is increased
+ * for better visibility against the static background dendrite network.
  */
 
 // --- Quadtree Helper Classes ---
@@ -92,9 +91,9 @@ class ParticleSystem {
             PROXIMITY_LINE_WIDTH: 0.8,
             PROXIMITY_LINE_ROUGHNESS: 6,
             FIRING_CHANCE: 0.0002,
-            FIRING_DURATION: 40,
-            PROPAGATED_FIRING_DURATION: 30, // <-- Duration for chained signals
-            FIRING_LINE_WIDTH: 2.5,
+            FIRING_DURATION: 35, // Adjusted for good visual balance
+            PROPAGATED_FIRING_DURATION: 30,
+            FIRING_LINE_WIDTH: 2.8, // Increased for prominence
             FIRING_LINE_ROUGHNESS: 12,
             PARTICLE_SHADOW_BLUR: 15,
             PARTICLE_FLASH_RADIUS_BOOST: 3,
@@ -129,21 +128,15 @@ class ParticleSystem {
         window.removeEventListener('resize', this._handleResize);
     }
 
-    _resizeCanvas() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-    }
+    _resizeCanvas() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; }
 
     _handleResize() {
         if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
-        this._resizeCanvas();
-        this._initParticles();
-        this._animate();
+        this._resizeCanvas(); this._initParticles(); this._animate();
     }
 
     _initParticles() {
-        this.particlesArray = [];
-        this.dendriteSignals = [];
+        this.particlesArray = []; this.dendriteSignals = [];
         let num = Math.floor((this.canvas.width * this.canvas.height) / this.config.PARTICLES_PER_PIXEL_DENSITY);
         if (window.innerWidth < this.config.MOBILE_BREAKPOINT) num *= 2;
         for (let i = 0; i < num; i++) {
@@ -161,11 +154,12 @@ class ParticleSystem {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         const qtree = new Quadtree(new Rectangle(this.canvas.width / 2, this.canvas.height / 2, this.canvas.width / 2, this.canvas.height / 2), 4);
         for (const p of this.particlesArray) qtree.insert(new Point(p.x, p.y, p));
-
+        
         this.particlesArray.forEach(p => p.update());
         this._handleConnections(qtree);
-        this._drawFiringConnections();
-        this._updateAndDrawDendriteSignals();
+        this._drawFiringConnections(); // This now correctly draws the prominent flash
+        this._updateAndDrawDendriteSignals(); // This draws the subsequent signal
+        
         this.animationFrameId = requestAnimationFrame(this._animate);
     }
 
@@ -179,12 +173,7 @@ class ParticleSystem {
                 if (distanceSq < this.config.MAX_CONNECTION_DISTANCE * this.config.MAX_CONNECTION_DISTANCE) {
                     const distance = Math.sqrt(distanceSq);
                     const opacity = (1 - distance / this.config.MAX_CONNECTION_DISTANCE) * this.config.PROXIMITY_LINE_OPACITY;
-                    this._drawJaggedLine(pA, pB, {
-                        color: 'rgba(56, 189, 248, OPACITY)',
-                        lineWidth: this.config.PROXIMITY_LINE_WIDTH,
-                        roughness: this.config.PROXIMITY_LINE_ROUGHNESS,
-                        opacity: opacity
-                    });
+                    this._drawJaggedLine(pA, pB, { color: 'rgba(56, 189, 248, OPACITY)', lineWidth: this.config.PROXIMITY_LINE_WIDTH, roughness: this.config.PROXIMITY_LINE_ROUGHNESS, opacity: opacity });
                     if (Math.random() < this.config.FIRING_CHANCE) {
                         this.firingConnections.push({ from: pA, to: pB, duration: this.config.FIRING_DURATION, alpha: 1 });
                         pA.flashTTL = this.config.FIRING_DURATION;
@@ -194,15 +183,7 @@ class ParticleSystem {
                             const branch = pA.dendrites[branchIndex];
                             if (branch.length > 0) {
                                 const speed = branch.length / this.config.FIRING_DURATION;
-                                this.dendriteSignals.push({
-                                    branchIndex: branchIndex,
-                                    segmentIndex: 0,
-                                    progress: 0,
-                                    speed: speed,
-                                    // --- LINK THE SIGNAL TO ITS TARGET ---
-                                    source: pA,
-                                    propagatesTo: pB
-                                });
+                                this.dendriteSignals.push({ branchIndex, segmentIndex: 0, progress: 0, speed, source: pA, propagatesTo: pB });
                             }
                         }
                     }
@@ -214,7 +195,9 @@ class ParticleSystem {
     _drawFiringConnections() {
         for (let i = this.firingConnections.length - 1; i >= 0; i--) {
             const conn = this.firingConnections[i];
-            this.ctx.shadowColor = 'rgba(125, 211, 252, 1)'; this.ctx.shadowBlur = 15;
+            // RESTORED: This logic ensures the flash is bright and visible
+            this.ctx.shadowColor = 'rgba(125, 211, 252, 1)';
+            this.ctx.shadowBlur = 15;
             this._drawJaggedLine(conn.from, conn.to, {
                 color: 'rgba(200, 240, 255, OPACITY)',
                 lineWidth: this.config.FIRING_LINE_WIDTH,
@@ -223,7 +206,8 @@ class ParticleSystem {
             });
             this.ctx.shadowBlur = 0;
             conn.duration--;
-            conn.alpha = conn.duration / this.config.FIRING_DURATION;
+            // Alpha calculation ensures it fades gracefully
+            conn.alpha = Math.min(1, (conn.duration / this.config.FIRING_DURATION) * 2);
             if (conn.duration <= 0) this.firingConnections.splice(i, 1);
         }
     }
@@ -263,12 +247,9 @@ class ParticleSystem {
                 signal.progress = 0;
                 signal.segmentIndex++;
                 if (signal.segmentIndex >= branch.length) {
-                    // --- PROPAGATION LOGIC ---
                     if (signal.propagatesTo) {
                         const receiver = signal.propagatesTo;
                         receiver.flashTTL = this.config.PROPAGATED_FIRING_DURATION;
-                        
-                        // Fire up to two new signals from the receiver
                         const numToFire = Math.floor(Math.random() * 2) + 1;
                         if (receiver.dendrites.length > 0) {
                             for(let j=0; j < numToFire; j++) {
@@ -276,20 +257,12 @@ class ParticleSystem {
                                 const nextBranch = receiver.dendrites[nextBranchIndex];
                                 if (nextBranch.length > 0) {
                                     const nextSpeed = nextBranch.length / this.config.PROPAGATED_FIRING_DURATION;
-                                    this.dendriteSignals.push({
-                                        branchIndex: nextBranchIndex,
-                                        segmentIndex: 0,
-                                        progress: 0,
-                                        speed: nextSpeed,
-                                        source: receiver,
-                                        // This new signal does NOT propagate further
-                                        propagatesTo: null 
-                                    });
+                                    this.dendriteSignals.push({ branchIndex: nextBranchIndex, segmentIndex: 0, progress: 0, speed: nextSpeed, source: receiver, propagatesTo: null });
                                 }
                             }
                         }
                     }
-                    this.dendriteSignals.splice(i, 1); // Remove the completed signal
+                    this.dendriteSignals.splice(i, 1);
                 }
             }
         }
@@ -304,7 +277,6 @@ class ParticleSystem {
         const vecX = dx / distance, vecY = dy / distance;
         const perpX = -vecY, perpY = vecX;
         const wobbleSeed = start.x + end.y;
-
         this.ctx.strokeStyle = color.replace('OPACITY', opacity.toString());
         this.ctx.lineWidth = lineWidth;
         this.ctx.beginPath();
@@ -403,7 +375,8 @@ class Particle {
         this.x += dx; this.y += dy;
         for (const branch of this.dendrites) {
             for (const seg of branch) {
-                seg.fromX += dx; seg.fromY += dy; seg.toX += dx; seg.toY += dy;
+                seg.fromX += dx; seg.fromY += dy;
+                seg.toX += dx; seg.toY += dy;
             }
         }
         if (this.flashTTL > 0) this.flashTTL--;
