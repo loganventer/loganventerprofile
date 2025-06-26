@@ -267,7 +267,7 @@ class ParticleSystem {
                             progress: 0,
                             alpha: 1,
                             isPrimary: true,
-                            bounces: Math.floor(Math.random() * 4) + 2,
+                            bounces: Math.floor(Math.random() * 2) + 2,
                             direction: 1,
                             hasPropagated: false,
                         });
