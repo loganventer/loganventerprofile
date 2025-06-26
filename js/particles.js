@@ -18,6 +18,7 @@
  * -   The `_drawFiringConnections` method has been updated to allow for continuous
  * chain reactions. When a signal arrives at a particle, that particle now
  * becomes a new source, propagating the signal to up to two new targets.
+ * -   The signal has been made brighter and now pulses visually as it travels.
  */
 
 // --- Quadtree Helper Classes (Essential for Performance) ---
@@ -143,18 +144,20 @@ class ParticleSystem {
             FIRING_CHANCE: 0.0003,
             FIRING_DURATION: 70, // In frames
             PROPAGATION_CHANCE: 0.9, // High chance for chain reactions
-            FIRING_LINE_WIDTH: 2.5,
+            FIRING_LINE_WIDTH: 3, // Slightly thicker base line for more impact
             FIRING_LINE_ROUGHNESS: 12,
             PARTICLE_SHADOW_BLUR: 15,
             PARTICLE_FLASH_RADIUS_BOOST: 3,
             PARTICLE_FLASH_GLOW_BOOST: 15,
             WOBBLE_SPEED: 0.002,
-            // --- MODIFIED: Config for a more prominent signal ---
+            // --- MODIFIED: Config for a brighter, pulsing signal ---
             SIGNAL_HEAD_LENGTH: 0.1, // As a percentage of the total path
-            SIGNAL_HEAD_WIDTH: 4.5,
+            SIGNAL_HEAD_WIDTH: 5, // Increased base width for brightness
             SIGNAL_HEAD_COLOR: 'rgba(255, 255, 255, 1)',
-            SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.8)',
-            SIGNAL_HEAD_GLOW_BLUR: 20,
+            SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.9)', // Brighter glow
+            SIGNAL_HEAD_GLOW_BLUR: 25, // Wider glow
+            SIGNAL_PULSE_AMPLITUDE: 2.5, // How much the width and glow will oscillate
+            SIGNAL_PULSE_SPEED: 10, // How fast it pulses
         };
 
         this.particlesArray = [];
@@ -271,7 +274,6 @@ class ParticleSystem {
         }
     }
 
-    // --- MODIFIED: This function now implements continuous chain reactions ---
     _drawFiringConnections(qtree) {
         for (let i = this.firingConnections.length - 1; i >= 0; i--) {
             const conn = this.firingConnections[i];
@@ -291,23 +293,17 @@ class ParticleSystem {
 
             // Handle signal expiration and propagation
             if (conn.duration <= 0) {
-                // MODIFICATION START: Implement chain reaction on signal arrival.
-                // The check for `conn.isPrimary` has been removed to allow any signal
-                // to propagate, creating a continuous chain reaction.
                 if (conn.progress >= 1 && Math.random() < this.config.PROPAGATION_CHANCE) {
-                    const propagator = conn.to; // The receiving particle becomes the new source.
-                    const numToFire = Math.floor(Math.random() * 2) + 1; // It will fire up to two new signals.
+                    const propagator = conn.to; 
+                    const numToFire = Math.floor(Math.random() * 2) + 1;
                     
-                    // Find potential new targets, excluding the one it just came from to prevent backward firing.
                     const potentialTargets = qtree.query(new Rectangle(propagator.x, propagator.y, this.config.MAX_CONNECTION_DISTANCE, this.config.MAX_CONNECTION_DISTANCE))
                                                  .filter(p => p !== propagator && p !== conn.from);
 
                     for (let j = 0; j < numToFire && potentialTargets.length > 0; j++) {
-                        // Select a random target from the potential list
                         const targetIndex = Math.floor(Math.random() * potentialTargets.length);
-                        const nextTarget = potentialTargets.splice(targetIndex, 1)[0]; // Select and remove to avoid duplicates
+                        const nextTarget = potentialTargets.splice(targetIndex, 1)[0];
                         
-                        // Create a new firing connection.
                         this.firingConnections.push({
                             from: propagator,
                             to: nextTarget,
@@ -315,29 +311,25 @@ class ParticleSystem {
                             initialDuration: this.config.FIRING_DURATION,
                             progress: 0,
                             alpha: 1,
-                            isPrimary: true // This new signal can also trigger a chain reaction.
+                            isPrimary: true
                         });
                         
-                        // Make both particles in the new connection flash.
                         propagator.flashTTL = this.config.FIRING_DURATION;
                         nextTarget.flashTTL = this.config.FIRING_DURATION;
                     }
                 }
-                // MODIFICATION END
 
-                this.firingConnections.splice(i, 1); // Remove the completed connection from the array.
+                this.firingConnections.splice(i, 1);
             }
         }
     }
     
-    // --- This function draws the faint blue proximity lines ONLY ---
     _drawStaticJaggedLine(start, end, lineConfig) {
         const { color, lineWidth, roughness, opacity } = lineConfig;
         this.ctx.strokeStyle = color.replace('OPACITY', opacity.toString());
         this.ctx.lineWidth = lineWidth;
         this.ctx.beginPath();
         this.ctx.moveTo(start.x, start.y);
-        // This is a simplified version for performance; it doesn't need to return points.
         const dx = end.x - start.x;
         const dy = end.y - start.y;
         this.ctx.lineTo(start.x + dx * 0.5 + (Math.random() - 0.5) * roughness, start.y + dy * 0.5 + (Math.random() - 0.5) * roughness);
@@ -345,7 +337,6 @@ class ParticleSystem {
         this.ctx.stroke();
     }
 
-    // --- This is the primary function for drawing the animated flash AND the signal on it ---
     _drawJaggedLine(conn, lineConfig) {
         const { from, to, progress } = conn;
         const { color, lineWidth, roughness, opacity } = lineConfig;
@@ -393,10 +384,13 @@ class ParticleSystem {
             const tailIndex = Math.max(0, Math.floor(tailProgress * (path.length -1) ));
 
             if (headIndex > tailIndex) {
+                 // --- MODIFICATION: Calculate pulse effect ---
+                 const pulse = Math.sin(this.time * this.config.SIGNAL_PULSE_SPEED) * this.config.SIGNAL_PULSE_AMPLITUDE;
+                 
                  this.ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-                 this.ctx.lineWidth = this.config.SIGNAL_HEAD_WIDTH;
+                 this.ctx.lineWidth = this.config.SIGNAL_HEAD_WIDTH + pulse; // Apply pulse
                  this.ctx.shadowColor = this.config.SIGNAL_HEAD_GLOW_COLOR;
-                 this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR;
+                 this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR + (pulse * 2); // Apply pulse to glow for more effect
                  this.ctx.beginPath();
                  this.ctx.moveTo(path[tailIndex].x, path[tailIndex].y);
                  for (let j = tailIndex + 1; j <= headIndex; j++) {
