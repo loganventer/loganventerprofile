@@ -3,16 +3,18 @@
  *
  * This version has been heavily optimized to target 60 FPS.
  *
- * FINAL & CORRECTED FEATURE IMPLEMENTATION:
- * 1.  **Original "Flashing Dendrite" Restored:** The animated, jagged firing
- * line between particles—the core visual effect—is fully restored and prominent.
- * 2.  **Signal Travels Directly on the Flash:** A "comet" signal now travels
- * directly along the animated, jagged path of the firing line itself.
- * 3.  **Integrated Drawing:** The `_drawJaggedLine` function is now responsible
- * for drawing both the faint path and the bright signal comet on top of it,
- * ensuring perfect synchronization and animation.
- * 4.  **Propagation Intact:** The chain-reaction mechanism is preserved; a
- * signal's arrival at its target triggers new firing events.
+ * FINAL & DEFINITIVE CORRECTION:
+ * This version returns to the original, successful drawing logic for the
+ * inter-particle "flashing dendrites" and enhances it directly.
+ *
+ * 1.  **Original "Vibrating Dendrite" Restored:** The original `_drawFiringConnections`
+ * and `_drawJaggedLine` logic is restored, ensuring the animated, flashing
+ * line between particles is exactly as it was initially.
+ * 2.  **Signal Integrated, Not Replaced:** The traveling "comet" signal is now
+ * drawn directly within the `_drawJaggedLine` function, immediately after
+ * the main flash is drawn, guaranteeing they are perfectly synced and animated.
+ * 3.  **Propagation Works as Intended:** The chain-reaction feature is tied
+ * to the completion of the signal's journey along the flashing line.
  */
 
 // --- Quadtree Helper Classes ---
@@ -46,18 +48,14 @@ class Quadtree {
     }
     insert(point) {
         if (!this.boundary.contains(point)) return false;
-        if (this.points.length < this.capacity) {
-            this.points.push(point); return true;
-        }
+        if (this.points.length < this.capacity) { this.points.push(point); return true; }
         if (!this.divided) this.subdivide();
         this.northeast.insert(point); this.northwest.insert(point);
         this.southeast.insert(point); this.southwest.insert(point);
     }
     query(range, found = []) {
         if (!this.boundary.intersects(range)) return found;
-        for (let p of this.points) {
-            if (range.contains(p)) found.push(p.data);
-        }
+        for (let p of this.points) { if (range.contains(p)) found.push(p.data); }
         if (this.divided) {
             this.northwest.query(range, found); this.northeast.query(range, found);
             this.southwest.query(range, found); this.southeast.query(range, found);
@@ -69,10 +67,7 @@ class Quadtree {
 class ParticleSystem {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
-        if (!this.canvas) {
-            console.error(`Canvas with ID '${canvasId}' not found.`);
-            return;
-        }
+        if (!this.canvas) { console.error(`Canvas with ID '${canvasId}' not found.`); return; }
         this.ctx = this.canvas.getContext('2d');
         this.config = {
             PARTICLE_COLOR: '#38BDF8',
@@ -84,8 +79,11 @@ class ParticleSystem {
             STATIC_DENDRITE_OPACITY: 0.18,
             STATIC_DENDRITE_LIFESPAN: 60,
             STATIC_DENDRITE_BRANCH_CHANCE: 0.1,
-            FIRING_CHANCE: 0.0003, // Slightly increased for visibility
-            FIRING_DURATION: 60,   // In frames
+            PROXIMITY_LINE_OPACITY: 0.5,
+            PROXIMITY_LINE_WIDTH: 0.8,
+            PROXIMITY_LINE_ROUGHNESS: 6,
+            FIRING_CHANCE: 0.0003,
+            FIRING_DURATION: 70,
             PROPAGATION_CHANCE: 0.8,
             FIRING_LINE_WIDTH: 2.5,
             FIRING_LINE_ROUGHNESS: 12,
@@ -93,7 +91,7 @@ class ParticleSystem {
             PARTICLE_FLASH_RADIUS_BOOST: 3,
             PARTICLE_FLASH_GLOW_BOOST: 15,
             WOBBLE_SPEED: 0.002,
-            SIGNAL_HEAD_LENGTH: 0.25,
+            SIGNAL_HEAD_LENGTH: 0.2,
             SIGNAL_HEAD_WIDTH: 3.5,
             SIGNAL_HEAD_COLOR: 'rgba(255, 255, 255, 1)',
             SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.8)',
@@ -111,10 +109,6 @@ class ParticleSystem {
         Particle.preRenderParticles(this.config); this._resizeCanvas();
         this._initParticles(); window.addEventListener('resize', this._handleResize);
         this._animate();
-    }
-    destroy() {
-        if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
-        window.removeEventListener('resize', this._handleResize);
     }
     _resizeCanvas() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; }
     _handleResize() {
@@ -143,55 +137,61 @@ class ParticleSystem {
         
         this.particlesArray.forEach(p => p.update());
         this._handleConnections(qtree);
-        this._updateAndDrawFiringConnections();
+        this._drawFiringConnections(); // The one true drawing loop is back
         
         this.animationFrameId = requestAnimationFrame(this._animate);
     }
 
     _handleConnections(qtree) {
         for (const pA of this.particlesArray) {
-            if (pA.isFiring) continue; // Prevent particle from firing again while already firing
             const range = new Rectangle(pA.x, pA.y, this.config.MAX_CONNECTION_DISTANCE);
             for (const pB of qtree.query(range)) {
                 if (pA === pB) continue;
+                // Check if a connection already exists to avoid duplicates
+                if (this.firingConnections.some(c => (c.from === pA && c.to === pB) || (c.from === pB && c.to === pA))) continue;
+
                 const dx = pA.x - pB.x, dy = pA.y - pB.y;
                 const distanceSq = dx * dx + dy * dy;
                 if (distanceSq < this.config.MAX_CONNECTION_DISTANCE * this.config.MAX_CONNECTION_DISTANCE) {
+                    const distance = Math.sqrt(distanceSq);
+                    const opacity = (1 - (distance / this.config.MAX_CONNECTION_DISTANCE)) * this.config.PROXIMITY_LINE_OPACITY;
+                    // This draws the faint blue proximity lines. It is NOT a firing event.
+                    // To avoid visual clutter, we can comment this out and only show actual firing.
+                    // this._drawStaticJaggedLine(pA, pB, { color: 'rgba(56, 189, 248, OPACITY)', lineWidth: this.config.PROXIMITY_LINE_WIDTH, roughness: this.config.PROXIMITY_LINE_ROUGHNESS, opacity: opacity });
+
                     if (Math.random() < this.config.FIRING_CHANCE) {
-                        pA.isFiring = true; // Mark as firing
                         this.firingConnections.push({
                             from: pA, to: pB,
                             duration: this.config.FIRING_DURATION,
                             initialDuration: this.config.FIRING_DURATION,
                             progress: 0,
+                            alpha: 1, // Start fully visible
                             isPrimary: true
                         });
-                        // No need to flash particles separately, the line is the flash
+                        pA.flashTTL = this.config.FIRING_DURATION;
+                        pB.flashTTL = this.config.FIRING_DURATION;
                     }
                 }
             }
         }
     }
 
-    // --- RENAMED and REBUILT: Handles drawing, signal travel, and propagation ---
-    _updateAndDrawFiringConnections() {
+    // --- The Original Method, Restored and Enhanced ---
+    _drawFiringConnections() {
         for (let i = this.firingConnections.length - 1; i >= 0; i--) {
             const conn = this.firingConnections[i];
 
-            // Update progress and duration
+            // Update state
             conn.progress += 1 / conn.initialDuration;
             conn.duration--;
+            conn.alpha = conn.duration / conn.initialDuration;
 
-            const hasArrived = conn.progress >= 1;
-            const hasExpired = conn.duration <= 0;
-
-            // --- THE CORE DRAWING LOGIC IS NOW INSIDE _drawJaggedLine ---
+            // The single drawing call that handles everything
             this._drawJaggedLine(conn);
 
-            // --- HANDLE PROPAGATION AND EXPIRATION ---
-            if (hasArrived || hasExpired) {
-                conn.from.isFiring = false; // Allow the particle to fire again
-                if (conn.isPrimary && hasArrived && Math.random() < this.config.PROPAGATION_CHANCE) {
+            // Handle expiration and propagation
+            if (conn.duration <= 0) {
+                 if (conn.isPrimary && conn.progress >= 1 && Math.random() < this.config.PROPAGATION_CHANCE) {
                     const propagator = conn.to;
                     const numToFire = Math.floor(Math.random() * 2) + 1;
                     const potentialTargets = this.particlesArray.filter(p => p !== propagator && p !== conn.from);
@@ -199,14 +199,15 @@ class ParticleSystem {
                     for (let j = 0; j < numToFire && potentialTargets.length > 0; j++) {
                         const targetIndex = Math.floor(Math.random() * potentialTargets.length);
                         const nextTarget = potentialTargets[targetIndex];
-                        propagator.isFiring = true;
                         this.firingConnections.push({
                             from: propagator, to: nextTarget,
                             duration: this.config.FIRING_DURATION,
                             initialDuration: this.config.FIRING_DURATION,
-                            progress: 0,
+                            progress: 0, alpha: 1,
                             isPrimary: false
                         });
+                        propagator.flashTTL = this.config.FIRING_DURATION;
+                        nextTarget.flashTTL = this.config.FIRING_DURATION;
                         potentialTargets.splice(targetIndex, 1);
                     }
                 }
@@ -215,12 +216,12 @@ class ParticleSystem {
         }
     }
     
-    // --- MODIFIED: This function now draws the path AND the signal on it ---
+    // --- The Upgraded, All-in-One Drawing Function ---
     _drawJaggedLine(conn) {
-        const { from, to, initialDuration, duration, progress } = conn;
+        const { from, to, progress, alpha } = conn;
         const { roughness, FIRING_LINE_WIDTH } = this.config;
         
-        // 1. Calculate path points
+        // 1. Calculate path points for this frame
         const path = [{x: from.x, y: from.y}];
         const dx = to.x - from.x, dy = to.y - from.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -242,28 +243,27 @@ class ParticleSystem {
             path.push({x: currentX, y: currentY});
         }
         
-        const alpha = Math.min(1, (duration / initialDuration) * 2.5);
+        this.ctx.save();
 
         // 2. Draw the main flashing line
-        this.ctx.save();
-        this.ctx.strokeStyle = `rgba(56, 189, 248, ${alpha * 0.6})`;
+        this.ctx.strokeStyle = `rgba(200, 240, 255, ${alpha * 0.9})`;
         this.ctx.lineWidth = FIRING_LINE_WIDTH;
-        this.ctx.shadowColor = `rgba(125, 211, 252, ${alpha * 0.8})`;
+        this.ctx.shadowColor = `rgba(125, 211, 252, ${alpha})`;
         this.ctx.shadowBlur = 15;
         this.ctx.beginPath();
         for(const point of path) this.ctx.lineTo(point.x, point.y);
         this.ctx.stroke();
         
         // 3. Draw the signal "comet" on top
-        if (progress > 0 && progress < 1) {
+        if (progress > 0) {
             const headIndex = Math.min(path.length - 1, Math.floor(progress * path.length));
             const tailProgress = progress - this.config.SIGNAL_HEAD_LENGTH;
             const tailIndex = Math.max(0, Math.floor(tailProgress * path.length));
 
             if (headIndex > tailIndex) {
-                 this.ctx.strokeStyle = this.config.SIGNAL_HEAD_COLOR;
+                 this.ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
                  this.ctx.lineWidth = this.config.SIGNAL_HEAD_WIDTH;
-                 this.ctx.shadowColor = this.config.SIGNAL_HEAD_GLOW_COLOR;
+                 this.ctx.shadowColor = `rgba(255, 255, 255, ${alpha * 0.8})`;
                  this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR;
                  this.ctx.beginPath();
                  this.ctx.moveTo(path[tailIndex].x, path[tailIndex].y);
@@ -286,9 +286,7 @@ class Particle {
     static renderedParticles = new Map();
     constructor(x, y, vx, vy, radius, canvas, ctx, config) {
         Object.assign(this, { x, y, vx, vy, radius, canvas, ctx, config });
-        this.dendrites = this._createDendriteTree();
-        this.intRadius = Math.round(radius);
-        this.isFiring = false; // To prevent a particle from creating multiple connections at once
+        this.flashTTL = 0; this.dendrites = this._createDendriteTree(); this.intRadius = Math.round(radius);
     }
     static preRenderParticles(config) {
         for (let r = config.MIN_RADIUS; r <= config.MAX_RADIUS; r++) {
@@ -336,18 +334,20 @@ class Particle {
         return branches;
     }
     draw() {
+        // Static dendrites for background texture
         this.ctx.save();
         this.ctx.globalAlpha = this.config.STATIC_DENDRITE_OPACITY;
         this.ctx.strokeStyle = this.config.PARTICLE_COLOR;
         this.ctx.lineWidth = 0.5; this.ctx.beginPath();
         for (const branch of this.dendrites) {
-            for (const seg of branch) {
-                this.ctx.moveTo(seg.fromX, seg.fromY); this.ctx.lineTo(seg.toX, seg.toY);
-            }
+            for (const seg of branch) { this.ctx.moveTo(seg.fromX, seg.fromY); this.ctx.lineTo(seg.toX, seg.toY); }
         }
         this.ctx.stroke(); this.ctx.restore();
         
-        const pCanvas = Particle.renderedParticles.get(`${this.intRadius}_base`);
+        // Particle core, which flashes based on the main firing connection TTL
+        const flashProgress = this.flashTTL > 0 ? this.flashTTL / this.config.FIRING_DURATION : 0;
+        const key = Math.sin(flashProgress * Math.PI) > 0.5 ? `${this.intRadius}_flash` : `${this.intRadius}_base`;
+        const pCanvas = Particle.renderedParticles.get(key);
         if (pCanvas) this.ctx.drawImage(pCanvas, this.x - pCanvas.width / 2, this.y - pCanvas.height / 2);
     }
     update() {
@@ -356,11 +356,9 @@ class Particle {
         const dx = this.vx, dy = this.vy;
         this.x += dx; this.y += dy;
         for (const branch of this.dendrites) {
-            for (const seg of branch) {
-                seg.fromX += dx; seg.fromY += dy;
-                seg.toX += dx; seg.toY += dy;
-            }
+            for (const seg of branch) { seg.fromX += dx; seg.fromY += dy; seg.toX += dx; seg.toY += dy; }
         }
+        if (this.flashTTL > 0) this.flashTTL--;
         this.draw();
     }
 }
