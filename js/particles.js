@@ -673,4 +673,3 @@ document.addEventListener('DOMContentLoaded', () => {
     if (particleSystem.canvas) {
         particleSystem.start();
     }
-});
