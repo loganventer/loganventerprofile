@@ -150,7 +150,7 @@ class ParticleSystem {
             PARTICLE_FLASH_GLOW_BOOST: 15,
             WOBBLE_SPEED: 0.002,
             // --- NEW: Config for the traveling signal ---
-            SIGNAL_HEAD_LENGTH: 0.25, // As a percentage of the total path
+            SIGNAL_HEAD_LENGTH: 0.1, // As a percentage of the total path
             SIGNAL_HEAD_WIDTH: 3.5,
             SIGNAL_HEAD_COLOR: 'rgba(255, 255, 255, 1)',
             SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.8)',
