@@ -129,8 +129,8 @@ class ParticleSystem {
         this.ctx = this.canvas.getContext('2d');
         this.config = {
             PARTICLE_COLOR: '#38BDF8',
-            MIN_RADIUS: 3,
-            MAX_RADIUS: 5,
+            MIN_RADIUS:2,
+            MAX_RADIUS: 4,
             INITIAL_VELOCITY_RANGE: 0.35,
             PARTICLES_PER_PIXEL_DENSITY: 35000,
             MAX_CONNECTION_DISTANCE: 250,
