@@ -22,6 +22,7 @@
  * -   The signal's pulse is now DECOUPLED from the dendrite line's wobble. The pulse rate is
  * based on the signal's travel progress, not the global animation timer.
  * -   The signal can now be rendered as a 'dot' (default) or a 'line', configurable via `SIGNAL_STYLE`.
+ * -   The signal now bounces back and forth between particles for a random duration (2-5 times) until the connection fades.
  */
 
 // --- Quadtree Helper Classes (Essential for Performance) ---
@@ -145,23 +146,22 @@ class ParticleSystem {
             PROXIMITY_LINE_WIDTH: 0.8,
             PROXIMITY_LINE_ROUGHNESS: 6,
             FIRING_CHANCE: 0.0003,
-            FIRING_DURATION: 70, // In frames
-            PROPAGATION_CHANCE: 0.9, // High chance for chain reactions
+            FIRING_DURATION: 120, // Increased duration to see bounces
+            PROPAGATION_CHANCE: 0.9,
             FIRING_LINE_WIDTH: 3, 
             FIRING_LINE_ROUGHNESS: 12,
             PARTICLE_SHADOW_BLUR: 15,
             PARTICLE_FLASH_RADIUS_BOOST: 3,
             PARTICLE_FLASH_GLOW_BOOST: 15,
             WOBBLE_SPEED: 0.002,
-            // --- MODIFIED: Config for a configurable, brighter, decoupled pulsing signal ---
-            SIGNAL_STYLE: 'dot', // 'dot' or 'line'
-            SIGNAL_HEAD_LENGTH: 0.35, // Only used for 'line' style
-            SIGNAL_HEAD_WIDTH: 5, // Base size for line width or dot radius
+            SIGNAL_STYLE: 'dot', 
+            SIGNAL_HEAD_LENGTH: 0.35,
+            SIGNAL_HEAD_WIDTH: 5,
             SIGNAL_HEAD_COLOR: 'rgba(255, 255, 255, 1)',
             SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.9)',
             SIGNAL_HEAD_GLOW_BLUR: 25,
             SIGNAL_PULSE_AMPLITUDE: 2.5,
-            SIGNAL_PULSE_FREQUENCY: 40, // How many pulses over the line's length. Decoupled from global time.
+            SIGNAL_PULSE_FREQUENCY: 40,
         };
 
         this.particlesArray = [];
@@ -229,7 +229,7 @@ class ParticleSystem {
 
         this.particlesArray.forEach(p => p.update());
         this._handleConnections(qtree);
-        this._drawFiringConnections(qtree); // Pass qtree for propagation
+        this._drawFiringConnections(qtree);
         this.animationFrameId = requestAnimationFrame(this._animate);
     }
 
@@ -265,7 +265,11 @@ class ParticleSystem {
                             initialDuration: this.config.FIRING_DURATION,
                             progress: 0,
                             alpha: 1,
-                            isPrimary: true
+                            isPrimary: true,
+                            // --- MODIFIED: Add bounce properties ---
+                            bounces: Math.floor(Math.random() * 4) + 2, // 2 to 5 bounces
+                            direction: 1, // 1 for forward, -1 for backward
+                            hasPropagated: false,
                         });
                         pA.flashTTL = this.config.FIRING_DURATION;
                         pB.flashTTL = this.config.FIRING_DURATION;
@@ -279,22 +283,24 @@ class ParticleSystem {
         for (let i = this.firingConnections.length - 1; i >= 0; i--) {
             const conn = this.firingConnections[i];
             
-            conn.progress += 1 / conn.initialDuration;
+            // --- MODIFIED: Update logic for bouncing signal ---
+            
+            // 1. Update overall lifetime and alpha fade
             conn.duration--;
             conn.alpha = conn.duration / conn.initialDuration;
 
-            this._drawJaggedLine(conn, {
-                color: `rgba(200, 240, 255, OPACITY)`,
-                lineWidth: this.config.FIRING_LINE_WIDTH,
-                roughness: this.config.FIRING_LINE_ROUGHNESS,
-                opacity: conn.alpha * 0.9
-            });
+            // 2. Calculate signal speed based on total bounces and update progress
+            const speed = conn.bounces / conn.initialDuration;
+            conn.progress += speed * conn.direction;
 
-            if (conn.duration <= 0) {
-                if (conn.progress >= 1 && Math.random() < this.config.PROPAGATION_CHANCE) {
-                    const propagator = conn.to; 
+            // 3. Handle bounces and propagation
+            if (conn.direction === 1 && conn.progress >= 1) {
+                conn.progress = 1; // Clamp position
+                conn.direction = -1; // Reverse direction
+                // Trigger propagation to other neurons on the first arrival only
+                if (!conn.hasPropagated && conn.isPrimary) {
+                    const propagator = conn.to;
                     const numToFire = Math.floor(Math.random() * 2) + 1;
-                    
                     const potentialTargets = qtree.query(new Rectangle(propagator.x, propagator.y, this.config.MAX_CONNECTION_DISTANCE, this.config.MAX_CONNECTION_DISTANCE))
                                                  .filter(p => p !== propagator && p !== conn.from);
 
@@ -309,14 +315,32 @@ class ParticleSystem {
                             initialDuration: this.config.FIRING_DURATION,
                             progress: 0,
                             alpha: 1,
-                            isPrimary: true
+                            isPrimary: true,
+                            bounces: Math.floor(Math.random() * 4) + 2,
+                            direction: 1,
+                            hasPropagated: false,
                         });
                         
                         propagator.flashTTL = this.config.FIRING_DURATION;
                         nextTarget.flashTTL = this.config.FIRING_DURATION;
                     }
+                    conn.hasPropagated = true; // Ensure it only propagates once
                 }
+            } else if (conn.direction === -1 && conn.progress <= 0) {
+                conn.progress = 0; // Clamp position
+                conn.direction = 1; // Reverse direction
+            }
 
+            // 4. Draw the connection line and the signal itself
+            this._drawJaggedLine(conn, {
+                color: `rgba(200, 240, 255, OPACITY)`,
+                lineWidth: this.config.FIRING_LINE_WIDTH,
+                roughness: this.config.FIRING_LINE_ROUGHNESS,
+                opacity: conn.alpha * 0.9
+            });
+
+            // 5. Remove the connection when its lifetime expires
+            if (conn.duration <= 0) {
                 this.firingConnections.splice(i, 1);
             }
         }
@@ -373,7 +397,7 @@ class ParticleSystem {
         for(const point of path) this.ctx.lineTo(point.x, point.y);
         this.ctx.stroke();
         
-        if (progress > 0) {
+        if (progress >= 0 && progress <= 1) { // Ensure progress is valid
             const headIndex = Math.min(path.length - 1, Math.floor(progress * (path.length - 1)));
             const pulse = Math.sin(conn.progress * this.config.SIGNAL_PULSE_FREQUENCY) * this.config.SIGNAL_PULSE_AMPLITUDE;
 
@@ -382,7 +406,7 @@ class ParticleSystem {
                 if (dotPos) {
                     const radius = (this.config.SIGNAL_HEAD_WIDTH / 2) + pulse;
                     this.ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-                    this.ctx.shadowColor = this.config.SIGNAL_HEAD_GLOW_COLOR;
+                    this.ctx.shadowColor = this.config.SIGNAL_HEAD_G LOW_COLOR;
                     this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR + (pulse * 2);
                     this.ctx.beginPath();
                     this.ctx.arc(dotPos.x, dotPos.y, Math.max(0, radius), 0, Math.PI * 2);
