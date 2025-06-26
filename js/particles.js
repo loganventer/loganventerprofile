@@ -22,15 +22,15 @@
  * 5.  **Capped Jagged Line Segments:** `MAX_JAGGED_SEGMENTS` limits the number
  * of individual segments used to draw a jagged line. This prevents extremely long
  * lines from becoming computationally expensive at high resolutions.
- * 6.  **Static Background Line Pre-calculation & Caching (FIXED & UPDATED):**
+ * 6.  **Static Background Line Pre-calculation & Caching (CRITICAL FIX):**
  * The *base* jagged paths for static background lines are calculated once and
- * stored. The dynamic "wobble" effect is now applied *during drawing* in the
- * animation loop, ensuring these background lines animate correctly without
- * recalculating their entire path geometry every frame.
- * 7.  **Traveling Fire Pre-rendering:** The jagged path for each traveling fire
- * effect is pre-rendered to a dedicated off-screen canvas once when the fire is
- * created. The animation loop then draws a *slice* of this pre-rendered path
- * using `drawImage`, replacing expensive per-frame path drawing operations.
+ * stored as arrays of points. These lines are now truly static in shape, and
+ * are simply drawn from their cached points, drastically reducing per-frame CPU usage.
+ * 7.  **Traveling Fire Pre-rendering (Corrected):** The jagged path for each traveling fire
+ * effect is pre-rendered once when the fire is created. The animation loop then draws a
+ * *slice* of this pre-rendered path using `drawImage`, replacing expensive
+ * per-frame path drawing operations with a much faster image blit. The path's wobble
+ * is dynamic based on `this.time` at the moment of the fire's creation.
  * 8.  **Configurable Static Line Draw Chance:** `STATIC_LINE_DRAW_CHANCE`
  * allows fine-tuning the visual density of background lines, letting us draw
  * only a percentage of potential connections to further optimize performance.
@@ -219,7 +219,7 @@ class ParticleSystem {
 
         this.particlesArray = [];
         this.travelingFires = [];    // For the moving "spark" effect
-        this.staticJaggedLines = []; // NEW: Cache for pre-calculated static background lines
+        this.staticJaggedLines = []; // Cache for pre-calculated static background line data
         this.animationFrameId = null; // Stores the requestAnimationFrame ID for cancellation
         this.time = 0; // Used for wobble animation and other time-based effects
 
@@ -235,7 +235,7 @@ class ParticleSystem {
         Particle.preRenderParticles(this.config);
         this._resizeCanvas();
         this._initParticles();
-        this._generateStaticLines(); // NEW: Generate and cache static lines once
+        this._generateStaticLines(); // Generate and cache static lines once
         window.addEventListener('resize', this._handleResize); // Listen for window resize events
         this._animate(); // Begin the animation loop
     }
@@ -262,7 +262,7 @@ class ParticleSystem {
         }
         this._resizeCanvas();
         this._initParticles();
-        this._generateStaticLines(); // NEW: Re-generate and cache static lines on resize
+        this._generateStaticLines(); // Re-generate and cache static lines on resize
         this._animate();
     }
 
@@ -291,8 +291,8 @@ class ParticleSystem {
     }
 
     /**
-     * NEW: Generates and caches the *base* jagged paths for static background lines.
-     * This heavy computation is done once, not every frame. The dynamic wobble
+     * Generates and caches the *base* jagged paths for static background lines.
+     * This heavy computation is done once. The dynamic wobble for these lines
      * will be applied during drawing in `_drawStaticJaggedLines`.
      */
     _generateStaticLines() {
@@ -316,23 +316,19 @@ class ParticleSystem {
                 const distanceSq = dx * dx + dy * dy;
 
                 if (distanceSq < this.config.MAX_CONNECTION_DISTANCE * this.config.MAX_CONNECTION_DISTANCE) {
-                    // Only generate a static line based on chance
                     if (Math.random() < this.config.STATIC_LINE_DRAW_CHANCE) {
                         const distance = Math.sqrt(distanceSq);
                         const opacity = (1 - (distance / this.config.MAX_CONNECTION_DISTANCE)) * this.config.PROXIMITY_LINE_OPACITY;
 
-                        // Generate *base* jagged points (without time-dependent wobble) once and store them
+                        // Store just the necessary data to dynamically calculate points later
                         const lineData = {
                             from: pA,
                             to: pB,
                             color: `rgba(56, 189, 248, ${opacity})`,
                             lineWidth: this.config.PROXIMITY_LINE_WIDTH,
                             roughness: this.config.PROXIMITY_LINE_ROUGHNESS,
-                            // Use a unique wobble seed for each line's base shape, but *don't* use this.time here.
-                            wobbleSeed: pA.x * 0.1 + pB.y * 0.1
+                            wobbleSeed: pA.x * 0.1 + pB.y * 0.1 // Unique seed for this line's fixed base shape
                         };
-                        // Store only the path geometry that changes with time, which is just the points and configs to calculate them
-                        // The actual jagged points will be calculated per frame in _drawStaticJaggedLines
                         this.staticJaggedLines.push(lineData);
                     }
                 }
@@ -343,7 +339,7 @@ class ParticleSystem {
 
     /**
      * Helper to generate the full jagged path points between two particles, including time-dependent wobble.
-     * This is used for traveling fires (cached per fire) and now for drawing static lines (per-frame).
+     * This is used for traveling fires (cached per fire) and for drawing static lines (per-frame calculation).
      * @param {Particle} start - The starting particle.
      * @param {Particle} end - The ending particle.
      * @param {number} roughness - Roughness factor for the wobble.
@@ -370,7 +366,7 @@ class ParticleSystem {
             let currentX = start.x + dx * currentTotalProgress;
             let currentY = start.y + dy * currentTotalProgress;
 
-            // Apply wobble dynamically based on current time
+            // Apply wobble dynamically based on current time and unique seed
             const sineInput = currentTime * 2 + wobbleSeed + currentTotalProgress * 0.5;
             const jitter = Math.sin(sineInput) * roughness * Math.sin(currentTotalProgress * Math.PI);
             currentX += perpX * jitter;
@@ -393,24 +389,24 @@ class ParticleSystem {
             qtree.insert(new Point(p.x, p.y, p)); // Insert each particle's position into the Quadtree
         }
 
-        // NEW: Draw cached static background lines FIRST, with dynamic wobble
+        // Draw cached static background lines FIRST, with dynamic wobble
         this._drawStaticJaggedLines();
 
         this.particlesArray.forEach(p => p.update()); // Update and draw each particle
-        this._handleConnections(qtree); // Only handles firing chances now, not drawing base lines
+        this._handleConnections(qtree); // Handles firing chances, but not drawing base lines
         this._drawTravelingFires();   // Draw the new traveling fire effects
         this.animationFrameId = requestAnimationFrame(this._animate); // Request next animation frame
     }
 
     /**
-     * NEW: Draws the pre-calculated static background lines, applying dynamic wobble per frame.
+     * Draws the pre-calculated static background lines, applying dynamic wobble per frame.
      * This ensures the background lines are animated and not frozen.
      */
     _drawStaticJaggedLines() {
         for (const lineData of this.staticJaggedLines) {
             const { from, to, color, lineWidth, roughness, wobbleSeed } = lineData;
             
-            // Generate jagged points dynamically based on current time
+            // Generate jagged points dynamically based on current time for wobble
             const jaggedPoints = this._getDynamicJaggedPathPoints(from, to, roughness, wobbleSeed, this.time);
 
             this.ctx.strokeStyle = color;
@@ -442,7 +438,6 @@ class ParticleSystem {
                 const distanceSq = dx * dx + dy * dy;
 
                 if (distanceSq < this.config.MAX_CONNECTION_DISTANCE * this.config.MAX_CONNECTION_DISTANCE) {
-                    // Only handle firing chance here, as static lines are drawn separately now
                     if (Math.random() < this.config.FIRING_CHANCE) {
                         pA.flashTTL = this.config.FIRING_DURATION;
                         pB.flashTTL = this.config.FIRING_DURATION;
@@ -454,7 +449,7 @@ class ParticleSystem {
                             progress: 0, // Starts at 0% of the path
                             speed: this.config.TRAVELING_FIRE_SPEED_PER_FRAME,
                             duration: this.config.FIRING_DURATION, // Ensure it travels for the same duration as the flash
-                            // Traveling fires still pre-generate their base jagged path once
+                            // Pre-generate and cache jagged points for the traveling fire (dynamic wobble included at creation time)
                             jaggedPointsCache: this._getDynamicJaggedPathPoints(pA, pB, this.config.FIRING_LINE_ROUGHNESS, pA.x * 0.1 + pB.y * 0.1, this.time)
                         });
 
@@ -505,7 +500,7 @@ class ParticleSystem {
                     progress: 0,
                     speed: this.config.TRAVELING_FIRE_SPEED_PER_FRAME,
                     duration: this.config.FIRING_DURATION,
-                    // Traveling fires still pre-generate their base jagged path once
+                    // Pre-generate and cache jagged points for the traveling fire (dynamic wobble included at creation time)
                     jaggedPointsCache: this._getDynamicJaggedPathPoints(originParticle, targetParticle, this.config.FIRING_LINE_ROUGHNESS, originParticle.x * 0.1 + targetParticle.y * 0.1, this.time)
                 });
 
