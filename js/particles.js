@@ -21,6 +21,7 @@
  * -   The signal has been made brighter and pulses visually as it travels.
  * -   The signal's pulse is now DECOUPLED from the dendrite line's wobble. The pulse rate is
  * based on the signal's travel progress, not the global animation timer.
+ * -   The signal can now be rendered as a 'dot' (default) or a 'line', configurable via `SIGNAL_STYLE`.
  */
 
 // --- Quadtree Helper Classes (Essential for Performance) ---
@@ -131,8 +132,8 @@ class ParticleSystem {
         this.ctx = this.canvas.getContext('2d');
         this.config = {
             PARTICLE_COLOR: '#38BDF8',
-            MIN_RADIUS: 2,
-            MAX_RADIUS: 4,
+            MIN_RADIUS: 3,
+            MAX_RADIUS: 5,
             INITIAL_VELOCITY_RANGE: 0.35,
             PARTICLES_PER_PIXEL_DENSITY: 35000,
             MAX_CONNECTION_DISTANCE: 250,
@@ -152,9 +153,10 @@ class ParticleSystem {
             PARTICLE_FLASH_RADIUS_BOOST: 3,
             PARTICLE_FLASH_GLOW_BOOST: 15,
             WOBBLE_SPEED: 0.002,
-            // --- MODIFIED: Config for a brighter, decoupled pulsing signal ---
-            SIGNAL_HEAD_LENGTH: 0.05,
-            SIGNAL_HEAD_WIDTH: 5,
+            // --- MODIFIED: Config for a configurable, brighter, decoupled pulsing signal ---
+            SIGNAL_STYLE: 'dot', // 'dot' or 'line'
+            SIGNAL_HEAD_LENGTH: 0.35, // Only used for 'line' style
+            SIGNAL_HEAD_WIDTH: 5, // Base size for line width or dot radius
             SIGNAL_HEAD_COLOR: 'rgba(255, 255, 255, 1)',
             SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.9)',
             SIGNAL_HEAD_GLOW_BLUR: 25,
@@ -353,7 +355,6 @@ class ParticleSystem {
             let currentX = from.x + dx * p;
             let currentY = from.y + dy * p;
             if (i < numSegments) {
-                // This wobble is tied to the global `this.time`
                 const sineInput = this.time * 2 + wobbleSeed + i * 0.5;
                 const jitter = Math.sin(sineInput) * roughness * Math.sin(p * Math.PI);
                 currentX += perpX * jitter;
@@ -373,24 +374,35 @@ class ParticleSystem {
         this.ctx.stroke();
         
         if (progress > 0) {
-            const headIndex = Math.min(path.length - 1, Math.floor(progress * (path.length -1) ));
-            const tailProgress = progress - this.config.SIGNAL_HEAD_LENGTH;
-            const tailIndex = Math.max(0, Math.floor(tailProgress * (path.length -1) ));
+            const headIndex = Math.min(path.length - 1, Math.floor(progress * (path.length - 1)));
+            const pulse = Math.sin(conn.progress * this.config.SIGNAL_PULSE_FREQUENCY) * this.config.SIGNAL_PULSE_AMPLITUDE;
 
-            if (headIndex > tailIndex) {
-                 // --- MODIFICATION: Calculate pulse effect based on travel progress, decoupling it from the dendrite wobble ---
-                 const pulse = Math.sin(conn.progress * this.config.SIGNAL_PULSE_FREQUENCY) * this.config.SIGNAL_PULSE_AMPLITUDE;
-                 
-                 this.ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-                 this.ctx.lineWidth = this.config.SIGNAL_HEAD_WIDTH + pulse;
-                 this.ctx.shadowColor = this.config.SIGNAL_HEAD_GLOW_COLOR;
-                 this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR + (pulse * 2);
-                 this.ctx.beginPath();
-                 this.ctx.moveTo(path[tailIndex].x, path[tailIndex].y);
-                 for (let j = tailIndex + 1; j <= headIndex; j++) {
-                     this.ctx.lineTo(path[j].x, path[j].y);
-                 }
-                 this.ctx.stroke();
+            if (this.config.SIGNAL_STYLE === 'dot') {
+                const dotPos = path[headIndex];
+                if (dotPos) {
+                    const radius = (this.config.SIGNAL_HEAD_WIDTH / 2) + pulse;
+                    this.ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                    this.ctx.shadowColor = this.config.SIGNAL_HEAD_GLOW_COLOR;
+                    this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR + (pulse * 2);
+                    this.ctx.beginPath();
+                    this.ctx.arc(dotPos.x, dotPos.y, Math.max(0, radius), 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+            } else { // 'line' style
+                const tailProgress = progress - this.config.SIGNAL_HEAD_LENGTH;
+                const tailIndex = Math.max(0, Math.floor(tailProgress * (path.length - 1)));
+                if (headIndex > tailIndex) {
+                    this.ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                    this.ctx.lineWidth = this.config.SIGNAL_HEAD_WIDTH + pulse;
+                    this.ctx.shadowColor = this.config.SIGNAL_HEAD_GLOW_COLOR;
+                    this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR + (pulse * 2);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(path[tailIndex].x, path[tailIndex].y);
+                    for (let j = tailIndex + 1; j <= headIndex; j++) {
+                        this.ctx.lineTo(path[j].x, path[j].y);
+                    }
+                    this.ctx.stroke();
+                }
             }
         }
         this.ctx.restore();
