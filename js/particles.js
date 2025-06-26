@@ -13,6 +13,11 @@
  * the main flash is drawn, guaranteeing they are perfectly synced and animated.
  * 3.  **Propagation on Arrival:** The chain-reaction feature is correctly tied
  * to the completion of the signal's journey along the flashing line.
+ *
+ * MODIFIED LOGIC (June 2024):
+ * -   The `_drawFiringConnections` method has been updated to allow for continuous
+ * chain reactions. When a signal arrives at a particle, that particle now
+ * becomes a new source, propagating the signal to up to two new targets.
  */
 
 // --- Quadtree Helper Classes (Essential for Performance) ---
@@ -266,17 +271,17 @@ class ParticleSystem {
         }
     }
 
-    // --- The original drawing method, now also handles signal updates and propagation ---
+    // --- MODIFIED: This function now implements continuous chain reactions ---
     _drawFiringConnections(qtree) {
         for (let i = this.firingConnections.length - 1; i >= 0; i--) {
             const conn = this.firingConnections[i];
             
-            // Update state
+            // Update signal state
             conn.progress += 1 / conn.initialDuration;
             conn.duration--;
             conn.alpha = conn.duration / conn.initialDuration;
 
-            // The draw function now handles both the line and the signal
+            // Draw the connection line and the traveling signal "comet"
             this._drawJaggedLine(conn, {
                 color: `rgba(200, 240, 255, OPACITY)`,
                 lineWidth: this.config.FIRING_LINE_WIDTH,
@@ -284,19 +289,25 @@ class ParticleSystem {
                 opacity: conn.alpha * 0.9
             });
 
-            // Handle expiration and propagation
+            // Handle signal expiration and propagation
             if (conn.duration <= 0) {
-                // On arrival (progress is approx 1), trigger propagation if it's a primary signal
-                if (conn.isPrimary && conn.progress >= 1 && Math.random() < this.config.PROPAGATION_CHANCE) {
-                    const propagator = conn.to;
-                    const numToFire = Math.floor(Math.random() * 2) + 1;
+                // MODIFICATION START: Implement chain reaction on signal arrival.
+                // The check for `conn.isPrimary` has been removed to allow any signal
+                // to propagate, creating a continuous chain reaction.
+                if (conn.progress >= 1 && Math.random() < this.config.PROPAGATION_CHANCE) {
+                    const propagator = conn.to; // The receiving particle becomes the new source.
+                    const numToFire = Math.floor(Math.random() * 2) + 1; // It will fire up to two new signals.
+                    
+                    // Find potential new targets, excluding the one it just came from to prevent backward firing.
                     const potentialTargets = qtree.query(new Rectangle(propagator.x, propagator.y, this.config.MAX_CONNECTION_DISTANCE, this.config.MAX_CONNECTION_DISTANCE))
                                                  .filter(p => p !== propagator && p !== conn.from);
 
                     for (let j = 0; j < numToFire && potentialTargets.length > 0; j++) {
+                        // Select a random target from the potential list
                         const targetIndex = Math.floor(Math.random() * potentialTargets.length);
-                        const nextTarget = potentialTargets.splice(targetIndex, 1)[0]; // Select and remove
+                        const nextTarget = potentialTargets.splice(targetIndex, 1)[0]; // Select and remove to avoid duplicates
                         
+                        // Create a new firing connection.
                         this.firingConnections.push({
                             from: propagator,
                             to: nextTarget,
@@ -304,13 +315,17 @@ class ParticleSystem {
                             initialDuration: this.config.FIRING_DURATION,
                             progress: 0,
                             alpha: 1,
-                            isPrimary: false // Secondary signals do not propagate
+                            isPrimary: true // This new signal can also trigger a chain reaction.
                         });
+                        
+                        // Make both particles in the new connection flash.
                         propagator.flashTTL = this.config.FIRING_DURATION;
                         nextTarget.flashTTL = this.config.FIRING_DURATION;
                     }
                 }
-                this.firingConnections.splice(i, 1); // Remove completed or expired connection
+                // MODIFICATION END
+
+                this.firingConnections.splice(i, 1); // Remove the completed connection from the array.
             }
         }
     }
