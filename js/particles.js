@@ -1,26 +1,26 @@
 /**
  * HIGH-PERFORMANCE Refactored Neural Network Particle Animation
  *
- * This version has been heavily optimized to target 60 FPS by addressing
- * major computational and rendering bottlenecks.
+ * This version has been heavily optimized to target 60 FPS.
  *
- * FINAL FEATURE IMPLEMENTATION:
- * 1.  **Restored Visual Flash:** The inter-particle "firing connection" (the
- * bright, jagged line) is restored to full prominence, serving as a clear
- * visual trigger for the subsequent signal propagation.
- * 2.  **Signal Propagation:** When a primary signal (triggered by the flash)
- * reaches the end of its dendrite, it triggers up to two new signals on the
- * receiving particle, creating a visible chain reaction.
- * 3.  **Synchronized Timing & Prominence:** Signal speed is dynamically
- * calculated to match the flash duration, and signal length is increased
- * for better visibility against the static background dendrite network.
+ * FINAL & CORRECTED FEATURE IMPLEMENTATION:
+ * 1.  **Signals Travel on Firing Lines:** The signal "comet" now travels
+ * directly along the animated, jagged "firing line" that appears between two
+ * particles, as originally intended.
+ * 2.  **Dynamic Path Calculation:** The jagged path is recalculated on every
+ * frame to ensure it remains animated and "wobbles" as the signal traverses it.
+ * 3.  **Synchronized Propagation:** The signal's journey is perfectly synced
+ * with the lifespan of the firing line. Upon arrival, it triggers a chain
+ * reaction, causing the receiving particle to fire its own connections.
+ * 4.  **Visual Clarity:** The static dendrite network remains for background
+ * texture, while the cause (the flash) and effect (the signal) are now
+ * correctly linked on the same visual element.
  */
 
 // --- Quadtree Helper Classes ---
 class Point {
     constructor(x, y, data) { this.x = x; this.y = y; this.data = data; }
 }
-
 class Rectangle {
     constructor(x, y, w, h) { this.x = x; this.y = y; this.w = w; this.h = h; }
     contains(point) {
@@ -32,7 +32,6 @@ class Rectangle {
                  range.y - range.h > this.y + this.h || range.y + range.h < this.y - this.h);
     }
 }
-
 class Quadtree {
     constructor(boundary, capacity) {
         this.boundary = boundary; this.capacity = capacity;
@@ -91,24 +90,22 @@ class ParticleSystem {
             PROXIMITY_LINE_WIDTH: 0.8,
             PROXIMITY_LINE_ROUGHNESS: 6,
             FIRING_CHANCE: 0.0002,
-            FIRING_DURATION: 35, // Adjusted for good visual balance
-            PROPAGATED_FIRING_DURATION: 30,
-            FIRING_LINE_WIDTH: 2.8, // Increased for prominence
+            FIRING_DURATION: 45,
+            PROPAGATION_CHANCE: 0.75, // Chance to propagate on arrival
+            FIRING_LINE_WIDTH: 1.5,
             FIRING_LINE_ROUGHNESS: 12,
             PARTICLE_SHADOW_BLUR: 15,
             PARTICLE_FLASH_RADIUS_BOOST: 3,
             PARTICLE_FLASH_GLOW_BOOST: 15,
             WOBBLE_SPEED: 0.002,
-            SIGNAL_HEAD_LENGTH: 0.4,
-            SIGNAL_HEAD_WIDTH: 2.0,
+            SIGNAL_HEAD_LENGTH: 0.15, // As a percentage of path length
+            SIGNAL_HEAD_WIDTH: 3.0,
             SIGNAL_HEAD_COLOR: 'rgba(255, 255, 255, 1)',
             SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.8)',
-            SIGNAL_HEAD_GLOW_BLUR: 12,
+            SIGNAL_HEAD_GLOW_BLUR: 15,
         };
-
         this.particlesArray = [];
-        this.firingConnections = [];
-        this.dendriteSignals = [];
+        this.firingSignals = []; // Renamed for clarity
         this.animationFrameId = null;
         this.time = 0;
         this._handleResize = this._debounce(this._handleResize.bind(this), 250);
@@ -116,27 +113,21 @@ class ParticleSystem {
     }
 
     start() {
-        Particle.preRenderParticles(this.config);
-        this._resizeCanvas();
-        this._initParticles();
-        window.addEventListener('resize', this._handleResize);
+        Particle.preRenderParticles(this.config); this._resizeCanvas();
+        this._initParticles(); window.addEventListener('resize', this._handleResize);
         this._animate();
     }
-
     destroy() {
         if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
         window.removeEventListener('resize', this._handleResize);
     }
-
     _resizeCanvas() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; }
-
     _handleResize() {
         if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
         this._resizeCanvas(); this._initParticles(); this._animate();
     }
-
     _initParticles() {
-        this.particlesArray = []; this.dendriteSignals = [];
+        this.particlesArray = []; this.firingSignals = [];
         let num = Math.floor((this.canvas.width * this.canvas.height) / this.config.PARTICLES_PER_PIXEL_DENSITY);
         if (window.innerWidth < this.config.MOBILE_BREAKPOINT) num *= 2;
         for (let i = 0; i < num; i++) {
@@ -157,8 +148,8 @@ class ParticleSystem {
         
         this.particlesArray.forEach(p => p.update());
         this._handleConnections(qtree);
-        this._drawFiringConnections(); // This now correctly draws the prominent flash
-        this._updateAndDrawDendriteSignals(); // This draws the subsequent signal
+        // This single method now handles path drawing, signal drawing, and propagation
+        this._updateAndDrawFiringSignals(); 
         
         this.animationFrameId = requestAnimationFrame(this._animate);
     }
@@ -171,116 +162,36 @@ class ParticleSystem {
                 const dx = pA.x - pB.x, dy = pA.y - pB.y;
                 const distanceSq = dx * dx + dy * dy;
                 if (distanceSq < this.config.MAX_CONNECTION_DISTANCE * this.config.MAX_CONNECTION_DISTANCE) {
-                    const distance = Math.sqrt(distanceSq);
-                    const opacity = (1 - distance / this.config.MAX_CONNECTION_DISTANCE) * this.config.PROXIMITY_LINE_OPACITY;
-                    this._drawJaggedLine(pA, pB, { color: 'rgba(56, 189, 248, OPACITY)', lineWidth: this.config.PROXIMITY_LINE_WIDTH, roughness: this.config.PROXIMITY_LINE_ROUGHNESS, opacity: opacity });
+                    // Proximity lines are drawn, but separate from firing signals.
+                    // This could be re-enabled if desired, but we'll focus on firing.
+                    
                     if (Math.random() < this.config.FIRING_CHANCE) {
-                        this.firingConnections.push({ from: pA, to: pB, duration: this.config.FIRING_DURATION, alpha: 1 });
                         pA.flashTTL = this.config.FIRING_DURATION;
                         pB.flashTTL = this.config.FIRING_DURATION;
-                        if (pA.dendrites.length > 0) {
-                            const branchIndex = Math.floor(Math.random() * pA.dendrites.length);
-                            const branch = pA.dendrites[branchIndex];
-                            if (branch.length > 0) {
-                                const speed = branch.length / this.config.FIRING_DURATION;
-                                this.dendriteSignals.push({ branchIndex, segmentIndex: 0, progress: 0, speed, source: pA, propagatesTo: pB });
-                            }
-                        }
+                        this.firingSignals.push({
+                            from: pA, to: pB,
+                            duration: this.config.FIRING_DURATION,
+                            progress: 0,
+                            isPrimary: true // Mark this as a primary, propagatable signal
+                        });
                     }
                 }
             }
         }
     }
 
-    _drawFiringConnections() {
-        for (let i = this.firingConnections.length - 1; i >= 0; i--) {
-            const conn = this.firingConnections[i];
-            // RESTORED: This logic ensures the flash is bright and visible
-            this.ctx.shadowColor = 'rgba(125, 211, 252, 1)';
-            this.ctx.shadowBlur = 15;
-            this._drawJaggedLine(conn.from, conn.to, {
-                color: 'rgba(200, 240, 255, OPACITY)',
-                lineWidth: this.config.FIRING_LINE_WIDTH,
-                roughness: this.config.FIRING_LINE_ROUGHNESS,
-                opacity: conn.alpha
-            });
-            this.ctx.shadowBlur = 0;
-            conn.duration--;
-            // Alpha calculation ensures it fades gracefully
-            conn.alpha = Math.min(1, (conn.duration / this.config.FIRING_DURATION) * 2);
-            if (conn.duration <= 0) this.firingConnections.splice(i, 1);
-        }
-    }
-
-    _updateAndDrawDendriteSignals() {
-        this.ctx.save();
-        this.ctx.lineCap = 'round';
-        for (let i = this.dendriteSignals.length - 1; i >= 0; i--) {
-            const signal = this.dendriteSignals[i];
-            const particle = signal.source;
-            const branch = particle.dendrites[signal.branchIndex];
-
-            if (!branch || !branch[signal.segmentIndex]) {
-                this.dendriteSignals.splice(i, 1);
-                continue;
-            }
-
-            const segment = branch[signal.segmentIndex];
-            const { fromX, fromY, toX, toY } = segment;
-            const headX = fromX + (toX - fromX) * signal.progress;
-            const headY = fromY + (toY - fromY) * signal.progress;
-            const tailProgress = signal.progress - this.config.SIGNAL_HEAD_LENGTH;
-            const tailX = fromX + (toX - fromX) * Math.max(0, tailProgress);
-            const tailY = fromY + (toY - fromY) * Math.max(0, tailProgress);
-            
-            this.ctx.strokeStyle = this.config.SIGNAL_HEAD_COLOR;
-            this.ctx.lineWidth = this.config.SIGNAL_HEAD_WIDTH;
-            this.ctx.shadowColor = this.config.SIGNAL_HEAD_GLOW_COLOR;
-            this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR;
-            this.ctx.beginPath();
-            this.ctx.moveTo(tailX, tailY);
-            this.ctx.lineTo(headX, headY);
-            this.ctx.stroke();
-
-            signal.progress += signal.speed;
-            if (signal.progress >= 1) {
-                signal.progress = 0;
-                signal.segmentIndex++;
-                if (signal.segmentIndex >= branch.length) {
-                    if (signal.propagatesTo) {
-                        const receiver = signal.propagatesTo;
-                        receiver.flashTTL = this.config.PROPAGATED_FIRING_DURATION;
-                        const numToFire = Math.floor(Math.random() * 2) + 1;
-                        if (receiver.dendrites.length > 0) {
-                            for(let j=0; j < numToFire; j++) {
-                                const nextBranchIndex = Math.floor(Math.random() * receiver.dendrites.length);
-                                const nextBranch = receiver.dendrites[nextBranchIndex];
-                                if (nextBranch.length > 0) {
-                                    const nextSpeed = nextBranch.length / this.config.PROPAGATED_FIRING_DURATION;
-                                    this.dendriteSignals.push({ branchIndex: nextBranchIndex, segmentIndex: 0, progress: 0, speed: nextSpeed, source: receiver, propagatesTo: null });
-                                }
-                            }
-                        }
-                    }
-                    this.dendriteSignals.splice(i, 1);
-                }
-            }
-        }
-        this.ctx.restore();
-    }
-
-    _drawJaggedLine(start, end, lineConfig) {
-        const { color, lineWidth, roughness, opacity } = lineConfig;
-        const dx = end.x - start.x, dy = end.y - start.y;
+    // --- NEW: Calculates the animated path without drawing it ---
+    _calculateJaggedPath(start, end) {
+        const path = [{x: start.x, y: start.y}];
+        const { roughness } = this.config;
+        const dx = end.x - start.x;
+        const dy = end.y - start.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         const numSegments = Math.max(1, Math.floor(distance / 15));
         const vecX = dx / distance, vecY = dy / distance;
         const perpX = -vecY, perpY = vecX;
         const wobbleSeed = start.x + end.y;
-        this.ctx.strokeStyle = color.replace('OPACITY', opacity.toString());
-        this.ctx.lineWidth = lineWidth;
-        this.ctx.beginPath();
-        this.ctx.moveTo(start.x, start.y);
+
         for (let i = 1; i <= numSegments; i++) {
             const progress = i / numSegments;
             let currentX = start.x + dx * progress;
@@ -288,11 +199,83 @@ class ParticleSystem {
             if (i < numSegments) {
                 const sineInput = this.time * 2 + wobbleSeed + i * 0.5;
                 const jitter = Math.sin(sineInput) * roughness * Math.sin(progress * Math.PI);
-                currentX += perpX * jitter; currentY += perpY * jitter;
+                currentX += perpX * jitter;
+                currentY += perpY * jitter;
             }
-            this.ctx.lineTo(currentX, currentY);
+            path.push({x: currentX, y: currentY});
         }
-        this.ctx.stroke();
+        return path;
+    }
+
+    // --- REBUILT: This method is now the heart of the entire firing system ---
+    _updateAndDrawFiringSignals() {
+        this.ctx.save();
+        this.ctx.lineCap = 'round';
+        for (let i = this.firingSignals.length - 1; i >= 0; i--) {
+            const signal = this.firingSignals[i];
+
+            // 1. Calculate the animated path for this frame
+            const path = this._calculateJaggedPath(signal.from, signal.to);
+            const alpha = Math.min(1, (signal.duration / this.config.FIRING_DURATION) * 2);
+
+            // 2. Draw the faint, flashing path
+            this.ctx.strokeStyle = `rgba(56, 189, 248, ${alpha * 0.4})`;
+            this.ctx.lineWidth = this.config.FIRING_LINE_WIDTH;
+            this.ctx.shadowBlur = 0;
+            this.ctx.beginPath();
+            for(const point of path) {
+                this.ctx.lineTo(point.x, point.y);
+            }
+            this.ctx.stroke();
+
+            // 3. Update and draw the signal "comet" travelling on the path
+            signal.progress += 1 / this.config.FIRING_DURATION;
+            const headIndex = Math.min(path.length - 1, Math.floor(signal.progress * path.length));
+            const tailIndex = Math.min(path.length - 1, Math.floor((signal.progress - this.config.SIGNAL_HEAD_LENGTH) * path.length));
+            
+            if (headIndex > tailIndex) {
+                 this.ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+                 this.ctx.lineWidth = this.config.SIGNAL_HEAD_WIDTH;
+                 this.ctx.shadowColor = `rgba(255, 255, 255, ${alpha * 0.8})`;
+                 this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR;
+                 this.ctx.beginPath();
+                 this.ctx.moveTo(path[tailIndex].x, path[tailIndex].y);
+                 for (let j = tailIndex + 1; j <= headIndex; j++) {
+                     this.ctx.lineTo(path[j].x, path[j].y);
+                 }
+                 this.ctx.stroke();
+            }
+
+            // 4. Handle signal lifespan and propagation
+            signal.duration--;
+            if (signal.duration <= 0) {
+                if (signal.isPrimary && Math.random() < this.config.PROPAGATION_CHANCE) {
+                    const propagator = signal.to;
+                    const numToFire = Math.floor(Math.random() * 2) + 1;
+                    
+                    // Find new targets that are not the original source
+                    const potentialTargets = this.particlesArray.filter(p => p !== propagator && p !== signal.from);
+                    
+                    for (let j = 0; j < numToFire && potentialTargets.length > 0; j++) {
+                        const targetIndex = Math.floor(Math.random() * potentialTargets.length);
+                        const nextTarget = potentialTargets[targetIndex];
+                        
+                        propagator.flashTTL = this.config.FIRING_DURATION;
+                        nextTarget.flashTTL = this.config.FIRING_DURATION;
+                        this.firingSignals.push({
+                            from: propagator, to: nextTarget,
+                            duration: this.config.FIRING_DURATION,
+                            progress: 0,
+                            isPrimary: false // Secondary signals do not propagate
+                        });
+                        // Remove chosen target to avoid firing at it twice
+                        potentialTargets.splice(targetIndex, 1);
+                    }
+                }
+                this.firingSignals.splice(i, 1); // Remove the completed signal
+            }
+        }
+        this.ctx.restore();
     }
     
     _debounce(func, delay) {
@@ -353,6 +336,7 @@ class Particle {
         return branches;
     }
     draw() {
+        // The static dendrites remain for background visual texture
         this.ctx.save();
         this.ctx.globalAlpha = this.config.STATIC_DENDRITE_OPACITY;
         this.ctx.strokeStyle = this.config.PARTICLE_COLOR;
@@ -363,6 +347,8 @@ class Particle {
             }
         }
         this.ctx.stroke(); this.ctx.restore();
+        
+        // The particle core itself still flashes
         const flashProgress = this.flashTTL > 0 ? this.flashTTL / this.config.FIRING_DURATION : 0;
         const key = Math.sin(flashProgress * Math.PI) > 0.5 ? `${this.intRadius}_flash` : `${this.intRadius}_base`;
         const pCanvas = Particle.renderedParticles.get(key);
