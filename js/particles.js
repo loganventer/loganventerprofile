@@ -18,7 +18,9 @@
  * -   The `_drawFiringConnections` method has been updated to allow for continuous
  * chain reactions. When a signal arrives at a particle, that particle now
  * becomes a new source, propagating the signal to up to two new targets.
- * -   The signal has been made brighter and now pulses visually as it travels.
+ * -   The signal has been made brighter and pulses visually as it travels.
+ * -   The signal's pulse is now DECOUPLED from the dendrite line's wobble. The pulse rate is
+ * based on the signal's travel progress, not the global animation timer.
  */
 
 // --- Quadtree Helper Classes (Essential for Performance) ---
@@ -129,7 +131,7 @@ class ParticleSystem {
         this.ctx = this.canvas.getContext('2d');
         this.config = {
             PARTICLE_COLOR: '#38BDF8',
-            MIN_RADIUS:2,
+            MIN_RADIUS: 2,
             MAX_RADIUS: 4,
             INITIAL_VELOCITY_RANGE: 0.35,
             PARTICLES_PER_PIXEL_DENSITY: 35000,
@@ -144,20 +146,20 @@ class ParticleSystem {
             FIRING_CHANCE: 0.0003,
             FIRING_DURATION: 70, // In frames
             PROPAGATION_CHANCE: 0.9, // High chance for chain reactions
-            FIRING_LINE_WIDTH: 3, // Slightly thicker base line for more impact
+            FIRING_LINE_WIDTH: 3, 
             FIRING_LINE_ROUGHNESS: 12,
             PARTICLE_SHADOW_BLUR: 15,
             PARTICLE_FLASH_RADIUS_BOOST: 3,
             PARTICLE_FLASH_GLOW_BOOST: 15,
             WOBBLE_SPEED: 0.002,
-            // --- MODIFIED: Config for a brighter, pulsing signal ---
-            SIGNAL_HEAD_LENGTH: 0.1, // As a percentage of the total path
-            SIGNAL_HEAD_WIDTH: 5, // Increased base width for brightness
+            // --- MODIFIED: Config for a brighter, decoupled pulsing signal ---
+            SIGNAL_HEAD_LENGTH: 0.05,
+            SIGNAL_HEAD_WIDTH: 5,
             SIGNAL_HEAD_COLOR: 'rgba(255, 255, 255, 1)',
-            SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.9)', // Brighter glow
-            SIGNAL_HEAD_GLOW_BLUR: 25, // Wider glow
-            SIGNAL_PULSE_AMPLITUDE: 2.5, // How much the width and glow will oscillate
-            SIGNAL_PULSE_SPEED: 10, // How fast it pulses
+            SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.9)',
+            SIGNAL_HEAD_GLOW_BLUR: 25,
+            SIGNAL_PULSE_AMPLITUDE: 2.5,
+            SIGNAL_PULSE_FREQUENCY: 40, // How many pulses over the line's length. Decoupled from global time.
         };
 
         this.particlesArray = [];
@@ -231,7 +233,6 @@ class ParticleSystem {
 
     _handleConnections(qtree) {
         for (const pA of this.particlesArray) {
-            // Skip if this particle is already the source of a fire
             if (this.firingConnections.some(c => c.from === pA)) continue;
 
             const range = new Rectangle(pA.x, pA.y, this.config.MAX_CONNECTION_DISTANCE, this.config.MAX_CONNECTION_DISTANCE);
@@ -245,7 +246,6 @@ class ParticleSystem {
                 const distanceSq = dx * dx + dy * dy;
 
                 if (distanceSq < this.config.MAX_CONNECTION_DISTANCE * this.config.MAX_CONNECTION_DISTANCE) {
-                    // This is the faint blue proximity line. We can keep it or disable it for clarity.
                     const distance = Math.sqrt(distanceSq);
                     const opacity = (1 - (distance / this.config.MAX_CONNECTION_DISTANCE)) * this.config.PROXIMITY_LINE_OPACITY;
                     this._drawStaticJaggedLine(pA, pB, {
@@ -255,7 +255,6 @@ class ParticleSystem {
                         opacity: opacity
                     });
 
-                    // Firing logic
                     if (Math.random() < this.config.FIRING_CHANCE) {
                         this.firingConnections.push({
                             from: pA,
@@ -278,12 +277,10 @@ class ParticleSystem {
         for (let i = this.firingConnections.length - 1; i >= 0; i--) {
             const conn = this.firingConnections[i];
             
-            // Update signal state
             conn.progress += 1 / conn.initialDuration;
             conn.duration--;
             conn.alpha = conn.duration / conn.initialDuration;
 
-            // Draw the connection line and the traveling signal "comet"
             this._drawJaggedLine(conn, {
                 color: `rgba(200, 240, 255, OPACITY)`,
                 lineWidth: this.config.FIRING_LINE_WIDTH,
@@ -291,7 +288,6 @@ class ParticleSystem {
                 opacity: conn.alpha * 0.9
             });
 
-            // Handle signal expiration and propagation
             if (conn.duration <= 0) {
                 if (conn.progress >= 1 && Math.random() < this.config.PROPAGATION_CHANCE) {
                     const propagator = conn.to; 
@@ -341,7 +337,6 @@ class ParticleSystem {
         const { from, to, progress } = conn;
         const { color, lineWidth, roughness, opacity } = lineConfig;
         
-        // 1. Calculate path points for this frame
         const path = [{x: from.x, y: from.y}];
         const dx = to.x - from.x;
         const dy = to.y - from.y;
@@ -358,6 +353,7 @@ class ParticleSystem {
             let currentX = from.x + dx * p;
             let currentY = from.y + dy * p;
             if (i < numSegments) {
+                // This wobble is tied to the global `this.time`
                 const sineInput = this.time * 2 + wobbleSeed + i * 0.5;
                 const jitter = Math.sin(sineInput) * roughness * Math.sin(p * Math.PI);
                 currentX += perpX * jitter;
@@ -368,7 +364,6 @@ class ParticleSystem {
         
         this.ctx.save();
 
-        // 2. Draw the main flashing line
         this.ctx.strokeStyle = color.replace('OPACITY', opacity.toString());
         this.ctx.lineWidth = lineWidth;
         this.ctx.shadowColor = 'rgba(125, 211, 252, 1)';
@@ -377,20 +372,19 @@ class ParticleSystem {
         for(const point of path) this.ctx.lineTo(point.x, point.y);
         this.ctx.stroke();
         
-        // 3. Draw the signal "comet" on top of the calculated path
         if (progress > 0) {
             const headIndex = Math.min(path.length - 1, Math.floor(progress * (path.length -1) ));
             const tailProgress = progress - this.config.SIGNAL_HEAD_LENGTH;
             const tailIndex = Math.max(0, Math.floor(tailProgress * (path.length -1) ));
 
             if (headIndex > tailIndex) {
-                 // --- MODIFICATION: Calculate pulse effect ---
-                 const pulse = Math.sin(this.time * this.config.SIGNAL_PULSE_SPEED) * this.config.SIGNAL_PULSE_AMPLITUDE;
+                 // --- MODIFICATION: Calculate pulse effect based on travel progress, decoupling it from the dendrite wobble ---
+                 const pulse = Math.sin(conn.progress * this.config.SIGNAL_PULSE_FREQUENCY) * this.config.SIGNAL_PULSE_AMPLITUDE;
                  
                  this.ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-                 this.ctx.lineWidth = this.config.SIGNAL_HEAD_WIDTH + pulse; // Apply pulse
+                 this.ctx.lineWidth = this.config.SIGNAL_HEAD_WIDTH + pulse;
                  this.ctx.shadowColor = this.config.SIGNAL_HEAD_GLOW_COLOR;
-                 this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR + (pulse * 2); // Apply pulse to glow for more effect
+                 this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR + (pulse * 2);
                  this.ctx.beginPath();
                  this.ctx.moveTo(path[tailIndex].x, path[tailIndex].y);
                  for (let j = tailIndex + 1; j <= headIndex; j++) {
@@ -486,7 +480,6 @@ class Particle {
     }
 
     draw() {
-        // Draw dendrites
         this.ctx.globalAlpha = this.config.STATIC_DENDRITE_OPACITY;
         this.ctx.strokeStyle = this.config.PARTICLE_COLOR;
         this.ctx.lineWidth = 0.5;
@@ -498,7 +491,6 @@ class Particle {
         this.ctx.stroke();
         this.ctx.globalAlpha = 1.0;
 
-        // Draw particle core
         const flashProgress = this.flashTTL > 0 ? this.flashTTL / this.config.FIRING_DURATION : 0;
         const flashMultiplier = Math.sin(flashProgress * Math.PI);
         const key = flashMultiplier > 0.5 ? `${this.intRadius}_flash` : `${this.intRadius}_base`;
