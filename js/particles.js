@@ -136,9 +136,9 @@ class ParticleSystem {
             PARTICLE_COLOR: '#38BDF8',
             MIN_RADIUS: 2,
             MAX_RADIUS: 4,
-            INITIAL_VELOCITY_RANGE: 0.117, // Slowed down 3x
+            INITIAL_VELOCITY_RANGE: 0.00000117, // Slowed down 3x
             PARTICLES_PER_PIXEL_DENSITY: 35000,
-            MAX_CONNECTION_DISTANCE: 250,
+            MAX_CONNECTION_DISTANCE: 200,
             MOBILE_BREAKPOINT: 768,
             STATIC_DENDRITE_OPACITY: 0.18,
             STATIC_DENDRITE_LIFESPAN: 60,
@@ -147,8 +147,8 @@ class ParticleSystem {
             PROXIMITY_LINE_WIDTH: 0.8,
             PROXIMITY_LINE_ROUGHNESS: 6,
             FIRING_CHANCE: 0.0003,
-            FIRING_DURATION: 30, // Slowed down 3x (was 120)
-            PROPAGATION_CHANCE: 0.3,
+            FIRING_DURATION: 360, // Slowed down 3x (was 120)
+            PROPAGATION_CHANCE: 0.2,
             FIRING_LINE_WIDTH: 3, 
             FIRING_LINE_ROUGHNESS: 12,
             PARTICLE_SHADOW_BLUR: 15,
@@ -156,13 +156,13 @@ class ParticleSystem {
             PARTICLE_FLASH_GLOW_BOOST: 15,
             WOBBLE_SPEED: 0.00067, // Slowed down 3x
             SIGNAL_STYLE: 'dot', 
-            SIGNAL_HEAD_LENGTH: 0.35,
+            SIGNAL_HEAD_LENGTH: 0.1,
             SIGNAL_HEAD_WIDTH: 5,
             SIGNAL_HEAD_COLOR: 'rgba(255, 255, 255, 1)',
             SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.9)',
             SIGNAL_HEAD_GLOW_BLUR: 25,
             SIGNAL_PULSE_AMPLITUDE: 2.5,
-            SIGNAL_PULSE_FREQUENCY: 40,
+            SIGNAL_PULSE_FREQUENCY: 1200,
         };
 
         this.particlesArray = [];
@@ -267,7 +267,7 @@ class ParticleSystem {
                             progress: 0,
                             alpha: 1,
                             isPrimary: true,
-                            bounces: Math.floor(Math.random() * 4) + 2,
+                            bounces: Math.floor(Math.random() * 2) + 1,
                             direction: 1,
                             hasPropagated: false,
                         });
