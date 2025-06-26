@@ -22,16 +22,15 @@
  * 5.  **Capped Jagged Line Segments:** `MAX_JAGGED_SEGMENTS` limits the number
  * of individual segments used to draw a jagged line. This prevents extremely long
  * lines from becoming computationally expensive at high resolutions.
- * 6.  **Static Background Line Pre-calculation & Caching:**
- * Instead of generating jagged paths for static background lines every frame,
- * these paths are now calculated *once* during initialization and stored.
- * The animation loop then efficiently draws these cached paths, drastically
- * reducing per-frame CPU usage, especially for 4K+.
- * 7.  **Traveling Fire Pre-rendering (CRITICAL NEW FIX FOR 4K):** The jagged path
- * for each traveling fire effect is now pre-rendered to a dedicated off-screen
- * canvas *once* when the fire is created. The animation loop then draws a
- * *slice* of this pre-rendered path using `drawImage`, replacing expensive
- * per-frame path drawing operations with a much faster image blit.
+ * 6.  **Static Background Line Pre-calculation & Caching (FIXED & UPDATED):**
+ * The *base* jagged paths for static background lines are calculated once and
+ * stored. The dynamic "wobble" effect is now applied *during drawing* in the
+ * animation loop, ensuring these background lines animate correctly without
+ * recalculating their entire path geometry every frame.
+ * 7.  **Traveling Fire Pre-rendering:** The jagged path for each traveling fire
+ * effect is pre-rendered to a dedicated off-screen canvas once when the fire is
+ * created. The animation loop then draws a *slice* of this pre-rendered path
+ * using `drawImage`, replacing expensive per-frame path drawing operations.
  * 8.  **Configurable Static Line Draw Chance:** `STATIC_LINE_DRAW_CHANCE`
  * allows fine-tuning the visual density of background lines, letting us draw
  * only a percentage of potential connections to further optimize performance.
@@ -170,7 +169,7 @@ class ParticleSystem {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         if (!this.canvas) {
-            console.error(`Canvas with ID '${canvasId}' not found. Cannot start the particle system.`);
+            console.error(`F@K! Canvas with ID '${canvasId}' not found. Cannot start the particle system.`);
             return;
         }
         this.ctx = this.canvas.getContext('2d');
@@ -201,7 +200,7 @@ class ParticleSystem {
             STATIC_LINE_DRAW_CHANCE: 0.3,       // Chance (0.0 - 1.0) for a static background line to be drawn. CRITICAL FOR 4K. (Reduced from 0.4)
 
             FIRING_CHANCE: 0.0002,              // Chance for a connection to "fire" (become active)
-            FIRING_DURATION: 40,                // Duration of a firing connection's animation frames
+            FIRING_DURATION: 20,                // Duration of a firing connection's animation frames
             FIRING_LINE_WIDTH: 2.5,             // Width of firing lines
             FIRING_LINE_ROUGHNESS: 6,           // Roughness/jaggedness of firing lines (reduced for less wobble)
             FIRING_STROKE_COLOR_BASE: 'rgba(200, 240, 255, ', // Base color for firing lines (white-blue)
@@ -271,7 +270,7 @@ class ParticleSystem {
     _initParticles() {
         this.particlesArray = [];
         // Calculate number of particles based on screen density and adjust for mobile
-        let num = Math.floor((this.canvas.width * this.canvas.height) / this.config.PARTICLES_PER_PIXEL_DENSITY);
+        let num = Math.floor((this.canvas.width * this.canvas.height) / this.config.PARTICLE_PER_PIXEL_DENSITY);
         
         // Apply max particles cap
         num = Math.min(num, this.config.MAX_PARTICLES);
@@ -292,8 +291,9 @@ class ParticleSystem {
     }
 
     /**
-     * NEW: Generates and caches the jagged paths for static background lines.
-     * This heavy computation is done once, not every frame.
+     * NEW: Generates and caches the *base* jagged paths for static background lines.
+     * This heavy computation is done once, not every frame. The dynamic wobble
+     * will be applied during drawing in `_drawStaticJaggedLines`.
      */
     _generateStaticLines() {
         this.staticJaggedLines = []; // Clear existing lines
@@ -316,20 +316,23 @@ class ParticleSystem {
                 const distanceSq = dx * dx + dy * dy;
 
                 if (distanceSq < this.config.MAX_CONNECTION_DISTANCE * this.config.MAX_CONNECTION_DISTANCE) {
-                    // Only draw a static line based on chance
+                    // Only generate a static line based on chance
                     if (Math.random() < this.config.STATIC_LINE_DRAW_CHANCE) {
                         const distance = Math.sqrt(distanceSq);
                         const opacity = (1 - (distance / this.config.MAX_CONNECTION_DISTANCE)) * this.config.PROXIMITY_LINE_OPACITY;
 
-                        // Generate jagged points once and store them
+                        // Generate *base* jagged points (without time-dependent wobble) once and store them
                         const lineData = {
                             from: pA,
                             to: pB,
                             color: `rgba(56, 189, 248, ${opacity})`,
                             lineWidth: this.config.PROXIMITY_LINE_WIDTH,
                             roughness: this.config.PROXIMITY_LINE_ROUGHNESS,
-                            jaggedPoints: this._getJaggedPathPoints(pA, pB, this.config.PROXIMITY_LINE_ROUGHNESS) // Generate once
+                            // Use a unique wobble seed for each line's base shape, but *don't* use this.time here.
+                            wobbleSeed: pA.x * 0.1 + pB.y * 0.1
                         };
+                        // Store only the path geometry that changes with time, which is just the points and configs to calculate them
+                        // The actual jagged points will be calculated per frame in _drawStaticJaggedLines
                         this.staticJaggedLines.push(lineData);
                     }
                 }
@@ -339,14 +342,20 @@ class ParticleSystem {
     }
 
     /**
-     * Helper to generate the full jagged path points between two particles.
-     * This logic is extracted so it can be called once for caching.
+     * Helper to generate the full jagged path points between two particles, including time-dependent wobble.
+     * This is used for traveling fires (cached per fire) and now for drawing static lines (per-frame).
+     * @param {Particle} start - The starting particle.
+     * @param {Particle} end - The ending particle.
+     * @param {number} roughness - Roughness factor for the wobble.
+     * @param {number} wobbleSeed - A unique seed for the line's wobble pattern.
+     * @param {number} currentTime - The current animation time.
+     * @returns {Array<Object>} Array of {x, y} points representing the jagged path.
      */
-    _getJaggedPathPoints(start, end, roughness) {
+    _getDynamicJaggedPathPoints(start, end, roughness, wobbleSeed, currentTime) {
         const dx = end.x - start.x;
         const dy = end.y - start.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance === 0) return [{x: start.x, y: start.y}]; // Handle zero distance
+        if (distance === 0) return [{x: start.x, y: start.y}];
 
         const totalNumSegments = Math.max(2, Math.min(this.config.MAX_JAGGED_SEGMENTS, Math.floor(distance / 5)));
         
@@ -354,7 +363,6 @@ class ParticleSystem {
         const vecY = dy / distance;
         const perpX = -vecY;
         const perpY = vecX;
-        const wobbleSeed = start.x * 0.1 + end.y * 0.1; 
         const jaggedPoints = [];
 
         for (let i = 0; i <= totalNumSegments; i++) {
@@ -362,7 +370,8 @@ class ParticleSystem {
             let currentX = start.x + dx * currentTotalProgress;
             let currentY = start.y + dy * currentTotalProgress;
 
-            const sineInput = this.time * 2 + wobbleSeed + currentTotalProgress * 0.5; // Use this.time for consistent wobble across lines
+            // Apply wobble dynamically based on current time
+            const sineInput = currentTime * 2 + wobbleSeed + currentTotalProgress * 0.5;
             const jitter = Math.sin(sineInput) * roughness * Math.sin(currentTotalProgress * Math.PI);
             currentX += perpX * jitter;
             currentY += perpY * jitter;
@@ -384,7 +393,7 @@ class ParticleSystem {
             qtree.insert(new Point(p.x, p.y, p)); // Insert each particle's position into the Quadtree
         }
 
-        // NEW: Draw cached static background lines FIRST
+        // NEW: Draw cached static background lines FIRST, with dynamic wobble
         this._drawStaticJaggedLines();
 
         this.particlesArray.forEach(p => p.update()); // Update and draw each particle
@@ -394,15 +403,16 @@ class ParticleSystem {
     }
 
     /**
-     * NEW: Draws the pre-calculated static background lines.
-     * This is much faster as it avoids recalculating jagged paths each frame.
+     * NEW: Draws the pre-calculated static background lines, applying dynamic wobble per frame.
+     * This ensures the background lines are animated and not frozen.
      */
     _drawStaticJaggedLines() {
-        // We iterate through pre-generated lines and draw them.
-        // Their jagged path points are already computed and stored.
         for (const lineData of this.staticJaggedLines) {
-            const { color, lineWidth, jaggedPoints } = lineData;
+            const { from, to, color, lineWidth, roughness, wobbleSeed } = lineData;
             
+            // Generate jagged points dynamically based on current time
+            const jaggedPoints = this._getDynamicJaggedPathPoints(from, to, roughness, wobbleSeed, this.time);
+
             this.ctx.strokeStyle = color;
             this.ctx.lineWidth = lineWidth;
             this.ctx.beginPath();
@@ -444,7 +454,8 @@ class ParticleSystem {
                             progress: 0, // Starts at 0% of the path
                             speed: this.config.TRAVELING_FIRE_SPEED_PER_FRAME,
                             duration: this.config.FIRING_DURATION, // Ensure it travels for the same duration as the flash
-                            jaggedPointsCache: this._getJaggedPathPoints(pA, pB, this.config.FIRING_LINE_ROUGHNESS) // Generate once
+                            // Traveling fires still pre-generate their base jagged path once
+                            jaggedPointsCache: this._getDynamicJaggedPathPoints(pA, pB, this.config.FIRING_LINE_ROUGHNESS, pA.x * 0.1 + pB.y * 0.1, this.time)
                         });
 
                         this._triggerSecondaryFirings(pB, qtree, this.config.SECONDARY_FIRING_DELAY);
@@ -494,7 +505,8 @@ class ParticleSystem {
                     progress: 0,
                     speed: this.config.TRAVELING_FIRE_SPEED_PER_FRAME,
                     duration: this.config.FIRING_DURATION,
-                    jaggedPointsCache: this._getJaggedPathPoints(originParticle, targetParticle, this.config.FIRING_LINE_ROUGHNESS) // Generate once
+                    // Traveling fires still pre-generate their base jagged path once
+                    jaggedPointsCache: this._getDynamicJaggedPathPoints(originParticle, targetParticle, this.config.FIRING_LINE_ROUGHNESS, originParticle.x * 0.1 + targetParticle.y * 0.1, this.time)
                 });
 
             }, delay * (i + 1));
@@ -521,11 +533,11 @@ class ParticleSystem {
             this.ctx.shadowColor = this.config.FIRING_SHADOW_COLOR;
             this.ctx.shadowBlur = this.config.FIRING_SHADOW_BLUR * 1.5;
 
-            // --- CRITICAL CHANGE: Use new _drawJaggedLineSegment to draw on main canvas ---
+            // Use _drawJaggedLineSegment to draw on main canvas, passing the cached points
             this._drawJaggedLineSegment(
                 fire.from, 
                 fire.to, 
-                fire.jaggedPointsCache, // Pass the pre-calculated jagged points
+                fire.jaggedPointsCache, // Pass the pre-calculated jagged points from cache
                 {
                     color: `rgba(255, 255, 255, ${sparkOpacity})`,
                     lineWidth: this.config.FIRING_LINE_WIDTH + 1
@@ -558,11 +570,10 @@ class ParticleSystem {
         this.ctx.beginPath();
 
         const totalPoints = jaggedPoints.length;
-        const totalLineProgress = currentProgress; // Total progress along the full line length
 
         // Calculate the start and end progress points for the visible segment
-        const segmentStartProgress = Math.max(0, totalLineProgress - segmentLengthRatio);
-        const segmentEndProgress = totalLineProgress;
+        const segmentStartProgress = Math.max(0, currentProgress - segmentLengthRatio);
+        const segmentEndProgress = currentProgress;
 
         // Function to get an interpolated point on the full jagged path
         const getPointOnJaggedPath = (progress) => {
@@ -592,7 +603,6 @@ class ParticleSystem {
         this.ctx.moveTo(startPoint.x, startPoint.y);
 
         // Iterate through the *indices* of `jaggedPoints` that fall between the start and end of the segment.
-        // We start from the first whole point *after* the interpolated start, and go up to the last whole point *before* the interpolated end.
         const firstRelevantIndex = Math.ceil(segmentStartProgress * (totalPoints - 1));
         const lastRelevantIndex = Math.floor(segmentEndProgress * (totalPoints - 1));
 
@@ -603,7 +613,6 @@ class ParticleSystem {
         }
         
         // Finally, draw to the precise interpolated end point.
-        // This connects the last whole jagged point (or the start point if segment is very short) to the exact end position.
         // Only draw if the end point is distinct or if the path is essentially just this final segment.
         if (startPoint.x !== endPoint.x || startPoint.y !== endPoint.y) {
             this.ctx.lineTo(endPoint.x, endPoint.y);
