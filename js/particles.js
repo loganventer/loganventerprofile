@@ -5,17 +5,19 @@
  * base and correctly implements all requested features without breaking the core visuals.
  *
  * FINAL & CORRECTED IMPLEMENTATION:
- * 1.  **True Recursive Propagation on Arrival:** The chain-reaction (`_triggerSecondaryFirings`)
- * is now correctly triggered ONLY when a traveling fire signal reaches the end of its
- * path. These secondary fires can then trigger more fires recursively.
- * 2.  **Recursion Depth Limit:** A `depth` property is added to each fire to
- * prevent infinite loops. The chain reaction will propagate for a few steps
- * and then naturally die out.
- * 3.  **Synchronized Travel Time:** The traveling fire's speed is dynamically
- * calculated based on FIRING_DURATION to ensure the signal's journey is
- * perfectly synchronized with the flash's lifespan.
- * 4.  **Original Visuals Preserved:** All performance optimizations and visual
- * styles from the user-provided code are 100% intact.
+ * 1.  **Flashing Dendrite Visual Restored:** The drawing logic is corrected to
+ * render the full, faint, vibrating path of a firing connection, with the bright
+ * signal traveling over it. This restores the core visual effect.
+ * 2.  **True Recursive Propagation on Arrival:** The chain-reaction is correctly
+ * triggered ONLY when a signal reaches the end of its path. These secondary
+ * fires can then trigger more fires recursively.
+ * 3.  **Recursion Depth Limit:** A `depth` property prevents infinite loops,
+ * allowing the chain reaction to propagate for a few steps and then die out.
+ * 4.  **Synchronized Travel Time:** The traveling fire's speed is dynamically
+ * calculated to ensure the signal's journey is perfectly synchronized with
+ * the flash's lifespan.
+ * 5.  **Original Visuals & Optimizations Preserved:** All performance logic
+ * from the user-provided code is 100% intact.
  */
 
 // --- Quadtree Helper Classes (Essential for Performance) ---
@@ -122,6 +124,7 @@ class ParticleSystem {
             STATIC_DENDRITE_SEGMENT_LENGTH: 5,
             STATIC_DENDRITE_PADDING: 20,
 
+            PROXIMITY_LINE_OPACITY: 0.5,
             PROXIMITY_LINE_WIDTH: 0.8,
             PROXIMITY_LINE_ROUGHNESS: 3,
             MAX_JAGGED_SEGMENTS: 60,
@@ -212,7 +215,7 @@ class ParticleSystem {
                 if (Math.random() < this.config.STATIC_LINE_DRAW_CHANCE) {
                     const distance = Math.hypot(pB.x - pA.x, pB.y - pA.y);
                     if (distance < this.config.MAX_CONNECTION_DISTANCE) {
-                        const opacity = (1 - (distance / this.config.MAX_CONNECTION_DISTANCE)) * this.config.PROXIMITY_LINE_OPACITY;
+                        const opacity = (1 - (distance / this.config.MAX_CONNECTION_DISTANCE)) * (this.config.PROXIMITY_LINE_OPACITY || 0.5);
                         this.staticJaggedLines.push({
                             from: pA, to: pB,
                             color: `rgba(56, 189, 248, ${opacity})`,
@@ -290,7 +293,8 @@ class ParticleSystem {
                     pA.flashTTL = this.config.FIRING_DURATION;
                     pB.flashTTL = this.config.FIRING_DURATION;
                     this.travelingFires.push({
-                        from: pA, to: pB,
+                        from: pA,
+                        to: pB,
                         progress: 0,
                         speed: 1 / this.config.FIRING_DURATION,
                         depth: 0, // Initial fires start at depth 0
@@ -302,7 +306,6 @@ class ParticleSystem {
     }
 
     _triggerSecondaryFirings(originParticle, sourceParticle, qtree, currentDepth) {
-        // Stop propagating if we've reached the max depth
         if (currentDepth >= this.config.MAX_PROPAGATION_DEPTH) return;
 
         const range = new Rectangle(originParticle.x, originParticle.y, this.config.MAX_CONNECTION_DISTANCE, this.config.MAX_CONNECTION_DISTANCE);
@@ -322,7 +325,7 @@ class ParticleSystem {
                 to: targetParticle,
                 progress: 0,
                 speed: 1 / this.config.FIRING_DURATION,
-                depth: currentDepth + 1, // Increment depth for the new fire
+                depth: currentDepth + 1,
                 jaggedPointsCache: this._getDynamicJaggedPathPoints(originParticle, targetParticle, this.config.FIRING_LINE_ROUGHNESS, originParticle.x * 0.1 + targetParticle.y * 0.1, this.time)
             });
         }
@@ -335,17 +338,32 @@ class ParticleSystem {
 
             const hasArrived = fire.progress >= 1;
 
-            // Draw the visual effect
-            const sparkOpacity = Math.sin(Math.min(1, fire.progress) * Math.PI);
+            // --- Draw the full, underlying flashing path ---
+            const pathOpacity = Math.sin(Math.min(1, fire.progress) * Math.PI) * 0.6;
+            this.ctx.save();
+            this.ctx.strokeStyle = `rgba(125, 211, 252, ${pathOpacity})`;
+            this.ctx.lineWidth = this.config.FIRING_LINE_WIDTH;
             this.ctx.shadowColor = this.config.FIRING_SHADOW_COLOR;
-            this.ctx.shadowBlur = this.config.FIRING_SHADOW_BLUR * 1.5;
+            this.ctx.shadowBlur = this.config.FIRING_SHADOW_BLUR;
+            this.ctx.beginPath();
+            const path = fire.jaggedPointsCache;
+            if(path && path.length > 0){
+                this.ctx.moveTo(path[0].x, path[0].y);
+                for (let j = 1; j < path.length; j++) {
+                    this.ctx.lineTo(path[j].x, path[j].y);
+                }
+            }
+            this.ctx.stroke();
+            this.ctx.restore();
+
+            // --- Draw the bright signal segment on top ---
+            const sparkOpacity = Math.sin(Math.min(1, fire.progress) * Math.PI);
             this._drawJaggedLineSegment(
                 fire.jaggedPointsCache,
                 { color: `rgba(255, 255, 255, ${sparkOpacity})`, lineWidth: this.config.FIRING_LINE_WIDTH + 1 },
                 fire.progress,
                 this.config.TRAVELING_FIRE_LENGTH_RATIO
             );
-            this.ctx.shadowBlur = 0;
 
             // Handle arrival and propagation
             if (hasArrived) {
@@ -360,8 +378,11 @@ class ParticleSystem {
     _drawJaggedLineSegment(jaggedPoints, lineConfig, currentProgress, segmentLengthRatio) {
         if (!jaggedPoints || jaggedPoints.length < 2) return;
 
+        this.ctx.save();
         this.ctx.strokeStyle = lineConfig.color;
         this.ctx.lineWidth = lineConfig.lineWidth;
+        this.ctx.shadowColor = this.config.FIRING_SHADOW_COLOR;
+        this.ctx.shadowBlur = this.config.FIRING_SHADOW_BLUR * 1.5;
         this.ctx.beginPath();
 
         const totalPoints = jaggedPoints.length;
@@ -395,6 +416,7 @@ class ParticleSystem {
         const endPoint = getPointOnJaggedPath(segmentEndProgress);
         if (startPoint.x !== endPoint.x || startPoint.y !== endPoint.y) this.ctx.lineTo(endPoint.x, endPoint.y);
         this.ctx.stroke();
+        this.ctx.restore();
     }
     
     _debounce(func, delay) {
