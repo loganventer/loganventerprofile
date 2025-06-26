@@ -23,6 +23,7 @@
  * based on the signal's travel progress, not the global animation timer.
  * -   The signal can now be rendered as a 'dot' (default) or a 'line', configurable via `SIGNAL_STYLE`.
  * -   The signal now bounces back and forth between particles for a random duration (2-5 times) until the connection fades.
+ * -   Particles now have a "refractory period": once part of a firing connection, they cannot be targeted for a new one until the first connection fades.
  */
 
 // --- Quadtree Helper Classes (Essential for Performance) ---
@@ -235,13 +236,13 @@ class ParticleSystem {
 
     _handleConnections(qtree) {
         for (const pA of this.particlesArray) {
-            if (this.firingConnections.some(c => c.from === pA)) continue;
+            if (this.firingConnections.some(c => c.from === pA || c.to === pA)) continue;
 
             const range = new Rectangle(pA.x, pA.y, this.config.MAX_CONNECTION_DISTANCE, this.config.MAX_CONNECTION_DISTANCE);
             const nearbyParticles = qtree.query(range);
 
             for (const pB of nearbyParticles) {
-                if (pA === pB) continue;
+                if (pA === pB || this.firingConnections.some(c => c.from === pB || c.to === pB)) continue;
 
                 const dx = pA.x - pB.x;
                 const dy = pA.y - pB.y;
@@ -279,6 +280,13 @@ class ParticleSystem {
     }
 
     _drawFiringConnections(qtree) {
+        // --- MODIFIED: Create a set of active particles to enforce a refractory period ---
+        const activeParticles = new Set();
+        for (const c of this.firingConnections) {
+            activeParticles.add(c.from);
+            activeParticles.add(c.to);
+        }
+
         for (let i = this.firingConnections.length - 1; i >= 0; i--) {
             const conn = this.firingConnections[i];
             
@@ -294,8 +302,9 @@ class ParticleSystem {
                 if (!conn.hasPropagated && conn.isPrimary) {
                     const propagator = conn.to;
                     const numToFire = Math.floor(Math.random() * 2) + 1;
+                    // --- MODIFIED: Filter out particles that are already active ---
                     const potentialTargets = qtree.query(new Rectangle(propagator.x, propagator.y, this.config.MAX_CONNECTION_DISTANCE, this.config.MAX_CONNECTION_DISTANCE))
-                                                 .filter(p => p !== propagator && p !== conn.from);
+                                                 .filter(p => p !== propagator && p !== conn.from && !activeParticles.has(p));
 
                     for (let j = 0; j < numToFire && potentialTargets.length > 0; j++) {
                         const targetIndex = Math.floor(Math.random() * potentialTargets.length);
@@ -397,7 +406,6 @@ class ParticleSystem {
                 if (dotPos) {
                     const radius = (this.config.SIGNAL_HEAD_WIDTH / 2) + pulse;
                     this.ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-                    // --- FIX: Corrected typo in variable name ---
                     this.ctx.shadowColor = this.config.SIGNAL_HEAD_GLOW_COLOR;
                     this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR + (pulse * 2);
                     this.ctx.beginPath();
