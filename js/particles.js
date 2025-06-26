@@ -136,7 +136,7 @@ class ParticleSystem {
             PARTICLE_COLOR: '#38BDF8',
             MIN_RADIUS: 2,
             MAX_RADIUS: 4,
-            INITIAL_VELOCITY_RANGE: 0.35,
+            INITIAL_VELOCITY_RANGE: 0.117, // Slowed down 3x
             PARTICLES_PER_PIXEL_DENSITY: 35000,
             MAX_CONNECTION_DISTANCE: 250,
             MOBILE_BREAKPOINT: 768,
@@ -147,16 +147,16 @@ class ParticleSystem {
             PROXIMITY_LINE_WIDTH: 0.8,
             PROXIMITY_LINE_ROUGHNESS: 6,
             FIRING_CHANCE: 0.0003,
-            FIRING_DURATION: 60, // Increased duration to see bounces
+            FIRING_DURATION: 60, // Slowed down 3x (was 120)
             PROPAGATION_CHANCE: 0.9,
             FIRING_LINE_WIDTH: 3, 
             FIRING_LINE_ROUGHNESS: 12,
             PARTICLE_SHADOW_BLUR: 15,
             PARTICLE_FLASH_RADIUS_BOOST: 3,
             PARTICLE_FLASH_GLOW_BOOST: 15,
-            WOBBLE_SPEED: 0.002,
+            WOBBLE_SPEED: 0.00067, // Slowed down 3x
             SIGNAL_STYLE: 'dot', 
-            SIGNAL_HEAD_LENGTH: 0.05,
+            SIGNAL_HEAD_LENGTH: 0.35,
             SIGNAL_HEAD_WIDTH: 5,
             SIGNAL_HEAD_COLOR: 'rgba(255, 255, 255, 1)',
             SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.9)',
@@ -267,7 +267,7 @@ class ParticleSystem {
                             progress: 0,
                             alpha: 1,
                             isPrimary: true,
-                            bounces: Math.floor(Math.random() * 2) + 2,
+                            bounces: Math.floor(Math.random() * 4) + 2,
                             direction: 1,
                             hasPropagated: false,
                         });
@@ -280,7 +280,6 @@ class ParticleSystem {
     }
 
     _drawFiringConnections(qtree) {
-        // --- MODIFIED: Create a set of active particles to enforce a refractory period ---
         const activeParticles = new Set();
         for (const c of this.firingConnections) {
             activeParticles.add(c.from);
@@ -302,7 +301,6 @@ class ParticleSystem {
                 if (!conn.hasPropagated && conn.isPrimary) {
                     const propagator = conn.to;
                     const numToFire = Math.floor(Math.random() * 2) + 1;
-                    // --- MODIFIED: Filter out particles that are already active ---
                     const potentialTargets = qtree.query(new Rectangle(propagator.x, propagator.y, this.config.MAX_CONNECTION_DISTANCE, this.config.MAX_CONNECTION_DISTANCE))
                                                  .filter(p => p !== propagator && p !== conn.from && !activeParticles.has(p));
 
