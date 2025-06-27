@@ -124,7 +124,7 @@ body {
 
 /* Section Content & Cards */
 .content-card {
-    background-color: rgba(31, 41, 55, 0.9); /* Adjusted for better readability on dark bg */
+    background-color: rgba(31, 41, 55, 0.8); /* Adjusted for better readability on dark bg */
     color: #E5E7EB; /* Text color that works well with this bg */
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
