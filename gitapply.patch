@@ -1,81 +1,66 @@
-diff --git a/.gitignore b/.gitignore
-new file mode 100644
-index 0000000000000000000000000000000000000000..21c35ba3c1439611cbe85fbca3beedea5eeca848
---- /dev/null
-+++ b/.gitignore
-@@ -0,0 +1,18 @@
-+# Node and general build artifacts
-+node_modules/
-+dist/
-+.env
-+.DS_Store
-+Thumbs.db
+diff --git a/js/particles.js b/js/particles.js
+index 7847895601108e92a16295c31b265bc8d1c81a6e..7e536af0fdc9f15e2d621640be28f292e963fe6c 100644
+--- a/js/particles.js
++++ b/js/particles.js
+@@ -72,54 +72,57 @@ class Quadtree {
+         let w = this.boundary.w / 2;
+         let h = this.boundary.h / 2;
+         let ne = new Rectangle(x + w, y - h, w, h);
+         this.northeast = new Quadtree(ne, this.capacity);
+         let nw = new Rectangle(x - w, y - h, w, h);
+         this.northwest = new Quadtree(nw, this.capacity);
+         let se = new Rectangle(x + w, y + h, w, h);
+         this.southeast = new Quadtree(se, this.capacity);
+         let sw = new Rectangle(x - w, y + h, w, h);
+         this.southwest = new Quadtree(sw, this.capacity);
+         this.divided = true;
+     }
+ 
+     insert(point) {
+         if (!this.boundary.contains(point)) {
+             return false;
+         }
+ 
+         if (this.points.length < this.capacity) {
+             this.points.push(point);
+             return true;
+         } else {
+             if (!this.divided) {
+                 this.subdivide();
+             }
+-            this.northeast.insert(point);
+-            this.northwest.insert(point);
+-            this.southeast.insert(point);
+-            this.southwest.insert(point);
 +
-+# VSCode settings
-+.vscode/
++            if (this.northeast.insert(point)) return true;
++            if (this.northwest.insert(point)) return true;
++            if (this.southeast.insert(point)) return true;
++            if (this.southwest.insert(point)) return true;
 +
-+# Logs
-+npm-debug.log*
-+yarn-debug.log*
-+yarn-error.log*
-+
-+# Mac files
-+*.DS_Store
-+
-diff --git a/LICENSE b/LICENSE
-new file mode 100644
-index 0000000000000000000000000000000000000000..6fd5a0c8a5df7176b848f32ba9a03e5db866f758
---- /dev/null
-+++ b/LICENSE
-@@ -0,0 +1,21 @@
-+MIT License
-+
-+Copyright (c) 2025 Logan Venter
-+
-+Permission is hereby granted, free of charge, to any person obtaining a copy
-+of this software and associated documentation files (the "Software"), to deal
-+in the Software without restriction, including without limitation the rights
-+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-+copies of the Software, and to permit persons to whom the Software is
-+furnished to do so, subject to the following conditions:
-+
-+The above copyright notice and this permission notice shall be included in all
-+copies or substantial portions of the Software.
-+
-+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-+SOFTWARE.
-diff --git a/README.md b/README.md
-new file mode 100644
-index 0000000000000000000000000000000000000000..f0ea56e7db1cfe3e27aa9e7d9f5192f10bf7da9c
---- /dev/null
-+++ b/README.md
-@@ -0,0 +1,24 @@
-+# Logan Venter Profile
-+
-+This repository hosts the source code for Logan Venter's personal portfolio website. The site is built using standard HTML, Tailwind CSS and vanilla JavaScript.
-+
-+## Project Structure
-+
-+- `index.html` – the main entry page.
-+- `css/` – custom style sheets.
-+- `js/` – JavaScript files providing interactivity.
-+- `assets/` – images and documents used by the site.
-+
-+## Usage
-+
-+Open `index.html` directly in a browser or serve the directory with any static web server:
-+
-+```bash
-+npx serve .
-+```
-+
-+No build step is required. Simply modify the files and refresh your browser during development.
-+
-+## License
-+
-+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
++            return false;
+         }
+     }
+ 
+     query(range, found) {
+         if (!found) {
+             found = [];
+         }
+         if (!this.boundary.intersects(range)) {
+             return found;
+         } else {
+             for (let p of this.points) {
+                 if (range.contains(p)) {
+                     found.push(p.data);
+                 }
+             }
+             if (this.divided) {
+                 this.northwest.query(range, found);
+                 this.northeast.query(range, found);
+                 this.southwest.query(range, found);
+                 this.southeast.query(range, found);
+             }
+         }
+         return found;
+     }
+ }

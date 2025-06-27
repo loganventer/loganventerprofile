@@ -94,10 +94,13 @@ class Quadtree {
             if (!this.divided) {
                 this.subdivide();
             }
-            this.northeast.insert(point);
-            this.northwest.insert(point);
-            this.southeast.insert(point);
-            this.southwest.insert(point);
+
+            if (this.northeast.insert(point)) return true;
+            if (this.northwest.insert(point)) return true;
+            if (this.southeast.insert(point)) return true;
+            if (this.southwest.insert(point)) return true;
+
+            return false;
         }
     }
 
