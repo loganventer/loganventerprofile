@@ -147,16 +147,16 @@ class ParticleSystem {
             PROXIMITY_LINE_WIDTH: 0.8,
             PROXIMITY_LINE_ROUGHNESS: 6,
             FIRING_CHANCE: 0.0003,
-            FIRING_DURATION: 360, // Slowed down 3x (was 120)
-            PROPAGATION_CHANCE: 0.2,
-            FIRING_LINE_WIDTH: 3, 
+            FIRING_DURATION: 240, // Slowed down 3x (was 120)
+            PROPAGATION_CHANCE: 0.1,
+            FIRING_LINE_WIDTH: 2, 
             FIRING_LINE_ROUGHNESS: 12,
             PARTICLE_SHADOW_BLUR: 15,
             PARTICLE_FLASH_RADIUS_BOOST: 3,
             PARTICLE_FLASH_GLOW_BOOST: 15,
             WOBBLE_SPEED: 0.00067, // Slowed down 3x
             SIGNAL_STYLE: 'dot', 
-            SIGNAL_HEAD_LENGTH: 0.1,
+            SIGNAL_HEAD_LENGTH: 0.01,
             SIGNAL_HEAD_WIDTH: 5,
             SIGNAL_HEAD_COLOR: 'rgba(255, 255, 255, 1)',
             SIGNAL_HEAD_GLOW_COLOR: 'rgba(255, 255, 255, 0.9)',
