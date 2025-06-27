@@ -1,66 +1,57 @@
-diff --git a/js/particles.js b/js/particles.js
-index 7847895601108e92a16295c31b265bc8d1c81a6e..7e536af0fdc9f15e2d621640be28f292e963fe6c 100644
---- a/js/particles.js
-+++ b/js/particles.js
-@@ -72,54 +72,57 @@ class Quadtree {
-         let w = this.boundary.w / 2;
-         let h = this.boundary.h / 2;
-         let ne = new Rectangle(x + w, y - h, w, h);
-         this.northeast = new Quadtree(ne, this.capacity);
-         let nw = new Rectangle(x - w, y - h, w, h);
-         this.northwest = new Quadtree(nw, this.capacity);
-         let se = new Rectangle(x + w, y + h, w, h);
-         this.southeast = new Quadtree(se, this.capacity);
-         let sw = new Rectangle(x - w, y + h, w, h);
-         this.southwest = new Quadtree(sw, this.capacity);
-         this.divided = true;
-     }
- 
-     insert(point) {
-         if (!this.boundary.contains(point)) {
-             return false;
+diff --git a/js/main.js b/js/main.js
+index a5809d6613210d5f752b34083f87f1898fc7e1eb..91bac1f3965bb9c8b7dbcaf6a60f7f03d6a95ba0 100644
+--- a/js/main.js
++++ b/js/main.js
+@@ -14,51 +14,51 @@ document.addEventListener('DOMContentLoaded', () => {
+      * We attach this to the window object so it can be called from the inline onclick="" attributes in the HTML.
+      * @param {string} sectionId - The ID of the section to show.
+      * @param {HTMLElement} [element] - The navigation element that was clicked.
+      */
+     window.showSection = function(sectionId, element) {
+         if (sectionId === currentActiveSection && document.querySelector('.section.active')) return;
+         
+         // Hide all sections
+         document.querySelectorAll('.section').forEach(section => {
+             section.classList.remove('active');
+         });
+         
+         // Show the target section
+         const targetSection = document.getElementById(sectionId);
+         if (targetSection) {
+             targetSection.classList.add('active');
          }
+         currentActiveSection = sectionId;
  
-         if (this.points.length < this.capacity) {
-             this.points.push(point);
-             return true;
+         // Update active state on navigation items
+         document.querySelectorAll('.nav-item').forEach(item => {
+             item.classList.remove('nav-item-active');
+         });
+         
+         if (element && !element.closest('.dropdown')) {
+-            // This is a direct nav link (e.g., "About Me")
++            // Handles direct navigation links
+             element.classList.add('nav-item-active');
+         } else if (element) {
+             // This is a link inside a dropdown
+             let parentDropdown = element.closest('.dropdown');
+             if (parentDropdown) {
+                 parentDropdown.querySelector('.nav-item').classList.add('nav-item-active');
+             }
          } else {
-             if (!this.divided) {
-                 this.subdivide();
+             // Fallback for the initial page load
+             const aboutLink = document.querySelector('a.nav-item[onclick*="\'about\'"]');
+             if (aboutLink) {
+                 aboutLink.classList.add('nav-item-active');
              }
--            this.northeast.insert(point);
--            this.northwest.insert(point);
--            this.southeast.insert(point);
--            this.southwest.insert(point);
-+
-+            if (this.northeast.insert(point)) return true;
-+            if (this.northwest.insert(point)) return true;
-+            if (this.southeast.insert(point)) return true;
-+            if (this.southwest.insert(point)) return true;
-+
-+            return false;
          }
      }
  
-     query(range, found) {
-         if (!found) {
-             found = [];
-         }
-         if (!this.boundary.intersects(range)) {
-             return found;
-         } else {
-             for (let p of this.points) {
-                 if (range.contains(p)) {
-                     found.push(p.data);
-                 }
-             }
-             if (this.divided) {
-                 this.northwest.query(range, found);
-                 this.northeast.query(range, found);
-                 this.southwest.query(range, found);
-                 this.southeast.query(range, found);
-             }
-         }
-         return found;
+     /**
+      * Toggles the mobile menu visibility.
+      * Also attached to the window object for inline onclick calls.
+      */
+     window.toggleMobileMenu = function() {
+         const isOpen = mobileMenuContainer.classList.toggle('menu-open');
+         mobileMenu.classList.toggle('menu-open');
+         document.body.classList.toggle('body-no-scroll', isOpen);
      }
- }

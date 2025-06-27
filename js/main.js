@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         if (element && !element.closest('.dropdown')) {
-            // This is a direct nav link (e.g., "About Me")
+            // Handles direct navigation links
             element.classList.add('nav-item-active');
         } else if (element) {
             // This is a link inside a dropdown
