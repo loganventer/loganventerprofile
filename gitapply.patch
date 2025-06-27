@@ -1,57 +1,57 @@
-diff --git a/js/main.js b/js/main.js
-index a5809d6613210d5f752b34083f87f1898fc7e1eb..91bac1f3965bb9c8b7dbcaf6a60f7f03d6a95ba0 100644
---- a/js/main.js
-+++ b/js/main.js
-@@ -14,51 +14,51 @@ document.addEventListener('DOMContentLoaded', () => {
-      * We attach this to the window object so it can be called from the inline onclick="" attributes in the HTML.
-      * @param {string} sectionId - The ID of the section to show.
-      * @param {HTMLElement} [element] - The navigation element that was clicked.
-      */
-     window.showSection = function(sectionId, element) {
-         if (sectionId === currentActiveSection && document.querySelector('.section.active')) return;
-         
-         // Hide all sections
-         document.querySelectorAll('.section').forEach(section => {
-             section.classList.remove('active');
-         });
-         
-         // Show the target section
-         const targetSection = document.getElementById(sectionId);
-         if (targetSection) {
-             targetSection.classList.add('active');
-         }
-         currentActiveSection = sectionId;
+diff --git a/index.html b/index.html
+index 25006d86adcf440c2135bcd1aad9d8ba6e7986a6..bf3ae2213dfb87aef818b4b9830a1902a0224e4f 100644
+--- a/index.html
++++ b/index.html
+@@ -481,51 +481,51 @@
+                     <li>Computer Studies - B</li>
+                     <li>Mathematics - E</li>
+                  </ul>
+                  <p class="mt-4">Recipient of the Computer Training Institute floating trophy for the best student in computer studies (2002).</p>
+                  <p class="mt-2">Completed entire Matric Computer Studies syllabus in Grade 10 and coded first primitive graphics program in the same year.</p>
+             </div>
+         </section>
  
-         // Update active state on navigation items
-         document.querySelectorAll('.nav-item').forEach(item => {
-             item.classList.remove('nav-item-active');
-         });
+         <section id="skills-languages" class="section">
+              <div class="content-card p-8">
+                 <h2 class="text-3xl font-bold mb-4">Programming Languages</h2>
+                 <div class="space-y-4">
+                     <div>
+                         <h3 class="text-xl font-semibold text-sky-600">C# &amp; .NET Ecosystem</h3>
+                         <p>Architecting and developing high-performance, scalable back-end services and APIs as my primary specialty. Deep, expert-level proficiency across the full framework, from legacy systems to .NET 8.</p>
+                     </div>
+                     <div>
+                         <h3 class="text-xl font-semibold text-sky-600">SQL (T-SQL/General)</h3>
+                         <p>Designing and implementing complex database schemas, writing optimized queries, and ensuring data integrity for mission-critical financial and communication systems.</p>
+                     </div>
+                     <div>
+                         <h3 class="text-xl font-semibold text-sky-600">C++</h3>
+                         <p>Utilized for performance-critical components in secure communications applications, interfacing directly with low-level libraries and protocols.</p>
+                     </div>
+                      <div>
+-                        <h3 class="text-xl font-semibold text-sky-600">Web Technologies (ASP.NET, Javascript)</h3>
++                        <h3 class="text-xl font-semibold text-sky-600">Web Technologies (ASP.NET, JavaScript)</h3>
+                         <p>Building and maintaining both the front-end and back-end logic for comprehensive web-based enterprise systems.</p>
+                     </div>
+                     <div>
+                         <h3 class="text-xl font-semibold text-sky-600">Legacy &amp; Other (COBOL, Delphi, VB)</h3>
+                         <p>Foundational experience in maintaining and developing for legacy systems, demonstrating a broad and adaptable understanding of different programming paradigms.</p>
+                     </div>
+                 </div>
+             </div>
+         </section>
          
-         if (element && !element.closest('.dropdown')) {
--            // This is a direct nav link (e.g., "About Me")
-+            // Handles direct navigation links
-             element.classList.add('nav-item-active');
-         } else if (element) {
-             // This is a link inside a dropdown
-             let parentDropdown = element.closest('.dropdown');
-             if (parentDropdown) {
-                 parentDropdown.querySelector('.nav-item').classList.add('nav-item-active');
-             }
-         } else {
-             // Fallback for the initial page load
-             const aboutLink = document.querySelector('a.nav-item[onclick*="\'about\'"]');
-             if (aboutLink) {
-                 aboutLink.classList.add('nav-item-active');
-             }
-         }
-     }
- 
-     /**
-      * Toggles the mobile menu visibility.
-      * Also attached to the window object for inline onclick calls.
-      */
-     window.toggleMobileMenu = function() {
-         const isOpen = mobileMenuContainer.classList.toggle('menu-open');
-         mobileMenu.classList.toggle('menu-open');
-         document.body.classList.toggle('body-no-scroll', isOpen);
-     }
+         <section id="skills-frameworks" class="section">
+             <div class="content-card p-8">
+                 <h2 class="text-3xl font-bold mb-4">Frameworks &amp; Methodologies</h2>
+                 <div class="space-y-4">
+                     <div>
+                         <h3 class="text-xl font-semibold text-sky-600">Back-end &amp; API Development</h3>
+                         <p>Specializing in the design and implementation of robust, secure, and scalable RESTful APIs for complex domains like fund management and secure communications.</p>
+                     </div>
+                      <div>
+                         <h3 class="text-xl font-semibold text-sky-600">AI &amp; LLM Integration</h3>
+                         <p>Pioneering the design and implementation of AI-driven applications. Extensive hands-on experience with dynamic prompt generation and execution, leveraging models from OpenAI, Ollama, and DeepSeek. Architected systems for interpreting JSON definitions, recursive chaining for complex queries, and building flexible, reusable prompt components.</p>
+                     </div>
+                     <div>
+                         <h3 class="text-xl font-semibold text-sky-600">CI/CD &amp; DevOps</h3>
+                         <p>Driving the implementation and maintenance of full continuous integration and continuous delivery pipelines using tools like Bamboo and Azure DevOps to streamline workflows and improve release velocity.</p>
