@@ -12,6 +12,11 @@ body {
     overflow: hidden;
 }
 
+/* Loading Overlay */
+#loading-overlay {
+    transition: opacity 0.3s ease;
+}
+
 /* Canvas Background */
 #neural-canvas {
     position: fixed;
@@ -159,10 +164,18 @@ body {
 /* Section visibility and animation */
 .section {
     display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 .section.active {
     display: block;
+    opacity: 1;
     animation: fadeInUp 0.8s ease forwards;
+}
+
+/* Intersection Observer Animation */
+.section-visible {
+    animation: slideInFromBottom 0.6s ease forwards;
 }
 
 .profile-pic {
@@ -174,8 +187,69 @@ body {
 }
 
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+@keyframes slideInFromBottom {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Focus styles for accessibility */
+.nav-item:focus,
+.btn-primary:focus,
+.dropdown-content a:focus {
+    outline: 2px solid #38BDF8;
+    outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .content-card:hover {
+        transform: none;
+    }
+    
+    .profile-pic:hover {
+        transform: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .content-card {
+        border: 2px solid #FFFFFF;
+    }
+    
+    .nav-item-active {
+        background-color: #38BDF8;
+        color: #000000;
+    }
 }
 
 .flow-root::after {

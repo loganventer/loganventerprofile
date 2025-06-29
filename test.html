@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Test</title>
+    <style>
+        .section { display: none; }
+        .section.active { display: block; }
+        .nav-item { cursor: pointer; color: blue; }
+        .nav-item-active { color: red; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" class="nav-item" onclick="showSection('about', this)">About</a>
+        <a href="#" class="nav-item" onclick="showSection('experience', this)">Experience</a>
+        <a href="#" class="nav-item" onclick="showSection('skills', this)">Skills</a>
+    </nav>
+
+    <section id="about" class="section active">
+        <h2>About</h2>
+        <p>This is the about section.</p>
+    </section>
+
+    <section id="experience" class="section">
+        <h2>Experience</h2>
+        <p>This is the experience section.</p>
+    </section>
+
+    <section id="skills" class="section">
+        <h2>Skills</h2>
+        <p>This is the skills section.</p>
+    </section>
+
+    <script>
+        function showSection(sectionId, element) {
+            console.log('showSection called with:', sectionId, element);
+            
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show the target section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            } else {
+                console.error('Target section not found:', sectionId);
+            }
+
+            // Update active state on navigation items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('nav-item-active');
+            });
+            
+            if (element) {
+                element.classList.add('nav-item-active');
+            }
+        }
+    </script>
+</body>
+</html> 
