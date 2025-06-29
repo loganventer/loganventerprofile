@@ -286,6 +286,9 @@ class ParticleSystem {
             this.config.PARTICLE_FLASH_GLOW_BOOST *= 1.3;  // Increase flash glow
             this.config.LINE_SHADOW_BLUR *= 1.2;  // Increase line shadow blur
             this.config.SIGNAL_HEAD_GLOW_BLUR *= 1.2;  // Increase signal head glow
+            
+            // Increase dendrite intensity for better mobile visibility
+            this.config.STATIC_DENDRITE_OPACITY *= 2.0;  // Double the dendrite visibility
         }
     }
 
