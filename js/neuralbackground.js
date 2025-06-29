@@ -287,9 +287,14 @@ class ParticleSystem {
             this.config.LINE_SHADOW_BLUR *= 1.2;  // Increase line shadow blur
             this.config.SIGNAL_HEAD_GLOW_BLUR *= 1.2;  // Increase signal head glow
             
-            // Significantly increase firing dendrite visibility for mobile
-            this.config.FIRING_LINE_WIDTH *= 2.0;  // Double the firing line thickness
-            this.config.FIRING_CHANCE *= 2.0;  // Double the firing frequency to compensate for initial reduction
+            // Make firing dendrites REALLY pop on mobile
+            this.config.FIRING_LINE_WIDTH *= 6.0;  // 6x the firing line thickness
+            this.config.FIRING_CHANCE *= 4.0;  // 4x the firing frequency
+            this.config.LINE_SHADOW_BLUR *= 3.0;  // 3x the line shadow blur for more glow
+            this.config.SIGNAL_HEAD_GLOW_BLUR *= 3.0;  // 3x the signal head glow
+            this.config.SIGNAL_HEAD_WIDTH *= 2.0;  // Double signal head size
+            this.config.PARTICLE_FLASH_RADIUS_BOOST *= 3.0;  // 3x particle flash radius
+            this.config.PARTICLE_FLASH_GLOW_BOOST *= 3.0;  // 3x particle flash glow
         }
     }
 
@@ -523,7 +528,7 @@ class ParticleSystem {
         this.ctx.save();
 
         this.ctx.strokeStyle = color.replace('OPACITY', opacity.toString());
-        this.ctx.lineWidth = this.config.STATIC_DENDRITE_LINE_WIDTH;
+        this.ctx.lineWidth = lineWidth;
         this.ctx.shadowColor = this.config.LINE_SHADOW_COLOR;
         this.ctx.shadowBlur = this.config.LINE_SHADOW_BLUR;
         this.ctx.beginPath();
