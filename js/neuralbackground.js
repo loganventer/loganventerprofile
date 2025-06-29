@@ -284,13 +284,12 @@ class ParticleSystem {
             // Increase brightness for mobile visibility instead of reducing it
             this.config.PARTICLE_SHADOW_BLUR *= 1.5;  // Increase blur for more glow
             this.config.PARTICLE_FLASH_GLOW_BOOST *= 1.3;  // Increase flash glow
-            this.config.LINE_SHADOW_BLUR *= 1.2;  // Increase line shadow blur
+            this.config.LINE_SHADOW_BLUR = this.config.FIRING_LINE_WIDTH + 1;  // Just 1px wider than the line width
             this.config.SIGNAL_HEAD_GLOW_BLUR *= 1.2;  // Increase signal head glow
             
             // Make firing dendrite LINES visible but not too thick on mobile
             this.config.FIRING_LINE_WIDTH = this.config.STATIC_DENDRITE_LINE_WIDTH + 2;  // Just 2px wider than normal dendrites
             this.config.FIRING_CHANCE *= 6.0;  // 6x the firing frequency for more activity
-            this.config.LINE_SHADOW_BLUR *= 6.0;  // 6x the line shadow blur for brightness
         }
     }
 
