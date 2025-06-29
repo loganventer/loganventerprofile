@@ -280,7 +280,12 @@ class ParticleSystem {
             // Reduce particle count and effects for better performance
             this.config.PARTICLES_PER_PIXEL_DENSITY *= 0.7;
             this.config.FIRING_CHANCE *= 0.5;
-            this.config.PARTICLE_SHADOW_BLUR *= 0.5;
+            
+            // Increase brightness for mobile visibility instead of reducing it
+            this.config.PARTICLE_SHADOW_BLUR *= 1.5;  // Increase blur for more glow
+            this.config.PARTICLE_FLASH_GLOW_BOOST *= 1.3;  // Increase flash glow
+            this.config.LINE_SHADOW_BLUR *= 1.2;  // Increase line shadow blur
+            this.config.SIGNAL_HEAD_GLOW_BLUR *= 1.2;  // Increase signal head glow
         }
     }
 
