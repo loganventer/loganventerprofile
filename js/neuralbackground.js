@@ -287,8 +287,9 @@ class ParticleSystem {
             this.config.LINE_SHADOW_BLUR *= 1.2;  // Increase line shadow blur
             this.config.SIGNAL_HEAD_GLOW_BLUR *= 1.2;  // Increase signal head glow
             
-            // Increase dendrite intensity for better mobile visibility
-            this.config.STATIC_DENDRITE_OPACITY *= 2.0;  // Double the dendrite visibility
+            // Significantly increase firing dendrite visibility for mobile
+            this.config.FIRING_LINE_WIDTH *= 2.0;  // Double the firing line thickness
+            this.config.FIRING_CHANCE *= 2.0;  // Double the firing frequency to compensate for initial reduction
         }
     }
 

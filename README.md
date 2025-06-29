@@ -2,6 +2,34 @@
 
 This repository hosts the source code for Logan Venter's personal portfolio website. The site is built using standard HTML, Tailwind CSS and vanilla JavaScript with advanced performance optimizations and PWA capabilities.
 
+## Recent Updates
+
+- **Mobile Neural Visibility** - Enhanced firing dendrite visibility on mobile devices with increased line width and firing frequency
+- **Performance Optimizations** - Automatic brightness scaling for different screen types and device capabilities
+- **Accessibility Improvements** - Better contrast and visibility across devices
+
+## Quick Start
+
+```bash
+# Clone the repository
+git clone [repository-url]
+cd loganventer
+
+# Open in browser (no build process required)
+open index.html
+
+# Or serve with a local server
+npx serve .
+```
+
+## Dependencies
+
+This project uses only vanilla technologies:
+- HTML5
+- CSS3 (with Tailwind CSS classes)
+- Vanilla JavaScript (ES6+)
+- No build tools or package managers required
+
 ## Features
 
 ### 🚀 Performance & User Experience
