@@ -741,7 +741,7 @@
       canvas.width = w * scale;
       canvas.height = h * scale;
       var ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#1e293b";
+      ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       URL.revokeObjectURL(url);
