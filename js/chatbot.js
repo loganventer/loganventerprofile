@@ -601,12 +601,19 @@
 
   function renderMermaidBlocks(container) {
     if (typeof mermaid === "undefined") return;
-    // Use same approach as Featured Projects: find pre.mermaid, delay, then run
     setTimeout(function () {
       var nodes = container.querySelectorAll("pre.mermaid:not([data-processed])");
       if (nodes.length === 0) return;
       try {
-        mermaid.run({ nodes: nodes });
+        var result = mermaid.run({ nodes: nodes });
+        if (result && result.then) {
+          result.then(function() {
+            if (typeof window.updateMermaidTheme === 'function') {
+              var theme = document.documentElement.getAttribute('data-theme') || 'dark';
+              window.updateMermaidTheme(theme);
+            }
+          });
+        }
       } catch (e) {
         // Fallback: leave raw text visible
       }

@@ -523,8 +523,8 @@ html {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    max-height: calc(100dvh - 340px);
-    min-height: 300px;
+    height: calc(100dvh - 260px);
+    min-height: 400px;
 }
 
 .chatbot-messages {
@@ -825,6 +825,16 @@ html {
 [data-theme="light"] .chat-mermaid-block .edgeLabel span { color: #e2e8f0 !important; }
 [data-theme="light"] .chat-mermaid-block .edgeLabel rect,
 [data-theme="light"] .chat-mermaid-block .edgeLabel polygon { fill: #1e293b !important; }
+/* Chatbot mermaid always on dark background - force dark node fills */
+.chat-mermaid-block .node rect,
+.chat-mermaid-block .node polygon,
+.chat-mermaid-block .node circle { fill: #1e293b !important; }
+.chat-mermaid-block .nodeLabel { color: #e2e8f0 !important; }
+.chat-mermaid-block .edgeLabel rect,
+.chat-mermaid-block .edgeLabel polygon { fill: #1e293b !important; stroke: none !important; }
+.chat-mermaid-block .edgeLabel span { color: #e2e8f0 !important; }
+.chat-mermaid-block .flowchart-link { stroke: #64748b !important; }
+.chat-mermaid-block marker path { fill: #64748b !important; stroke: #64748b !important; }
 .chat-mermaid-block svg {
     max-width: 100%;
     height: auto;
