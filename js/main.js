@@ -97,21 +97,40 @@ window.updateMermaidTheme = function(theme) {
         });
     });
 
-    // === Chatbot diagrams (theme-aware: pastels in light, dark fills in dark) ===
-    var chatFill   = isLight ? '#dbeafe' : '#1d4ed8';
-    var chatStroke = '#60a5fa';
-    var chatText   = isLight ? '#1e293b' : '#dbeafe';
+    // === Chatbot diagrams (varied node colors from expanded palette) ===
+    var chatNodePalettes = isLight ? [
+        { fill: '#dbeafe', stroke: '#60a5fa', text: '#1e40af' },
+        { fill: '#d1fae5', stroke: '#34d399', text: '#065f46' },
+        { fill: '#fef3c7', stroke: '#fbbf24', text: '#92400e' },
+        { fill: '#ede9fe', stroke: '#a78bfa', text: '#5b21b6' },
+        { fill: '#fce7f3', stroke: '#f472b6', text: '#9d174d' },
+        { fill: '#cffafe', stroke: '#22d3ee', text: '#155e75' },
+        { fill: '#ffedd5', stroke: '#fb923c', text: '#9a3412' },
+        { fill: '#e0e7ff', stroke: '#818cf8', text: '#3730a3' }
+    ] : [
+        { fill: '#1e3a5f', stroke: '#3b82f6', text: '#93c5fd' },
+        { fill: '#1a3a2a', stroke: '#10b981', text: '#6ee7b7' },
+        { fill: '#3b2a1a', stroke: '#f59e0b', text: '#fcd34d' },
+        { fill: '#2a1a3b', stroke: '#8b5cf6', text: '#c4b5fd' },
+        { fill: '#3b1a2a', stroke: '#f472b6', text: '#fbcfe8' },
+        { fill: '#1a3b3b', stroke: '#22d3ee', text: '#a5f3fc' },
+        { fill: '#3b2514', stroke: '#fb923c', text: '#fed7aa' },
+        { fill: '#1e1a3b', stroke: '#818cf8', text: '#c7d2fe' }
+    ];
     var chatEdgeBg = isLight ? '#e2e8f0' : '#0f172a';
     var chatEdgeText = isLight ? '#334155' : '#cbd5e1';
-    var chatLine   = isLight ? '#94a3b8' : '#64748b';
+    var chatLine = isLight ? '#94a3b8' : '#64748b';
 
     document.querySelectorAll('.chat-mermaid-block svg').forEach(function(svg) {
-        svg.querySelectorAll('.node rect, .node polygon, .node circle').forEach(function(el) {
-            el.style.setProperty('fill', chatFill, 'important');
-            el.style.setProperty('stroke', chatStroke, 'important');
-        });
-        svg.querySelectorAll('.nodeLabel').forEach(function(el) {
-            el.style.setProperty('color', chatText, 'important');
+        svg.querySelectorAll('.node').forEach(function(node, i) {
+            var p = chatNodePalettes[i % chatNodePalettes.length];
+            node.querySelectorAll('rect, polygon, circle').forEach(function(el) {
+                el.style.setProperty('fill', p.fill, 'important');
+                el.style.setProperty('stroke', p.stroke, 'important');
+            });
+            node.querySelectorAll('.nodeLabel').forEach(function(el) {
+                el.style.setProperty('color', p.text, 'important');
+            });
         });
         svg.querySelectorAll('.edgeLabel rect, .edgeLabel polygon').forEach(function(el) {
             el.style.setProperty('fill', chatEdgeBg, 'important');
