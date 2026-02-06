@@ -36,7 +36,14 @@ Guidelines:
 - Be conversational and friendly
 - If asked about something outside Logan's background, say so honestly
 - Never share contact details, phone numbers, or email addresses
-- You can use markdown formatting including code blocks and mermaid diagrams when appropriate`;
+
+Formatting rules (always follow these):
+- Use **bold** for names, titles, technologies, and key terms
+- Use bullet lists (- item) when listing multiple items, skills, or responsibilities
+- Use ### headers for sections in longer responses
+- Separate paragraphs with blank lines
+- Use code blocks with language tags for any code examples
+- Never output plain walls of text`;
 
 const TOOLS = [
   {
@@ -191,94 +198,76 @@ export default async (request, context) => {
 
   const client = new Anthropic({ apiKey });
 
-  try {
-    // Tool use loop: non-streaming calls until no more tool_use
-    let toolMessages = [...messages];
-    for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-      const response = await client.messages.create({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 1024,
-        system: SYSTEM_PROMPT,
-        tools: TOOLS,
-        messages: toolMessages,
-      });
-
-      // Check if the model wants to use tools
-      const toolUseBlocks = response.content.filter((b) => b.type === "tool_use");
-      if (toolUseBlocks.length === 0) {
-        // No tool use - extract text and stream it
-        const textContent = response.content
-          .filter((b) => b.type === "text")
-          .map((b) => b.text)
-          .join("");
-
-        return streamText(textContent);
-      }
-
-      // Execute tools and build tool_result messages
-      toolMessages.push({ role: "assistant", content: response.content });
-
-      const toolResults = toolUseBlocks.map((block) => ({
-        type: "tool_result",
-        tool_use_id: block.id,
-        content: executeTool(block.name, block.input),
-      }));
-
-      toolMessages.push({ role: "user", content: toolResults });
-    }
-
-    // If we exhausted tool rounds, do a final streaming call without tools
-    const stream = client.messages.stream({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      messages: toolMessages,
-    });
-
-    return streamSSE(stream);
-  } catch (err) {
-    return new Response(`API error: ${err.message}`, { status: 502 });
-  }
-};
-
-function streamText(text) {
-  const encoder = new TextEncoder();
-  const readable = new ReadableStream({
-    start(controller) {
-      // Send text in small chunks to simulate streaming
-      const chunkSize = 20;
-      for (let i = 0; i < text.length; i += chunkSize) {
-        controller.enqueue(encoder.encode(`data: ${text.slice(i, i + chunkSize)}\n\n`));
-      }
-      controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-      controller.close();
-    },
-  });
-
-  return new Response(readable, {
-    status: 200,
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      "Connection": "keep-alive",
-      "Access-Control-Allow-Origin": "*",
-    },
-  });
-}
-
-function streamSSE(stream) {
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
     async start(controller) {
+      function emit(obj) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
+      }
+
       try {
-        for await (const event of stream) {
-          if (event.type === "content_block_delta" && event.delta?.text) {
-            controller.enqueue(encoder.encode(`data: ${event.delta.text}\n\n`));
+        let toolMessages = [...messages];
+        let finalText = null;
+
+        for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+          const response = await client.messages.create({
+            model: "claude-haiku-4-5-20251001",
+            max_tokens: 1024,
+            system: SYSTEM_PROMPT,
+            tools: TOOLS,
+            messages: toolMessages,
+          });
+
+          const toolUseBlocks = response.content.filter((b) => b.type === "tool_use");
+          if (toolUseBlocks.length === 0) {
+            finalText = response.content
+              .filter((b) => b.type === "text")
+              .map((b) => b.text)
+              .join("");
+            break;
+          }
+
+          // Emit tool call indicators to the client
+          for (const block of toolUseBlocks) {
+            emit({ type: "tool", name: block.name });
+          }
+
+          toolMessages.push({ role: "assistant", content: response.content });
+
+          const toolResults = toolUseBlocks.map((block) => ({
+            type: "tool_result",
+            tool_use_id: block.id,
+            content: executeTool(block.name, block.input),
+          }));
+
+          toolMessages.push({ role: "user", content: toolResults });
+        }
+
+        if (finalText !== null) {
+          // Got text from tool loop - send in chunks
+          const chunkSize = 20;
+          for (let i = 0; i < finalText.length; i += chunkSize) {
+            emit({ type: "delta", text: finalText.slice(i, i + chunkSize) });
+          }
+        } else {
+          // Exhausted tool rounds - stream final response
+          const stream = client.messages.stream({
+            model: "claude-haiku-4-5-20251001",
+            max_tokens: 1024,
+            system: SYSTEM_PROMPT,
+            messages: toolMessages,
+          });
+
+          for await (const event of stream) {
+            if (event.type === "content_block_delta" && event.delta?.text) {
+              emit({ type: "delta", text: event.delta.text });
+            }
           }
         }
-        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+
+        emit({ type: "done" });
       } catch (err) {
-        controller.enqueue(encoder.encode(`data: [ERROR] ${err.message}\n\n`));
+        emit({ type: "error", message: err.message });
       } finally {
         controller.close();
       }
@@ -294,4 +283,4 @@ function streamSSE(stream) {
       "Access-Control-Allow-Origin": "*",
     },
   });
-}
+};

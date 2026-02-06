@@ -310,6 +310,13 @@
       setStatus(false);
     }
 
+    var TOOL_LABELS = {
+      search_knowledge: "Searching knowledge base",
+      get_project_details: "Looking up project details",
+      get_experience: "Looking up work experience",
+      get_skills: "Looking up technical skills"
+    };
+
     try {
       var response = await fetch(url, {
         method: "POST",
@@ -351,7 +358,8 @@
       var decoder = new TextDecoder();
       var fullText = "";
       var buffer = "";
-      var firstChunk = true;
+      var showingTyping = true;
+      var receivedText = false;
 
       while (true) {
         var result = await reader.read();
@@ -364,28 +372,53 @@
         for (var i = 0; i < lines.length; i++) {
           var line = lines[i];
           if (!line.startsWith("data: ")) continue;
-          var data = line.substring(6);
-          if (data === "[DONE]") continue;
-          if (data.startsWith("[ERROR]")) {
+          var raw = line.substring(6);
+
+          var evt;
+          try {
+            evt = JSON.parse(raw);
+          } catch {
+            // Legacy plain text fallback
+            if (raw === "[DONE]") continue;
+            if (raw.startsWith("[ERROR]")) {
+              contentEl.textContent = "Something went wrong. Please try again.";
+              break;
+            }
+            if (showingTyping) { contentEl.innerHTML = ""; showingTyping = false; }
+            fullText += raw;
+            contentEl.innerHTML = renderMarkdown(fullText);
+            if (isNearBottom()) scrollToBottom();
+            continue;
+          }
+
+          if (evt.type === "tool") {
+            if (showingTyping) { contentEl.innerHTML = ""; showingTyping = false; }
+            var label = TOOL_LABELS[evt.name] || evt.name;
+            var indicator = document.createElement("div");
+            indicator.className = "chat-tool-indicator";
+            indicator.innerHTML = '<i class="fas fa-cog fa-spin"></i> ' + label + '...';
+            contentEl.appendChild(indicator);
+            if (isNearBottom()) scrollToBottom();
+          } else if (evt.type === "delta") {
+            if (!receivedText) {
+              contentEl.innerHTML = "";
+              receivedText = true;
+            }
+            fullText += evt.text;
+            contentEl.innerHTML = renderMarkdown(fullText);
+            if (isNearBottom()) scrollToBottom();
+          } else if (evt.type === "error") {
             contentEl.textContent = "Something went wrong. Please try again.";
             break;
           }
-          if (firstChunk) {
-            contentEl.innerHTML = "";
-            firstChunk = false;
-          }
-          fullText += data;
-          contentEl.innerHTML = renderMarkdown(fullText);
-          if (isNearBottom()) scrollToBottom();
         }
       }
 
       if (fullText) {
         history.push({ role: "assistant", content: fullText });
-        // Final render with mermaid
         contentEl.innerHTML = renderMarkdown(fullText);
         renderMermaidBlocks(contentEl);
-      } else if (firstChunk) {
+      } else if (!receivedText) {
         contentEl.textContent = "No response received. Please try again.";
       }
     } catch (err) {
