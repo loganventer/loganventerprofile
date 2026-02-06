@@ -80,24 +80,25 @@ window.updateMermaidTheme = function(theme) {
     // === Chatbot diagrams (always dark background in both themes) ===
     document.querySelectorAll('.chat-mermaid-block svg').forEach(function(svg) {
         svg.querySelectorAll('.node rect, .node polygon, .node circle').forEach(function(el) {
-            el.style.setProperty('fill', '#1e293b', 'important');
+            el.style.setProperty('fill', '#1e3a5f', 'important');
+            el.style.setProperty('stroke', '#3b82f6', 'important');
         });
         svg.querySelectorAll('.nodeLabel').forEach(function(el) {
-            el.style.setProperty('color', '#e2e8f0', 'important');
+            el.style.setProperty('color', '#93c5fd', 'important');
         });
         svg.querySelectorAll('.edgeLabel rect, .edgeLabel polygon').forEach(function(el) {
-            el.style.setProperty('fill', '#1e293b', 'important');
+            el.style.setProperty('fill', '#0f172a', 'important');
             el.style.setProperty('stroke', 'none', 'important');
         });
         svg.querySelectorAll('.edgeLabel span').forEach(function(el) {
-            el.style.setProperty('color', '#e2e8f0', 'important');
+            el.style.setProperty('color', '#94a3b8', 'important');
         });
         svg.querySelectorAll('.flowchart-link').forEach(function(el) {
-            el.style.setProperty('stroke', '#64748b', 'important');
+            el.style.setProperty('stroke', '#475569', 'important');
         });
         svg.querySelectorAll('marker path').forEach(function(el) {
-            el.style.setProperty('fill', '#64748b', 'important');
-            el.style.setProperty('stroke', '#64748b', 'important');
+            el.style.setProperty('fill', '#475569', 'important');
+            el.style.setProperty('stroke', '#475569', 'important');
         });
     });
 };
