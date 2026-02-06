@@ -130,7 +130,7 @@
     hideGate();
     addMessage(
       "assistant",
-      "Hi! I'm Logan's portfolio assistant. Ask me anything about his experience, skills, or projects."
+      "Hi! I'm Logan's portfolio agent. Ask me anything about his experience, skills, or projects."
     );
   }
 
@@ -416,7 +416,7 @@
     } catch (err) {
       contentEl.textContent = err.message.includes("Rate limit")
         ? "Too many requests. Please wait a moment."
-        : "Could not reach the assistant. Please try again.";
+        : "Could not reach the agent. Please try again.";
 
       if (usePrimary) {
         usePrimary = false;
