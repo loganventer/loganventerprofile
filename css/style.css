@@ -523,7 +523,7 @@ html {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    max-height: calc(100dvh - 300px);
+    height: calc(100dvh - 320px);
     min-height: 400px;
 }
 
