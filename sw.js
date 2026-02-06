@@ -1,5 +1,5 @@
 // Service Worker for Logan Venter Portfolio
-const CACHE_NAME = 'logan-venter-portfolio-v1.0.6';
+const CACHE_NAME = 'logan-venter-portfolio-v1.0.7';
 const urlsToCache = [
     '/',
     '/index.html',

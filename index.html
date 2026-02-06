@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
+    <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})()</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logan Venter | Senior AI/Platform Engineer & MCP Framework Author</title>
@@ -202,6 +203,9 @@
                     </div>
                 </div>
                 <a href="#" class="nav-item" onclick="showSection('references', this)">References</a>
+                <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <i id="theme-icon" class="fas fa-moon"></i>
+                </button>
                 <a href="assets/documents/Logan Venter Curriculum Vitae 13-06-2025.pdf" download="Logan Venter Curriculum Vitae 13-06-2025.pdf" class="btn-primary text-white font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center whitespace-nowrap">
                     <i class="fas fa-download mr-2"></i>Download My CV
                 </a>
@@ -217,7 +221,12 @@
     <div id="mobile-menu-container">
         <div id="mobile-menu">
             <div id="mobile-menu-close">×</div>
-            <a href="#" class="block py-3 text-white text-xl" onclick="showSection('about', this); toggleMobileMenu();">About Me</a>
+            <div class="flex items-center justify-between mb-4">
+                <a href="#" class="block py-3 text-white text-xl" onclick="showSection('about', this); toggleMobileMenu();">About Me</a>
+                <button id="theme-toggle-mobile" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <i id="theme-icon-mobile" class="fas fa-moon"></i>
+                </button>
+            </div>
             <h3 class="text-gray-400 mt-6 mb-2 font-bold">Professional Experience</h3>
             <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-tih', this); toggleMobileMenu();">TIH</a>
             <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-derivco', this); toggleMobileMenu();">Derivco</a>

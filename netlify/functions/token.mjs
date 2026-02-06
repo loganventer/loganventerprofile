@@ -179,17 +179,29 @@ export default async (request, context) => {
   // --- Admin: List active tokens ---
   if (action === "tokens") {
     const list = await tokens.list();
+    const countStore = getStore({ name: "chatbot-counts", consistency: "strong" });
     const items = [];
     const now = Date.now();
     for (const entry of list.blobs) {
       const data = await tokens.get(entry.key, { type: "json" });
       if (data) {
         data.is_expired = now > data.expires;
+        const countData = await countStore.get(entry.key, { type: "json" });
+        data.msg_count = countData ? countData.count : 0;
         items.push(data);
       }
     }
     items.sort((a, b) => b.created - a.created);
     return cors({ tokens: items });
+  }
+
+  // --- Admin: Reset demo message limit ---
+  if (action === "reset_limit") {
+    const jti = (body.jti || "").trim();
+    if (!jti) return cors({ error: "jti required" }, 400);
+    const countStore = getStore({ name: "chatbot-counts", consistency: "strong" });
+    await countStore.setJSON(jti, { count: 0 });
+    return cors({ ok: true });
   }
 
   // --- Admin: Approve a pending request ---

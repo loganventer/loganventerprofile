@@ -1,5 +1,32 @@
 // js/main.js
 
+// --- Theme ---
+window.toggleTheme = function() {
+    var html = document.documentElement;
+    var current = html.getAttribute('data-theme') || 'dark';
+    var next = current === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateThemeIcons(next);
+    if (particleSystem && particleSystem.updateColors) {
+        particleSystem.updateColors(next);
+    }
+};
+
+function updateThemeIcons(theme) {
+    var cls = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+    var icon = document.getElementById('theme-icon');
+    var iconMobile = document.getElementById('theme-icon-mobile');
+    if (icon) icon.className = cls;
+    if (iconMobile) iconMobile.className = cls;
+}
+
+// Set initial icon state
+(function() {
+    var theme = document.documentElement.getAttribute('data-theme') || 'dark';
+    document.addEventListener('DOMContentLoaded', function() { updateThemeIcons(theme); });
+})();
+
 // --- Performance & Loading States ---
 let isPageLoaded = false;
 let particleSystem = null;

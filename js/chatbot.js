@@ -87,23 +87,21 @@
   function buildGateOverlay() {
     gateOverlay = document.createElement("div");
     gateOverlay.id = "chatbot-gate";
-    gateOverlay.style.cssText =
-      "position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;" +
-      "justify-content:center;background:rgba(15,23,42,0.95);z-index:10;border-radius:0.75rem;padding:32px;text-align:center;";
+    gateOverlay.className = "chatbot-gate";
 
     var icon = document.createElement("div");
-    icon.innerHTML =
-      '<i class="fas fa-lock" style="font-size:2.5rem;color:#475569;margin-bottom:16px;"></i>';
+    icon.className = "chatbot-gate-icon";
+    icon.innerHTML = '<i class="fas fa-lock"></i>';
     gateOverlay.appendChild(icon);
 
     var title = document.createElement("h3");
     title.textContent = "Access Required";
-    title.style.cssText = "color:#E5E7EB;font-size:1.25rem;font-weight:700;margin-bottom:8px;";
+    title.className = "chatbot-gate-title";
     gateOverlay.appendChild(title);
 
     var desc = document.createElement("p");
     desc.textContent = "This is a live AI demo. Request access to start a conversation.";
-    desc.style.cssText = "color:#9CA3AF;font-size:0.875rem;margin-bottom:24px;max-width:280px;";
+    desc.className = "chatbot-gate-desc";
     gateOverlay.appendChild(desc);
 
     gateBtn = document.createElement("button");
@@ -115,7 +113,7 @@
     gateOverlay.appendChild(gateBtn);
 
     gateStatus = document.createElement("p");
-    gateStatus.style.cssText = "color:#6B7280;font-size:0.75rem;margin-top:16px;min-height:1.2em;";
+    gateStatus.className = "chatbot-gate-status";
     gateOverlay.appendChild(gateStatus);
 
     container.style.position = "relative";
@@ -351,6 +349,14 @@
           return;
         }
 
+        // Server-side demo limit reached
+        if (response.status === 429 && errData.error === "demo_limit") {
+          msgCount = MAX_MESSAGES;
+          sessionStorage.setItem("cb_count", String(msgCount));
+          contentEl.textContent = "You've reached the demo message limit. The admin can reset your limit if needed.";
+          return;
+        }
+
         throw new Error(errData.error || "HTTP " + response.status);
       }
 
@@ -516,14 +522,14 @@
             if (inList) { html += "</" + listType + ">"; inList = false; }
             var level = headingMatch[1].length;
             var sizes = { 1: "1.3em", 2: "1.15em", 3: "1em", 4: "0.9em" };
-            html += '<div style="font-weight:700;font-size:' + sizes[level] + ';margin:8px 0 4px;color:#fff;">' + renderInlineMarkdown(headingMatch[2]) + "</div>";
+            html += '<div style="font-weight:700;font-size:' + sizes[level] + ';margin:8px 0 4px;color:var(--text-heading);">' + renderInlineMarkdown(headingMatch[2]) + "</div>";
             continue;
           }
 
           // Horizontal rule
           if (/^(-{3,}|\*{3,}|_{3,})$/.test(line.trim())) {
             if (inList) { html += "</" + listType + ">"; inList = false; }
-            html += '<hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:8px 0;">';
+            html += '<hr style="border:none;border-top:1px solid var(--border-light);margin:8px 0;">';
             continue;
           }
 
@@ -531,7 +537,7 @@
           if (line.match(/^&gt;\s?(.*)$/)) {
             if (inList) { html += "</" + listType + ">"; inList = false; }
             var quoteContent = line.replace(/^&gt;\s?/, "");
-            html += '<div style="border-left:3px solid #475569;padding:2px 12px;margin:4px 0;color:#94a3b8;">' + renderInlineMarkdown(quoteContent) + "</div>";
+            html += '<div style="border-left:3px solid var(--text-dim);padding:2px 12px;margin:4px 0;color:var(--text-muted);">' + renderInlineMarkdown(quoteContent) + "</div>";
             continue;
           }
 

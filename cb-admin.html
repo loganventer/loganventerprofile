@@ -189,16 +189,21 @@
                 return;
             }
 
-            var html = '<table><tr><th>JTI</th><th>IP</th><th>Created</th><th>Expires</th><th>Status</th><th>Action</th></tr>';
+            var html = '<table><tr><th>JTI</th><th>IP</th><th>Created</th><th>Expires</th><th>Msgs</th><th>Status</th><th>Action</th></tr>';
             list.forEach(function(item) {
                 var status = item.is_expired ? '<span class="tag tag-expired">Expired</span>' : '<span class="tag tag-active">Active</span>';
+                var msgCount = (item.msg_count || 0);
+                var msgDisplay = msgCount + ' / 25';
+                var msgStyle = msgCount >= 25 ? 'color:#f87171;font-weight:600;' : '';
                 html += '<tr>';
                 html += '<td class="mono">' + esc(item.jti.substring(0, 8)) + '...</td>';
                 html += '<td class="mono">' + esc(item.ip || "?") + '</td>';
                 html += '<td>' + timeAgo(item.created) + '</td>';
                 html += '<td>' + formatTime(item.expires) + '</td>';
+                html += '<td style="' + msgStyle + '">' + msgDisplay + '</td>';
                 html += '<td>' + status + '</td>';
-                html += '<td><button class="btn-sm btn-red" onclick="revokeToken(\'' + item.jti + '\')">Revoke</button></td>';
+                html += '<td style="white-space:nowrap;"><button class="btn-sm btn-green" onclick="resetLimit(\'' + item.jti + '\')" title="Reset message limit">Reset</button> ';
+                html += '<button class="btn-sm btn-red" onclick="revokeToken(\'' + item.jti + '\')">Revoke</button></td>';
                 html += '</tr>';
             });
             html += '</table>';
@@ -219,6 +224,11 @@
 
         async function revokeToken(jti) {
             await apiCall("revoke", { jti: jti });
+            refresh();
+        }
+
+        async function resetLimit(jti) {
+            await apiCall("reset_limit", { jti: jti });
             refresh();
         }
 

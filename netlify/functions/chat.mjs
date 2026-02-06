@@ -182,6 +182,19 @@ export default async (request, context) => {
     });
   }
 
+  // Server-side message count enforcement
+  const countStore = getStore({ name: "chatbot-counts", consistency: "strong" });
+  const countKey = payload.jti;
+  const countData = (await countStore.get(countKey, { type: "json" })) || { count: 0 };
+  if (countData.count >= 25) {
+    return new Response(JSON.stringify({ error: "demo_limit" }), {
+      status: 429,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+  countData.count++;
+  await countStore.setJSON(countKey, countData);
+
   const userMessage = (body.message || "").trim();
   if (!userMessage || userMessage.length > 2000) {
     return new Response("Message required (max 2000 chars)", { status: 400 });
