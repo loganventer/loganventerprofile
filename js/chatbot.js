@@ -359,17 +359,20 @@
             break;
           }
           if (firstChunk) {
-            contentEl.textContent = "";
+            contentEl.innerHTML = "";
             firstChunk = false;
           }
           fullText += data;
-          contentEl.textContent = fullText;
+          contentEl.innerHTML = renderMarkdown(fullText);
           messages.scrollTop = messages.scrollHeight;
         }
       }
 
       if (fullText) {
         history.push({ role: "assistant", content: fullText });
+        // Final render with mermaid
+        contentEl.innerHTML = renderMarkdown(fullText);
+        renderMermaidBlocks(contentEl);
       } else if (firstChunk) {
         contentEl.textContent = "No response received. Please try again.";
       }
@@ -415,6 +418,72 @@
     }
   }
 
+  // --- Markdown rendering ---
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function renderMarkdown(text) {
+    var result = "";
+    var parts = text.split("```");
+    for (var i = 0; i < parts.length; i++) {
+      if (i % 2 === 0) {
+        // Outside code block: render inline code and escape HTML
+        var lines = escapeHtml(parts[i]).split("\n");
+        var processed = [];
+        for (var j = 0; j < lines.length; j++) {
+          processed.push(lines[j].replace(/`([^`]+)`/g, '<code class="chat-inline-code">$1</code>'));
+        }
+        result += processed.join("<br>");
+      } else {
+        // Inside code block
+        var block = parts[i];
+        var lang = "";
+        var newlineIdx = block.indexOf("\n");
+        if (newlineIdx !== -1) {
+          var firstLine = block.substring(0, newlineIdx).trim();
+          if (firstLine && /^[a-zA-Z0-9+#_-]+$/.test(firstLine)) {
+            lang = firstLine;
+            block = block.substring(newlineIdx + 1);
+          }
+        }
+        // Remove trailing newline
+        if (block.endsWith("\n")) block = block.slice(0, -1);
+
+        if (lang === "mermaid") {
+          var mermaidId = "chat-mermaid-" + Math.random().toString(36).substring(2, 9);
+          result += '<div class="chat-mermaid-block" id="' + mermaidId + '">' + escapeHtml(block) + "</div>";
+        } else {
+          var langAttr = lang ? ' data-lang="' + escapeHtml(lang) + '"' : "";
+          var langLabel = lang ? '<span class="chat-code-lang">' + escapeHtml(lang) + "</span>" : "";
+          result += '<div class="chat-code-block"' + langAttr + ">" + langLabel + "<pre><code>" + escapeHtml(block) + "</code></pre></div>";
+        }
+      }
+    }
+    return result;
+  }
+
+  function renderMermaidBlocks(container) {
+    if (typeof mermaid === "undefined") return;
+    var blocks = container.querySelectorAll(".chat-mermaid-block:not([data-rendered])");
+    blocks.forEach(function (block) {
+      block.setAttribute("data-rendered", "true");
+      var source = block.textContent;
+      try {
+        mermaid.render(block.id + "-svg", source).then(function (result) {
+          block.innerHTML = result.svg;
+        });
+      } catch {
+        // If mermaid fails, show as code block fallback
+        block.innerHTML = '<pre style="color:#94a3b8;font-size:12px;">' + escapeHtml(source) + "</pre>";
+      }
+    });
+  }
+
   function addMessage(role, text) {
     var wrapper = document.createElement("div");
     wrapper.className = "chat-msg chat-msg-" + role;
@@ -424,12 +493,15 @@
 
     var content = document.createElement("div");
     content.className = "chat-msg-content";
-    content.textContent = text;
+    if (text) {
+      content.innerHTML = renderMarkdown(text);
+    }
 
     bubble.appendChild(content);
     wrapper.appendChild(bubble);
     messages.appendChild(wrapper);
     messages.scrollTop = messages.scrollHeight;
+    if (text) renderMermaidBlocks(content);
     return wrapper;
   }
 })();

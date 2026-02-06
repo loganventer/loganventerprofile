@@ -493,3 +493,57 @@ html {
     0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
     40% { transform: translateY(-6px); opacity: 1; }
 }
+
+/* Chat code blocks */
+.chat-code-block {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    margin: 8px 0;
+    position: relative;
+    overflow: hidden;
+}
+.chat-code-block pre {
+    margin: 0;
+    padding: 12px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.chat-code-block code {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace;
+    color: #e2e8f0;
+    white-space: pre;
+}
+.chat-code-lang {
+    display: block;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: #64748b;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-family: 'Inter', sans-serif;
+}
+.chat-inline-code {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace;
+    font-size: 0.85em;
+    color: #e2e8f0;
+}
+
+/* Mermaid diagrams in chat */
+.chat-mermaid-block {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 12px;
+    margin: 8px 0;
+    overflow-x: auto;
+}
+.chat-mermaid-block svg {
+    max-width: 100%;
+    height: auto;
+}
