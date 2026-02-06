@@ -594,7 +594,8 @@
         if (block.endsWith("\n")) block = block.slice(0, -1);
 
         if (lang === "mermaid") {
-          result += '<div class="chat-mermaid-block"><pre class="mermaid">' + escapeHtml(block) + "</pre></div>";
+          var dlBtn = '<button class="chat-mermaid-download" title="Download as PNG"><i class="fas fa-download"></i></button>';
+          result += '<div class="chat-mermaid-block">' + dlBtn + '<pre class="mermaid">' + escapeHtml(block) + "</pre></div>";
         } else {
           var langAttr = lang ? ' data-lang="' + escapeHtml(lang) + '"' : "";
           var langLabel = lang ? '<span class="chat-code-lang">' + escapeHtml(lang) + "</span>" : "";
@@ -690,5 +691,53 @@
         btn.innerHTML = '<i class="fas fa-copy"></i>';
       }, 1500);
     });
+  });
+
+  // Mermaid download as PNG handler (event delegation)
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest(".chat-mermaid-download");
+    if (!btn) return;
+    var block = btn.closest(".chat-mermaid-block");
+    if (!block) return;
+    var svg = block.querySelector("svg");
+    if (!svg) return;
+
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    var svgData = new XMLSerializer().serializeToString(svg);
+    var svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    var url = URL.createObjectURL(svgBlob);
+    var img = new Image();
+
+    img.onload = function () {
+      var scale = 2;
+      var canvas = document.createElement("canvas");
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      var ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#1e293b";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+
+      canvas.toBlob(function (blob) {
+        var link = document.createElement("a");
+        link.download = "diagram.png";
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(function () {
+          btn.innerHTML = '<i class="fas fa-download"></i>';
+        }, 1500);
+      }, "image/png");
+    };
+
+    img.onerror = function () {
+      URL.revokeObjectURL(url);
+      btn.innerHTML = '<i class="fas fa-download"></i>';
+    };
+
+    img.src = url;
   });
 })();

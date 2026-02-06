@@ -638,6 +638,7 @@ html {
 
 /* Mermaid diagrams in chat */
 .chat-mermaid-block {
+    position: relative;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 6px;
@@ -648,4 +649,23 @@ html {
 .chat-mermaid-block svg {
     max-width: 100%;
     height: auto;
+}
+.chat-mermaid-download {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #94a3b8;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 1;
+}
+.chat-mermaid-download:hover {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.4);
 }
