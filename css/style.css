@@ -495,18 +495,7 @@ html {
     border-radius: 8px;
     padding: 16px;
 }
-/* Override dark node fills with light fills, keep accent strokes */
-[data-theme="light"] .project-card .node rect,
-[data-theme="light"] .project-card .node polygon,
-[data-theme="light"] .project-card .node circle {
-    fill: #f1f5f9 !important;
-}
-/* Dark text on light nodes */
-[data-theme="light"] .project-card .nodeLabel,
-[data-theme="light"] .project-card .nodeLabel p,
-[data-theme="light"] .project-card .nodeLabel span {
-    color: #1e293b !important;
-}
+/* Keep original dark node fills + light text from mermaid style directives */
 /* Edge labels: dark text, light bg */
 [data-theme="light"] .project-card .mermaid .edgeLabel span { color: #334155 !important; }
 [data-theme="light"] .project-card .mermaid .edgeLabel rect,
@@ -523,9 +512,8 @@ html {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 240px);
-    height: calc(100dvh - 240px);
-    min-height: 350px;
+    max-height: calc(100dvh - 340px);
+    min-height: 300px;
 }
 
 .chatbot-messages {
