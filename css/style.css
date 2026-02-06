@@ -534,6 +534,15 @@ html {
     color: #e2e8f0;
 }
 
+/* Chat markdown elements */
+.chat-msg-content strong { color: #fff; font-weight: 700; }
+.chat-msg-content em { font-style: italic; }
+.chat-msg-content del { text-decoration: line-through; opacity: 0.7; }
+.chat-msg-content ul, .chat-msg-content ol { margin: 4px 0; }
+.chat-msg-content li { margin: 2px 0; }
+.chat-msg-content a { text-decoration: none; }
+.chat-msg-content a:hover { text-decoration: underline; }
+
 /* Mermaid diagrams in chat */
 .chat-mermaid-block {
     background: rgba(0, 0, 0, 0.3);

@@ -427,18 +427,112 @@
       .replace(/"/g, "&quot;");
   }
 
+  function renderInlineMarkdown(line) {
+    // Inline code first (protect from other transforms)
+    var codes = [];
+    line = line.replace(/`([^`]+)`/g, function (_, code) {
+      codes.push(code);
+      return "\x00CODE" + (codes.length - 1) + "\x00";
+    });
+    // Bold: **text** or __text__
+    line = line.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    line = line.replace(/__(.+?)__/g, "<strong>$1</strong>");
+    // Italic: *text* or _text_ (but not inside words for _)
+    line = line.replace(/\*(.+?)\*/g, "<em>$1</em>");
+    line = line.replace(/(?:^|(?<=\s))_(.+?)_(?=\s|$)/g, "<em>$1</em>");
+    // Strikethrough: ~~text~~
+    line = line.replace(/~~(.+?)~~/g, "<del>$1</del>");
+    // Links: [text](url)
+    line = line.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-sky-400 hover:underline">$1</a>');
+    // Restore inline codes
+    line = line.replace(/\x00CODE(\d+)\x00/g, function (_, idx) {
+      return '<code class="chat-inline-code">' + codes[parseInt(idx)] + "</code>";
+    });
+    return line;
+  }
+
   function renderMarkdown(text) {
     var result = "";
     var parts = text.split("```");
     for (var i = 0; i < parts.length; i++) {
       if (i % 2 === 0) {
-        // Outside code block: render inline code and escape HTML
+        // Outside code block: full markdown
         var lines = escapeHtml(parts[i]).split("\n");
-        var processed = [];
+        var html = "";
+        var inList = false;
+        var listType = "";
+
         for (var j = 0; j < lines.length; j++) {
-          processed.push(lines[j].replace(/`([^`]+)`/g, '<code class="chat-inline-code">$1</code>'));
+          var line = lines[j];
+
+          // Headings
+          var headingMatch = line.match(/^(#{1,4})\s+(.+)$/);
+          if (headingMatch) {
+            if (inList) { html += "</" + listType + ">"; inList = false; }
+            var level = headingMatch[1].length;
+            var sizes = { 1: "1.3em", 2: "1.15em", 3: "1em", 4: "0.9em" };
+            html += '<div style="font-weight:700;font-size:' + sizes[level] + ';margin:8px 0 4px;color:#fff;">' + renderInlineMarkdown(headingMatch[2]) + "</div>";
+            continue;
+          }
+
+          // Horizontal rule
+          if (/^(-{3,}|\*{3,}|_{3,})$/.test(line.trim())) {
+            if (inList) { html += "</" + listType + ">"; inList = false; }
+            html += '<hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:8px 0;">';
+            continue;
+          }
+
+          // Blockquote
+          if (line.match(/^&gt;\s?(.*)$/)) {
+            if (inList) { html += "</" + listType + ">"; inList = false; }
+            var quoteContent = line.replace(/^&gt;\s?/, "");
+            html += '<div style="border-left:3px solid #475569;padding:2px 12px;margin:4px 0;color:#94a3b8;">' + renderInlineMarkdown(quoteContent) + "</div>";
+            continue;
+          }
+
+          // Unordered list
+          var ulMatch = line.match(/^(\s*)[-*+]\s+(.+)$/);
+          if (ulMatch) {
+            if (!inList || listType !== "ul") {
+              if (inList) html += "</" + listType + ">";
+              html += '<ul style="margin:4px 0;padding-left:20px;list-style:disc;">';
+              inList = true;
+              listType = "ul";
+            }
+            html += "<li>" + renderInlineMarkdown(ulMatch[2]) + "</li>";
+            continue;
+          }
+
+          // Ordered list
+          var olMatch = line.match(/^(\s*)\d+[.)]\s+(.+)$/);
+          if (olMatch) {
+            if (!inList || listType !== "ol") {
+              if (inList) html += "</" + listType + ">";
+              html += '<ol style="margin:4px 0;padding-left:20px;list-style:decimal;">';
+              inList = true;
+              listType = "ol";
+            }
+            html += "<li>" + renderInlineMarkdown(olMatch[2]) + "</li>";
+            continue;
+          }
+
+          // Close any open list
+          if (inList) { html += "</" + listType + ">"; inList = false; }
+
+          // Empty line = paragraph break
+          if (line.trim() === "") {
+            html += "<br>";
+            continue;
+          }
+
+          // Regular paragraph line
+          html += renderInlineMarkdown(line) + "<br>";
         }
-        result += processed.join("<br>");
+
+        if (inList) html += "</" + listType + ">";
+        // Clean up trailing <br>
+        html = html.replace(/(<br>)+$/, "");
+        result += html;
       } else {
         // Inside code block
         var block = parts[i];
@@ -473,14 +567,18 @@
     blocks.forEach(function (block) {
       block.setAttribute("data-rendered", "true");
       var source = block.textContent;
-      try {
-        mermaid.render(block.id + "-svg", source).then(function (result) {
+      mermaid
+        .render(block.id + "-svg", source)
+        .then(function (result) {
           block.innerHTML = result.svg;
+        })
+        .catch(function () {
+          // Fallback: show as code block
+          block.innerHTML =
+            '<pre style="color:#94a3b8;font-size:12px;white-space:pre-wrap;">' +
+            escapeHtml(source) +
+            "</pre>";
         });
-      } catch {
-        // If mermaid fails, show as code block fallback
-        block.innerHTML = '<pre style="color:#94a3b8;font-size:12px;">' + escapeHtml(source) + "</pre>";
-      }
     });
   }
 
