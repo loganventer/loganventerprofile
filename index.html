@@ -51,7 +51,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             mermaid.initialize({
-                startOnLoad: true,
+                startOnLoad: false,
                 theme: 'dark',
                 themeVariables: {
                     darkMode: true,
@@ -70,6 +70,31 @@
                     padding: 15
                 }
             });
+
+            // Render mermaid diagrams when their section becomes visible
+            var mermaidRendered = false;
+            var origShowSection = null;
+            function tryRenderMermaid() {
+                if (mermaidRendered) return;
+                var diagrams = document.querySelectorAll('pre.mermaid:not([data-processed])');
+                if (diagrams.length > 0) {
+                    mermaidRendered = true;
+                    mermaid.run({ nodes: diagrams });
+                }
+            }
+            // Hook into showSection after it's defined
+            var waitForShow = setInterval(function() {
+                if (window.showSection && !origShowSection) {
+                    origShowSection = window.showSection;
+                    window.showSection = function(sectionId, element) {
+                        origShowSection(sectionId, element);
+                        if (sectionId === 'featured-projects') {
+                            setTimeout(tryRenderMermaid, 100);
+                        }
+                    };
+                    clearInterval(waitForShow);
+                }
+            }, 50);
         });
     </script>
 
@@ -235,7 +260,7 @@
                 </div>
                 <h1 class="text-4xl font-bold mb-4">About Me</h1>
                 <p class="text-lg leading-relaxed mb-4">
-                    I architect and build production AI platforms. Over 20 years in software development, I've evolved from backend engineer to platform architect — designing ecosystems, not just APIs. My current focus: enabling organizations to deploy LLM-powered systems with enterprise-grade reliability.
+                    I architect and build production AI platforms. Over 20 years in software development, I design full ecosystems — from multi-protocol server frameworks to agentic chatbot platforms to RAG-powered knowledge bases. My current focus: enabling organizations to deploy LLM-powered systems with enterprise-grade reliability.
                 </p>
 
                 <h3 class="text-xl font-bold mb-3 text-sky-400">What I've Built</h3>
@@ -258,8 +283,8 @@
 
                 <h3 class="text-xl font-bold mb-3 text-sky-400">What I Believe In</h3>
                 <ul class="list-disc list-inside space-y-2 mb-6 text-lg">
-                    <li>Clean architecture over clever hacks</li>
-                    <li>Deterministic systems where possible, graceful degradation where not</li>
+                    <li>Clean architecture and deliberate design decisions</li>
+                    <li>Deterministic systems with well-defined failure boundaries</li>
                     <li>Code that communicates intent</li>
                     <li>Direct feedback and honest technical discourse</li>
                 </ul>
@@ -720,33 +745,32 @@
                                 <i class="fas fa-image text-3xl text-gray-600"></i>
                                 <span class="text-gray-600 text-sm mt-2">Image coming soon</span>
                             </div>
-                            <div class="mermaid mb-4">
+                            <pre class="mermaid mb-4">
 graph TB
-    Agent[AI Agent / Client] --> Gateway[MCP Gateway]
-    Gateway --> Auth[Auth Layer]
-    Auth --> Router[Transport Router]
-    Router --> STDIO[stdio]
-    Router --> REST[REST API]
-    Router --> SSE[SSE Stream]
-    Router --> SR[SignalR Hub]
-    Router --> GRPC[gRPC Service]
-    Router --> Session[Session Manager]
-    Router --> Discovery[Tool Discovery]
-    Discovery --> Tools[Registered Tools]
-
-    style Agent fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
-    style Gateway fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
-    style Auth fill:#1e293b,stroke:#475569,color:#94a3b8
-    style Router fill:#1e293b,stroke:#475569,color:#94a3b8
-    style Session fill:#1e293b,stroke:#475569,color:#94a3b8
-    style Discovery fill:#1e293b,stroke:#475569,color:#94a3b8
-    style STDIO fill:#172554,stroke:#3b82f6,color:#93c5fd
-    style REST fill:#172554,stroke:#3b82f6,color:#93c5fd
-    style SSE fill:#172554,stroke:#3b82f6,color:#93c5fd
-    style SR fill:#172554,stroke:#3b82f6,color:#93c5fd
-    style GRPC fill:#172554,stroke:#3b82f6,color:#93c5fd
-    style Tools fill:#172554,stroke:#3b82f6,color:#93c5fd
-                            </div>
+  Agent[AI Agent / Client] --> Gateway[MCP Gateway]
+  Gateway --> Auth[Auth Layer]
+  Auth --> Router[Transport Router]
+  Router --> STDIO[stdio]
+  Router --> REST[REST API]
+  Router --> SSE[SSE Stream]
+  Router --> SR[SignalR Hub]
+  Router --> GRPC[gRPC Service]
+  Router --> Session[Session Manager]
+  Router --> Discovery[Tool Discovery]
+  Discovery --> Tools[Registered Tools]
+  style Agent fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
+  style Gateway fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
+  style Auth fill:#1e293b,stroke:#475569,color:#94a3b8
+  style Router fill:#1e293b,stroke:#475569,color:#94a3b8
+  style Session fill:#1e293b,stroke:#475569,color:#94a3b8
+  style Discovery fill:#1e293b,stroke:#475569,color:#94a3b8
+  style STDIO fill:#172554,stroke:#3b82f6,color:#93c5fd
+  style REST fill:#172554,stroke:#3b82f6,color:#93c5fd
+  style SSE fill:#172554,stroke:#3b82f6,color:#93c5fd
+  style SR fill:#172554,stroke:#3b82f6,color:#93c5fd
+  style GRPC fill:#172554,stroke:#3b82f6,color:#93c5fd
+  style Tools fill:#172554,stroke:#3b82f6,color:#93c5fd
+                            </pre>
                             <div class="flex flex-wrap gap-2 mt-4">
                                 <span class="project-tag project-tag-blue">.NET 9</span>
                                 <span class="project-tag project-tag-blue">C#</span>
@@ -773,37 +797,34 @@ graph TB
                                 <i class="fas fa-image text-3xl text-gray-600"></i>
                                 <span class="text-gray-600 text-sm mt-2">Image coming soon</span>
                             </div>
-                            <div class="mermaid mb-4">
+                            <pre class="mermaid mb-4">
 graph TB
-    User[User] --> UI[React / Flutter UI]
-    UI -->|SSE / WebSocket| API[FastAPI Backend]
-    API --> BotRouter[Bot Router]
-    BotRouter --> LLM[LLM Providers]
-    BotRouter --> RAG[RAG Pipeline]
-    RAG --> VectorDB[Vector Stores]
-    API --> Metrics[Metrics Collector]
-
-    LLM --> OpenAI[Azure OpenAI]
-    LLM --> Anthropic[Anthropic]
-    LLM --> Ollama[Ollama]
-
-    VectorDB --> Qdrant[Qdrant]
-    VectorDB --> FAISS[FAISS]
-
-    style User fill:#1a3a2a,stroke:#10b981,color:#6ee7b7
-    style UI fill:#1a3a2a,stroke:#10b981,color:#6ee7b7
-    style API fill:#1e293b,stroke:#475569,color:#94a3b8
-    style BotRouter fill:#1e293b,stroke:#475569,color:#94a3b8
-    style LLM fill:#1e293b,stroke:#475569,color:#94a3b8
-    style RAG fill:#1e293b,stroke:#475569,color:#94a3b8
-    style Metrics fill:#1e293b,stroke:#475569,color:#94a3b8
-    style VectorDB fill:#1e293b,stroke:#475569,color:#94a3b8
-    style OpenAI fill:#14332a,stroke:#10b981,color:#6ee7b7
-    style Anthropic fill:#14332a,stroke:#10b981,color:#6ee7b7
-    style Ollama fill:#14332a,stroke:#10b981,color:#6ee7b7
-    style Qdrant fill:#14332a,stroke:#10b981,color:#6ee7b7
-    style FAISS fill:#14332a,stroke:#10b981,color:#6ee7b7
-                            </div>
+  User[User] --> UI[React / Flutter UI]
+  UI -->|SSE / WebSocket| API[FastAPI Backend]
+  API --> BotRouter[Bot Router]
+  BotRouter --> LLM[LLM Providers]
+  BotRouter --> RAG[RAG Pipeline]
+  RAG --> VectorDB[Vector Stores]
+  API --> Metrics[Metrics Collector]
+  LLM --> OpenAI[Azure OpenAI]
+  LLM --> Anthropic[Anthropic]
+  LLM --> Ollama[Ollama]
+  VectorDB --> Qdrant[Qdrant]
+  VectorDB --> FAISS[FAISS]
+  style User fill:#1a3a2a,stroke:#10b981,color:#6ee7b7
+  style UI fill:#1a3a2a,stroke:#10b981,color:#6ee7b7
+  style API fill:#1e293b,stroke:#475569,color:#94a3b8
+  style BotRouter fill:#1e293b,stroke:#475569,color:#94a3b8
+  style LLM fill:#1e293b,stroke:#475569,color:#94a3b8
+  style RAG fill:#1e293b,stroke:#475569,color:#94a3b8
+  style Metrics fill:#1e293b,stroke:#475569,color:#94a3b8
+  style VectorDB fill:#1e293b,stroke:#475569,color:#94a3b8
+  style OpenAI fill:#14332a,stroke:#10b981,color:#6ee7b7
+  style Anthropic fill:#14332a,stroke:#10b981,color:#6ee7b7
+  style Ollama fill:#14332a,stroke:#10b981,color:#6ee7b7
+  style Qdrant fill:#14332a,stroke:#10b981,color:#6ee7b7
+  style FAISS fill:#14332a,stroke:#10b981,color:#6ee7b7
+                            </pre>
                             <div class="flex flex-wrap gap-2 mt-4">
                                 <span class="project-tag project-tag-green">Python</span>
                                 <span class="project-tag project-tag-green">FastAPI</span>
@@ -831,29 +852,28 @@ graph TB
                                 <i class="fas fa-image text-3xl text-gray-600"></i>
                                 <span class="text-gray-600 text-sm mt-2">Image coming soon</span>
                             </div>
-                            <div class="mermaid mb-4">
+                            <pre class="mermaid mb-4">
 graph LR
-    Agent[LLM Agent] -->|MCP| Server[MCP Server]
-    Server --> WorkItems[Work Items]
-    Server --> Repos[Repositories]
-    Server --> Pipelines[Pipelines]
-    Server --> PRs[Pull Requests]
-    Server --> Backlogs[Backlogs]
-    WorkItems --> ADO[Azure DevOps API]
-    Repos --> ADO
-    Pipelines --> ADO
-    PRs --> ADO
-    Backlogs --> ADO
-
-    style Agent fill:#3b2a1a,stroke:#f59e0b,color:#fcd34d
-    style Server fill:#1e293b,stroke:#475569,color:#94a3b8
-    style WorkItems fill:#1e293b,stroke:#475569,color:#94a3b8
-    style Repos fill:#1e293b,stroke:#475569,color:#94a3b8
-    style Pipelines fill:#1e293b,stroke:#475569,color:#94a3b8
-    style PRs fill:#1e293b,stroke:#475569,color:#94a3b8
-    style Backlogs fill:#1e293b,stroke:#475569,color:#94a3b8
-    style ADO fill:#3b2a1a,stroke:#f59e0b,color:#fcd34d
-                            </div>
+  Agent[LLM Agent] -->|MCP| Server[MCP Server]
+  Server --> WorkItems[Work Items]
+  Server --> Repos[Repositories]
+  Server --> Pipelines[Pipelines]
+  Server --> PRs[Pull Requests]
+  Server --> Backlogs[Backlogs]
+  WorkItems --> ADO[Azure DevOps API]
+  Repos --> ADO
+  Pipelines --> ADO
+  PRs --> ADO
+  Backlogs --> ADO
+  style Agent fill:#3b2a1a,stroke:#f59e0b,color:#fcd34d
+  style Server fill:#1e293b,stroke:#475569,color:#94a3b8
+  style WorkItems fill:#1e293b,stroke:#475569,color:#94a3b8
+  style Repos fill:#1e293b,stroke:#475569,color:#94a3b8
+  style Pipelines fill:#1e293b,stroke:#475569,color:#94a3b8
+  style PRs fill:#1e293b,stroke:#475569,color:#94a3b8
+  style Backlogs fill:#1e293b,stroke:#475569,color:#94a3b8
+  style ADO fill:#3b2a1a,stroke:#f59e0b,color:#fcd34d
+                            </pre>
                             <div class="flex flex-wrap gap-2 mt-4">
                                 <span class="project-tag project-tag-amber">.NET 9</span>
                                 <span class="project-tag project-tag-amber">C#</span>
@@ -878,31 +898,30 @@ graph LR
                                 <i class="fas fa-image text-3xl text-gray-600"></i>
                                 <span class="text-gray-600 text-sm mt-2">Image coming soon</span>
                             </div>
-                            <div class="mermaid mb-4">
+                            <pre class="mermaid mb-4">
 graph TB
-    Upload[Document Upload] --> Ingest[Ingestion Engine]
-    Ingest --> Parse[Document Parser]
-    Ingest --> Embed[Embedding Service]
-    Embed --> Qdrant[Qdrant Vector Store]
-    User[User Query] --> RAG[RAG Interface]
-    RAG --> Search[Semantic Search]
-    Search --> Qdrant
-    RAG --> LLM[LLM Response]
-    Admin[Admin Dashboard] --> Manage[Collection Manager]
-    Manage --> Qdrant
-
-    style Upload fill:#2a1a3b,stroke:#8b5cf6,color:#c4b5fd
-    style User fill:#2a1a3b,stroke:#8b5cf6,color:#c4b5fd
-    style Admin fill:#2a1a3b,stroke:#8b5cf6,color:#c4b5fd
-    style Ingest fill:#1e293b,stroke:#475569,color:#94a3b8
-    style Parse fill:#1e293b,stroke:#475569,color:#94a3b8
-    style Embed fill:#1e293b,stroke:#475569,color:#94a3b8
-    style RAG fill:#1e293b,stroke:#475569,color:#94a3b8
-    style Search fill:#1e293b,stroke:#475569,color:#94a3b8
-    style LLM fill:#1e293b,stroke:#475569,color:#94a3b8
-    style Manage fill:#1e293b,stroke:#475569,color:#94a3b8
-    style Qdrant fill:#2a1a3b,stroke:#8b5cf6,color:#c4b5fd
-                            </div>
+  Upload[Document Upload] --> Ingest[Ingestion Engine]
+  Ingest --> Parse[Document Parser]
+  Ingest --> Embed[Embedding Service]
+  Embed --> Qdrant[Qdrant Vector Store]
+  UserQ[User Query] --> RAG[RAG Interface]
+  RAG --> Search[Semantic Search]
+  Search --> Qdrant
+  RAG --> LLM[LLM Response]
+  Admin[Admin Dashboard] --> Manage[Collection Manager]
+  Manage --> Qdrant
+  style Upload fill:#2a1a3b,stroke:#8b5cf6,color:#c4b5fd
+  style UserQ fill:#2a1a3b,stroke:#8b5cf6,color:#c4b5fd
+  style Admin fill:#2a1a3b,stroke:#8b5cf6,color:#c4b5fd
+  style Ingest fill:#1e293b,stroke:#475569,color:#94a3b8
+  style Parse fill:#1e293b,stroke:#475569,color:#94a3b8
+  style Embed fill:#1e293b,stroke:#475569,color:#94a3b8
+  style RAG fill:#1e293b,stroke:#475569,color:#94a3b8
+  style Search fill:#1e293b,stroke:#475569,color:#94a3b8
+  style LLM fill:#1e293b,stroke:#475569,color:#94a3b8
+  style Manage fill:#1e293b,stroke:#475569,color:#94a3b8
+  style Qdrant fill:#2a1a3b,stroke:#8b5cf6,color:#c4b5fd
+                            </pre>
                             <div class="flex flex-wrap gap-2 mt-4">
                                 <span class="project-tag project-tag-purple">.NET 9</span>
                                 <span class="project-tag project-tag-purple">Python</span>
