@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+        .login { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .login-box { background: #1e293b; padding: 32px; border-radius: 12px; width: 100%; max-width: 380px; }
+        .login-box h2 { font-size: 1.25rem; margin-bottom: 16px; color: #94a3b8; }
+        input, select { width: 100%; padding: 10px 14px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; font-size: 14px; margin-bottom: 12px; outline: none; }
+        input:focus, select:focus { border-color: #0ea5e9; }
+        button { padding: 10px 20px; background: #0ea5e9; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: background 0.2s; }
+        button:hover { background: #0284c7; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-red { background: #ef4444; }
+        .btn-red:hover { background: #dc2626; }
+        .btn-sm { padding: 6px 14px; font-size: 12px; }
+        .btn-green { background: #10b981; }
+        .btn-green:hover { background: #059669; }
+        .btn-gray { background: #475569; }
+        .btn-gray:hover { background: #64748b; }
+        .panel { display: none; max-width: 900px; margin: 0 auto; padding: 24px; }
+        .section { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .section h3 { font-size: 1rem; color: #94a3b8; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .badge { display: inline-block; background: #334155; color: #94a3b8; padding: 2px 10px; border-radius: 12px; font-size: 12px; margin-left: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; color: #64748b; font-weight: 600; padding: 8px 12px; border-bottom: 1px solid #334155; }
+        td { padding: 8px 12px; border-bottom: 1px solid #1e293b; vertical-align: middle; }
+        .mono { font-family: 'SF Mono', Monaco, monospace; font-size: 11px; color: #64748b; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .tag-pending { background: rgba(245,158,11,0.15); color: #fbbf24; }
+        .tag-active { background: rgba(16,185,129,0.15); color: #34d399; }
+        .tag-expired { background: rgba(239,68,68,0.15); color: #f87171; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding: 12px 0; border-bottom: 1px solid #1e293b; }
+        .topbar h1 { font-size: 1.1rem; color: #64748b; }
+        .empty { color: #475569; font-size: 13px; padding: 16px; text-align: center; }
+        .approve-row { display: flex; gap: 8px; align-items: center; }
+        .approve-row select { width: auto; margin-bottom: 0; min-width: 100px; }
+        .error { color: #f87171; font-size: 13px; margin-top: 8px; }
+        .success { color: #34d399; font-size: 13px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="login" id="login-view">
+        <div class="login-box">
+            <h2>Authenticate</h2>
+            <input type="password" id="admin-key-input" placeholder="Admin key" autocomplete="off">
+            <button id="login-btn" onclick="doLogin()" style="width:100%;">Sign In</button>
+            <div id="login-error" class="error" style="margin-top:8px;"></div>
+        </div>
+    </div>
+
+    <div class="panel" id="panel-view">
+        <div class="topbar">
+            <h1>Chatbot Token Admin</h1>
+            <div style="display:flex;gap:8px;">
+                <button class="btn-sm" onclick="refresh()">Refresh</button>
+                <button class="btn-sm btn-red" onclick="emergencyClear()">Emergency Clear All</button>
+                <button class="btn-sm btn-gray" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Pending Requests <span class="badge" id="pending-count">0</span></h3>
+            <div id="pending-list"></div>
+        </div>
+
+        <div class="section">
+            <h3>Active Tokens <span class="badge" id="token-count">0</span></h3>
+            <div id="token-list"></div>
+        </div>
+    </div>
+
+    <script>
+        var TOKEN_URL = "/.netlify/functions/token";
+        var adminKey = "";
+
+        document.getElementById("admin-key-input").addEventListener("keydown", function(e) {
+            if (e.key === "Enter") doLogin();
+        });
+
+        async function doLogin() {
+            var key = document.getElementById("admin-key-input").value.trim();
+            if (!key) return;
+            document.getElementById("login-error").textContent = "";
+            document.getElementById("login-btn").disabled = true;
+
+            try {
+                var res = await fetch(TOKEN_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "pending", admin_key: key }),
+                });
+
+                if (res.status === 401) {
+                    document.getElementById("login-error").textContent = "Invalid admin key.";
+                    document.getElementById("login-btn").disabled = false;
+                    return;
+                }
+
+                if (!res.ok) {
+                    document.getElementById("login-error").textContent = "Server error.";
+                    document.getElementById("login-btn").disabled = false;
+                    return;
+                }
+
+                adminKey = key;
+                sessionStorage.setItem("_ak", key);
+                document.getElementById("login-view").style.display = "none";
+                document.getElementById("panel-view").style.display = "block";
+                refresh();
+            } catch {
+                document.getElementById("login-error").textContent = "Could not connect.";
+                document.getElementById("login-btn").disabled = false;
+            }
+        }
+
+        // Auto-restore session
+        (function() {
+            var saved = sessionStorage.getItem("_ak");
+            if (saved) {
+                adminKey = saved;
+                document.getElementById("login-view").style.display = "none";
+                document.getElementById("panel-view").style.display = "block";
+                refresh();
+            }
+        })();
+
+        async function apiCall(action, extra) {
+            var body = Object.assign({ action: action, admin_key: adminKey }, extra || {});
+            var res = await fetch(TOKEN_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+            return res.json();
+        }
+
+        async function refresh() {
+            await Promise.all([loadPending(), loadTokens()]);
+        }
+
+        async function loadPending() {
+            var data = await apiCall("pending");
+            var list = data.pending || [];
+            document.getElementById("pending-count").textContent = list.length;
+
+            if (list.length === 0) {
+                document.getElementById("pending-list").innerHTML = '<div class="empty">No pending requests</div>';
+                return;
+            }
+
+            var html = '<table><tr><th>ID</th><th>IP</th><th>Time</th><th>Action</th></tr>';
+            list.forEach(function(item) {
+                var ago = timeAgo(item.ts);
+                html += '<tr>';
+                html += '<td class="mono">' + esc(item.id.substring(0, 8)) + '...</td>';
+                html += '<td class="mono">' + esc(item.ip) + '</td>';
+                html += '<td>' + ago + '</td>';
+                html += '<td><div class="approve-row">';
+                html += '<select id="timeout-' + item.id + '">';
+                html += '<option value="15">15 min</option>';
+                html += '<option value="30">30 min</option>';
+                html += '<option value="60" selected>1 hour</option>';
+                html += '<option value="120">2 hours</option>';
+                html += '<option value="480">8 hours</option>';
+                html += '<option value="1440">24 hours</option>';
+                html += '</select>';
+                html += '<button class="btn-sm btn-green" onclick="approveReq(\'' + item.id + '\')">Approve</button>';
+                html += '<button class="btn-sm btn-red" onclick="denyReq(\'' + item.id + '\')">Deny</button>';
+                html += '</div></td>';
+                html += '</tr>';
+            });
+            html += '</table>';
+            document.getElementById("pending-list").innerHTML = html;
+        }
+
+        async function loadTokens() {
+            var data = await apiCall("tokens");
+            var list = data.tokens || [];
+            document.getElementById("token-count").textContent = list.length;
+
+            if (list.length === 0) {
+                document.getElementById("token-list").innerHTML = '<div class="empty">No active tokens</div>';
+                return;
+            }
+
+            var html = '<table><tr><th>JTI</th><th>IP</th><th>Created</th><th>Expires</th><th>Status</th><th>Action</th></tr>';
+            list.forEach(function(item) {
+                var status = item.is_expired ? '<span class="tag tag-expired">Expired</span>' : '<span class="tag tag-active">Active</span>';
+                html += '<tr>';
+                html += '<td class="mono">' + esc(item.jti.substring(0, 8)) + '...</td>';
+                html += '<td class="mono">' + esc(item.ip || "?") + '</td>';
+                html += '<td>' + timeAgo(item.created) + '</td>';
+                html += '<td>' + formatTime(item.expires) + '</td>';
+                html += '<td>' + status + '</td>';
+                html += '<td><button class="btn-sm btn-red" onclick="revokeToken(\'' + item.jti + '\')">Revoke</button></td>';
+                html += '</tr>';
+            });
+            html += '</table>';
+            document.getElementById("token-list").innerHTML = html;
+        }
+
+        async function approveReq(id) {
+            var sel = document.getElementById("timeout-" + id);
+            var mins = parseInt(sel.value);
+            await apiCall("approve", { request_id: id, timeout_minutes: mins });
+            refresh();
+        }
+
+        async function denyReq(id) {
+            await apiCall("deny", { request_id: id });
+            refresh();
+        }
+
+        async function revokeToken(jti) {
+            await apiCall("revoke", { jti: jti });
+            refresh();
+        }
+
+        async function emergencyClear() {
+            if (!confirm("This will revoke ALL tokens and deny ALL pending requests. Continue?")) return;
+            var data = await apiCall("clear");
+            alert("Cleared " + (data.cleared || 0) + " entries.");
+            refresh();
+        }
+
+        function logout() {
+            adminKey = "";
+            sessionStorage.removeItem("_ak");
+            document.getElementById("panel-view").style.display = "none";
+            document.getElementById("login-view").style.display = "flex";
+            document.getElementById("admin-key-input").value = "";
+            document.getElementById("login-btn").disabled = false;
+        }
+
+        function esc(s) {
+            var d = document.createElement("div");
+            d.textContent = s || "";
+            return d.innerHTML;
+        }
+
+        function timeAgo(ts) {
+            var diff = Date.now() - ts;
+            if (diff < 60000) return "just now";
+            if (diff < 3600000) return Math.floor(diff / 60000) + "m ago";
+            if (diff < 86400000) return Math.floor(diff / 3600000) + "h ago";
+            return Math.floor(diff / 86400000) + "d ago";
+        }
+
+        function formatTime(ts) {
+            return new Date(ts).toLocaleString();
+        }
+    </script>
+</body>
+</html>

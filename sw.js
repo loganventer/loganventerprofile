@@ -1,11 +1,12 @@
 // Service Worker for Logan Venter Portfolio
-const CACHE_NAME = 'logan-venter-portfolio-v1.0.1';
+const CACHE_NAME = 'logan-venter-portfolio-v1.0.2';
 const urlsToCache = [
     '/',
     '/index.html',
     '/css/style.css',
     '/js/main.js',
     '/js/neuralbackground.js',
+    '/js/chatbot.js',
     '/assets/images/image.jpg',
     '/assets/documents/Logan Venter Curriculum Vitae 13-06-2025.pdf',
     'https://cdn.tailwindcss.com',
@@ -29,6 +30,13 @@ self.addEventListener('install', event => {
 
 // Fetch event - serve from cache when offline
 self.addEventListener('fetch', event => {
+    // Never cache API calls (Netlify Functions, external backends)
+    const url = new URL(event.request.url);
+    if (url.pathname.startsWith('/.netlify/functions/') || url.pathname === '/cb-admin.html') {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request)
             .then(response => {

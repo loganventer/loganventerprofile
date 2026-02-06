@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /cb-admin.html
 
 # Sitemap
 Sitemap: https://loganventer.com/sitemap.xml

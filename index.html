@@ -198,6 +198,7 @@
                         <a href="#" onclick="showSection('personal-interests', this)">Personal Interests</a>
                     </div>
                 </div>
+                <a href="#" class="nav-item" onclick="showSection('chatbot-demo', this)">AI Demo</a>
                 <a href="#" class="nav-item" onclick="showSection('references', this)">References</a>
                 <a href="assets/documents/Logan Venter Curriculum Vitae 13-06-2025.pdf" download="Logan Venter Curriculum Vitae 13-06-2025.pdf" class="btn-primary text-white font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center whitespace-nowrap">
                     <i class="fas fa-download mr-2"></i>Download My CV
@@ -241,6 +242,7 @@
             <h3 class="text-gray-400 mt-6 mb-2 font-bold">Projects</h3>
             <a href="#" class="block py-2 text-white text-lg" onclick="showSection('featured-projects', this); toggleMobileMenu();">Featured Projects</a>
             <a href="#" class="block py-2 text-white text-lg" onclick="showSection('personal-interests', this); toggleMobileMenu();">Personal Interests</a>
+            <a href="#" class="block py-3 text-white text-xl" onclick="showSection('chatbot-demo', this); toggleMobileMenu();">AI Demo</a>
             <a href="#" class="block py-3 text-white text-xl" onclick="showSection('references', this); toggleMobileMenu();">References</a>
             <a href="assets/documents/Logan Venter Curriculum Vitae 13-06-2025.pdf" download="Logan Venter Curriculum Vitae 13-06-2025.pdf" class="mt-8 inline-flex items-center justify-center btn-primary text-white font-bold py-3 px-5 rounded-lg whitespace-nowrap">
                 <i class="fas fa-download mr-2"></i>Download CV
@@ -898,6 +900,35 @@ graph LR
             </div>
         </section>
         
+        <section id="chatbot-demo" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">AI Assistant Demo</h2>
+                <p class="text-lg mb-6 text-gray-400">A live demo of my chatbot framework. Ask questions about my experience, skills, or projects.</p>
+
+                <div id="chatbot-container" class="chatbot-container">
+                    <div id="chatbot-messages" class="chatbot-messages"></div>
+
+                    <div id="chatbot-chips" class="chatbot-chips">
+                        <button class="chatbot-prompt-chip">What's your AI experience?</button>
+                        <button class="chatbot-prompt-chip">Tell me about MCP</button>
+                        <button class="chatbot-prompt-chip">What languages do you use?</button>
+                    </div>
+
+                    <div class="chatbot-input-area">
+                        <input id="chatbot-input" class="chatbot-input" type="text" placeholder="Ask me anything..." autocomplete="off">
+                        <button id="chatbot-send" class="chatbot-send-btn" aria-label="Send message">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+
+                    <div class="chatbot-footer">
+                        <span id="chatbot-status-dot" class="chatbot-dot chatbot-dot-gray"></span>
+                        <span id="chatbot-status-text" class="text-xs text-gray-500">Powered by Claude</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="references" class="section">
             <div class="content-card p-8">
                 <h2 class="text-3xl font-bold mb-6">All References</h2>
@@ -955,5 +986,6 @@ graph LR
 
     <script src="js/neuralbackground.js" defer></script>
     <script src="js/main.js" defer></script>
+    <script src="js/chatbot.js" defer></script>
 </body>
 </html>

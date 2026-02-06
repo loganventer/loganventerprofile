@@ -1,0 +1,9 @@
+{
+  "name": "logan-venter-portfolio",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@netlify/blobs": "^10.5.0"
+  }
+}
