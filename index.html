@@ -260,24 +260,23 @@
                 </div>
                 <h1 class="text-4xl font-bold mb-4">About Me</h1>
                 <p class="text-lg leading-relaxed mb-4">
-                    I architect and build production AI platforms. Over 20 years in software development, I design full ecosystems — from multi-protocol server frameworks to agentic chatbot platforms to RAG-powered knowledge bases. My current focus: enabling organizations to deploy LLM-powered systems with enterprise-grade reliability.
+                    I architect and build production AI platforms. Over 20 years in software development, from multi-protocol server frameworks to agentic chatbot platforms to RAG-powered knowledge bases. My current focus: enabling organizations to deploy LLM-powered systems with enterprise-grade reliability.
                 </p>
 
                 <h3 class="text-xl font-bold mb-3 text-sky-400">What I've Built</h3>
                 <ul class="list-disc list-outside pl-5 space-y-2 mb-6 text-lg">
-                    <li>Production MCP (Model Context Protocol) server framework for .NET 9 supporting 5 transport protocols (stdio, REST, SSE, SignalR, gRPC)</li>
-                    <li>Agentic chatbot platform with pluggable LLM providers (Azure OpenAI, Anthropic, Ollama, custom endpoints)</li>
-                    <li>RAG orchestration systems integrating Qdrant, FAISS, Pinecone, ChromaDB, and Weaviate</li>
-                    <li>Knowledge base platforms with semantic search, hierarchical document management, and streaming responses</li>
-                    <li>Cross-platform chat interfaces (React, Flutter) with real-time SSE/WebSocket streaming</li>
-                    <li>Azure DevOps integration tools for AI-assisted development workflows</li>
+                    <li>Production MCP (Model Context Protocol) server framework for .NET 9 supporting multiple transport protocols with session management, authentication, and automatic tool discovery</li>
+                    <li>Agentic chatbot platform with LangChain/LangGraph orchestration, pluggable LLM providers, RAG pipelines across multiple vector stores, and cross-platform frontends (React, Flutter)</li>
+                    <li>MCP meta-tooling: servers that scaffold, build, and publish new MCP server projects from templates</li>
+                    <li>Knowledge base platforms with semantic search, hierarchical document management, and conversational RAG interfaces</li>
+                    <li>Azure DevOps integration tools exposing DevOps operations as AI-callable MCP tools</li>
                 </ul>
 
                 <h3 class="text-xl font-bold mb-3 text-sky-400">Technical Foundation</h3>
                 <div class="grid md:grid-cols-2 gap-x-8 gap-y-2 mb-6 text-lg">
                     <div><strong class="text-white">Languages:</strong> C# (.NET 9), Python (FastAPI, Pydantic), TypeScript/React, Dart/Flutter</div>
                     <div><strong class="text-white">Architecture:</strong> iDesign Methodology (trained by Juval L&ouml;wy), Clean Architecture, DDD</div>
-                    <div><strong class="text-white">AI/ML:</strong> LLM orchestration, RAG pipelines, vector embeddings, prompt engineering</div>
+                    <div><strong class="text-white">AI/ML:</strong> LangChain, LangGraph, LLM orchestration, RAG pipelines, vector embeddings, prompt engineering</div>
                     <div><strong class="text-white">Infrastructure:</strong> Docker, Azure, multi-protocol APIs, distributed systems</div>
                 </div>
 
@@ -289,9 +288,6 @@
                     <li>Direct feedback and honest technical discourse</li>
                 </ul>
 
-                <p class="text-lg leading-relaxed">
-                    Currently building a C# RPG campaign engine integrating Ollama and DeepSeek for procedural narrative generation.
-                </p>
                 <div class="mt-8 text-center lg:text-left">
                     <a href="mailto:logan.venter@outlook.com" class="text-sky-400 text-lg hover:underline"><i class="fas fa-envelope mr-2"></i>logan.venter@outlook.com</a>
                     <span class="mx-4 text-gray-500 hidden md:inline">|</span>
@@ -640,8 +636,8 @@
                         <p>Primary specialty. Architecting and developing high-performance, scalable back-end services, APIs, and AI platform frameworks. Deep expert-level proficiency from legacy .NET Framework through to .NET 9.</p>
                     </div>
                     <div>
-                        <h3 class="text-xl font-semibold text-sky-600">Python (FastAPI, Pydantic)</h3>
-                        <p>Building RAG orchestration services, agentic chatbot backends, and LLM integration layers with FastAPI, LangChain, and LangGraph.</p>
+                        <h3 class="text-xl font-semibold text-sky-600">Python (LangChain, LangGraph, FastAPI)</h3>
+                        <p>Building agentic chatbot platforms and RAG orchestration services with LangChain/LangGraph for LLM orchestration, FastAPI for backend APIs, and Pydantic for data validation.</p>
                     </div>
                     <div>
                         <h3 class="text-xl font-semibold text-sky-600">TypeScript / React</h3>
@@ -673,7 +669,7 @@
                 <div class="space-y-4">
                     <div>
                         <h3 class="text-xl font-semibold text-sky-600">AI/ML Engineering</h3>
-                        <p>Model Context Protocol (MCP), Retrieval-Augmented Generation (RAG), LLM Orchestration, Vector Databases (Qdrant, FAISS, Pinecone, ChromaDB, Weaviate), Prompt Engineering, Semantic Search, Embeddings.</p>
+                        <p>LangChain, LangGraph, Model Context Protocol (MCP), Retrieval-Augmented Generation (RAG), LLM Orchestration, Vector Databases (Qdrant, FAISS, Pinecone, ChromaDB, Weaviate), Prompt Engineering, Semantic Search, Embeddings.</p>
                     </div>
                     <div>
                         <h3 class="text-xl font-semibold text-sky-600">Multi-Protocol Backend Architecture</h3>
@@ -737,7 +733,7 @@
                             <span class="project-label project-label-blue">Open Source Framework</span>
                             <h3 class="text-2xl font-bold mb-3">Production MCP Server Framework for .NET 9</h3>
                             <p class="text-gray-400 mb-4">
-                                A Model Context Protocol server framework supporting five transport protocols
+                                A Model Context Protocol server framework supporting multiple transport protocols
                                 with session management, JWT &amp; API key authentication, JSON schema validation,
                                 and automatic tool discovery. Built for enterprise AI agent integrations.
                             </p>
@@ -775,9 +771,10 @@ graph LR
                             <span class="project-label project-label-green">Full-Stack AI Platform</span>
                             <h3 class="text-2xl font-bold mb-3">Enterprise Agentic Chatbot Framework</h3>
                             <p class="text-gray-400 mb-4">
-                                Full-stack chatbot platform with pluggable LLM providers, RAG pipeline with multiple
-                                vector store backends, streaming responses via SSE/WebSocket, and React &amp; Flutter
-                                frontends. Supports multi-bot routing, A/B testing, and comprehensive metrics.
+                                Full-stack chatbot platform built on LangChain and LangGraph with pluggable LLM
+                                providers, RAG pipelines across multiple vector store backends, streaming responses
+                                via SSE/WebSocket, and React &amp; Flutter frontends. Supports multi-bot routing,
+                                A/B testing, and comprehensive metrics.
                             </p>
                             <div class="project-image-placeholder mb-4">
                                 <i class="fas fa-image text-3xl text-gray-600"></i>
@@ -797,12 +794,11 @@ graph LR
                             </pre>
                             <div class="flex flex-wrap gap-2 mt-4">
                                 <span class="project-tag project-tag-green">Python</span>
+                                <span class="project-tag project-tag-green">LangChain</span>
+                                <span class="project-tag project-tag-green">LangGraph</span>
                                 <span class="project-tag project-tag-green">FastAPI</span>
                                 <span class="project-tag project-tag-green">React</span>
-                                <span class="project-tag project-tag-green">TypeScript</span>
                                 <span class="project-tag project-tag-green">Flutter</span>
-                                <span class="project-tag project-tag-green">Qdrant</span>
-                                <span class="project-tag project-tag-green">FAISS</span>
                             </div>
                         </div>
                     </div>
@@ -815,8 +811,7 @@ graph LR
                             <h3 class="text-2xl font-bold mb-3">AI-Powered Azure DevOps Integration via MCP</h3>
                             <p class="text-gray-400 mb-4">
                                 MCP server exposing Azure DevOps operations as AI-callable tools. Enables LLM agents
-                                to query backlogs, create work items, manage repositories, trigger pipelines, and interact
-                                with DevOps workflows through natural language.
+                                to manage work items, pull requests, projects, and relationships through natural language.
                             </p>
                             <div class="project-image-placeholder mb-4">
                                 <i class="fas fa-image text-3xl text-gray-600"></i>
@@ -886,7 +881,7 @@ graph LR
                 
                 <h3 class="text-2xl font-bold mb-3 text-sky-400">Software Development</h3>
                 <p class="text-lg leading-relaxed mb-6">
-                    Passionate about programming, finding it exhilarating and rewarding to solve particularly hard problems. Currently developing a C# engine for text-based RPG campaigns (DnD-like mechanics), integrating Ollama and DeepSeek for advanced storytelling, with a campaign editor, and using JSON for data storage.
+                    Passionate about programming, finding it exhilarating and rewarding to solve particularly hard problems.
                 </p>
 
                 <h3 class="text-2xl font-bold mb-3 text-sky-400">Tech Innovations</h3>
