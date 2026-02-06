@@ -549,8 +549,7 @@
         if (block.endsWith("\n")) block = block.slice(0, -1);
 
         if (lang === "mermaid") {
-          var mermaidId = "chat-mermaid-" + Math.random().toString(36).substring(2, 9);
-          result += '<div class="chat-mermaid-block" id="' + mermaidId + '">' + escapeHtml(block) + "</div>";
+          result += '<div class="chat-mermaid-block"><pre class="mermaid">' + escapeHtml(block) + "</pre></div>";
         } else {
           var langAttr = lang ? ' data-lang="' + escapeHtml(lang) + '"' : "";
           var langLabel = lang ? '<span class="chat-code-lang">' + escapeHtml(lang) + "</span>" : "";
@@ -563,36 +562,16 @@
 
   function renderMermaidBlocks(container) {
     if (typeof mermaid === "undefined") return;
-    var blocks = container.querySelectorAll(".chat-mermaid-block:not([data-rendered])");
-    if (blocks.length === 0) return;
-
-    // Convert to pre.mermaid elements for mermaid.run() compatibility
-    var nodes = [];
-    blocks.forEach(function (block) {
-      block.setAttribute("data-rendered", "true");
-      var source = block.textContent;
-      var pre = document.createElement("pre");
-      pre.className = "mermaid";
-      pre.textContent = source;
-      block.innerHTML = "";
-      block.appendChild(pre);
-      nodes.push(pre);
-    });
-
-    // Use mermaid.run() which is the recommended v10+ API
-    mermaid.run({ nodes: nodes }).catch(function () {
-      // Fallback: show source as code block on failure
-      blocks.forEach(function (block) {
-        var pre = block.querySelector("pre.mermaid");
-        if (pre && !pre.querySelector("svg")) {
-          var source = pre.textContent;
-          block.innerHTML =
-            '<pre style="color:#94a3b8;font-size:12px;white-space:pre-wrap;">' +
-            escapeHtml(source) +
-            "</pre>";
-        }
-      });
-    });
+    // Use same approach as Featured Projects: find pre.mermaid, delay, then run
+    setTimeout(function () {
+      var nodes = container.querySelectorAll("pre.mermaid:not([data-processed])");
+      if (nodes.length === 0) return;
+      try {
+        mermaid.run({ nodes: nodes });
+      } catch (e) {
+        // Fallback: leave raw text visible
+      }
+    }, 150);
   }
 
   function addMessage(role, text) {
