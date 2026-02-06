@@ -710,7 +710,7 @@
     var img = new Image();
 
     img.onload = function () {
-      var scale = 2;
+      var scale = 4;
       var canvas = document.createElement("canvas");
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
