@@ -162,6 +162,7 @@
                 <div class="dropdown relative">
                     <button class="nav-item focus:outline-none">Experience <i class="fas fa-chevron-down fa-xs"></i></button>
                     <div class="dropdown-content">
+                        <a href="#" onclick="showSection('exp-tih', this)">Senior AI/Platform Engineer | TIH</a>
                         <a href="#" onclick="showSection('exp-derivco', this)">Senior Software Developer | Derivco</a>
                         <a href="#" onclick="showSection('exp-dvt', this)">Senior Software Developer | DVT</a>
                         <a href="#" onclick="showSection('exp-seecrypt', this)">Software Developer/Team Lead | Seecrypt</a>
@@ -198,7 +199,6 @@
                         <a href="#" onclick="showSection('personal-interests', this)">Personal Interests</a>
                     </div>
                 </div>
-                <a href="#" class="nav-item" onclick="showSection('chatbot-demo', this)">AI Demo</a>
                 <a href="#" class="nav-item" onclick="showSection('references', this)">References</a>
                 <a href="assets/documents/Logan Venter Curriculum Vitae 13-06-2025.pdf" download="Logan Venter Curriculum Vitae 13-06-2025.pdf" class="btn-primary text-white font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center whitespace-nowrap">
                     <i class="fas fa-download mr-2"></i>Download My CV
@@ -217,6 +217,7 @@
             <div id="mobile-menu-close">×</div>
             <a href="#" class="block py-3 text-white text-xl" onclick="showSection('about', this); toggleMobileMenu();">About Me</a>
             <h3 class="text-gray-400 mt-6 mb-2 font-bold">Professional Experience</h3>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-tih', this); toggleMobileMenu();">TIH</a>
             <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-derivco', this); toggleMobileMenu();">Derivco</a>
             <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-dvt', this); toggleMobileMenu();">DVT</a>
             <a href="#" class="block py-2 text-white text-lg" onclick="showSection('exp-seecrypt', this); toggleMobileMenu();">Seecrypt</a>
@@ -242,7 +243,6 @@
             <h3 class="text-gray-400 mt-6 mb-2 font-bold">Projects</h3>
             <a href="#" class="block py-2 text-white text-lg" onclick="showSection('featured-projects', this); toggleMobileMenu();">Featured Projects</a>
             <a href="#" class="block py-2 text-white text-lg" onclick="showSection('personal-interests', this); toggleMobileMenu();">Personal Interests</a>
-            <a href="#" class="block py-3 text-white text-xl" onclick="showSection('chatbot-demo', this); toggleMobileMenu();">AI Demo</a>
             <a href="#" class="block py-3 text-white text-xl" onclick="showSection('references', this); toggleMobileMenu();">References</a>
             <a href="assets/documents/Logan Venter Curriculum Vitae 13-06-2025.pdf" download="Logan Venter Curriculum Vitae 13-06-2025.pdf" class="mt-8 inline-flex items-center justify-center btn-primary text-white font-bold py-3 px-5 rounded-lg whitespace-nowrap">
                 <i class="fas fa-download mr-2"></i>Download CV
@@ -260,6 +260,16 @@
                         <i class="fas fa-download mr-2"></i>Download CV
                     </a>
                 </div>
+
+                <!-- AI Chat CTA -->
+                <div class="mb-6 p-4 rounded-xl border border-sky-500/30 bg-sky-500/5 flex items-center gap-4">
+                    <i class="fas fa-robot text-sky-400 text-2xl"></i>
+                    <p class="text-gray-300 text-sm flex-1">Chat with an AI assistant that knows about my experience, skills, and projects.</p>
+                    <a href="#" onclick="showSection('chatbot-demo', this)" class="inline-flex items-center gap-2 px-5 py-2 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-lg transition-all duration-300 hover:scale-105 whitespace-nowrap">
+                        <i class="fas fa-comments"></i> Try It
+                    </a>
+                </div>
+
                 <h1 class="text-4xl font-bold mb-4">About Me</h1>
                 <p class="text-lg leading-relaxed mb-4">
                     I architect and build production AI platforms. Over 20 years in software development, from multi-protocol server frameworks to agentic chatbot platforms to RAG-powered knowledge bases. My current focus: enabling organizations to deploy LLM-powered systems with enterprise-grade reliability.
@@ -290,14 +300,6 @@
                     <li>Direct feedback and honest technical discourse</li>
                 </ul>
 
-                <!-- AI Demo CTA -->
-                <div class="mt-8 mb-8 p-6 rounded-xl border border-sky-500/30 bg-sky-500/5 text-center">
-                    <p class="text-gray-300 mb-3">Chat with an AI assistant that knows about my experience, skills, and projects.</p>
-                    <a href="#" onclick="showSection('chatbot-demo', this)" class="inline-flex items-center gap-2 px-6 py-3 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-lg text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-sky-500/25">
-                        <i class="fas fa-robot"></i> Try the AI Demo
-                    </a>
-                </div>
-
                 <div class="mt-8 text-center lg:text-left">
                     <a href="mailto:logan.venter@outlook.com" class="text-sky-400 text-lg hover:underline"><i class="fas fa-envelope mr-2"></i>logan.venter@outlook.com</a>
                     <span class="mx-4 text-gray-500 hidden md:inline">|</span>
@@ -307,6 +309,22 @@
                         <a href="tel:+27764140083" class="text-sky-400 text-lg hover:underline">+27 76 414 0083</a>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <section id="exp-tih" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Senior AI/Platform Engineer</h2>
+                <h3 class="text-xl font-semibold mb-1 text-sky-400"><a href="https://www.tihsa.co.za/" target="_blank" class="hover:underline">Telesure Investment Holdings (TIH)</a> | Aug 2025 - Present</h3>
+                <p class="text-sm text-gray-500 mb-4">Contractor via <a href="https://www.dotcomsoftware.co.za/" target="_blank" class="text-sky-400 hover:underline">DotCom Software Solutions</a></p>
+                <ul class="list-disc list-outside pl-5 space-y-3">
+                    <li>Designing and building production AI platforms powering enterprise LLM integrations across the organization.</li>
+                    <li>Architecting a production MCP (Model Context Protocol) server framework for .NET 9 with multi-transport support, session management, and automatic tool discovery.</li>
+                    <li>Developing agentic chatbot systems with LangChain/LangGraph orchestration, pluggable LLM providers, and RAG pipelines across multiple vector store backends.</li>
+                    <li>Building knowledge base platforms with semantic search, document management, and conversational RAG interfaces.</li>
+                    <li>Creating MCP meta-tooling that scaffolds, builds, and publishes new MCP server projects from templates.</li>
+                    <li>Leading technical architecture decisions and mentoring team members on AI/ML best practices.</li>
+                </ul>
             </div>
         </section>
 
@@ -906,9 +924,9 @@ graph LR
                     <div id="chatbot-messages" class="chatbot-messages"></div>
 
                     <div id="chatbot-chips" class="chatbot-chips">
-                        <button class="chatbot-prompt-chip">What's your AI experience?</button>
-                        <button class="chatbot-prompt-chip">Tell me about MCP</button>
-                        <button class="chatbot-prompt-chip">What languages do you use?</button>
+                        <button class="chatbot-prompt-chip">What projects have you built?</button>
+                        <button class="chatbot-prompt-chip">Tell me about your AI experience</button>
+                        <button class="chatbot-prompt-chip">What's your tech stack?</button>
                     </div>
 
                     <div class="chatbot-input-area">

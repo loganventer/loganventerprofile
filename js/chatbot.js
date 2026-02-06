@@ -364,7 +364,7 @@
           }
           fullText += data;
           contentEl.innerHTML = renderMarkdown(fullText);
-          messages.scrollTop = messages.scrollHeight;
+          if (isNearBottom()) scrollToBottom();
         }
       }
 
@@ -553,7 +553,8 @@
         } else {
           var langAttr = lang ? ' data-lang="' + escapeHtml(lang) + '"' : "";
           var langLabel = lang ? '<span class="chat-code-lang">' + escapeHtml(lang) + "</span>" : "";
-          result += '<div class="chat-code-block"' + langAttr + ">" + langLabel + "<pre><code>" + escapeHtml(block) + "</code></pre></div>";
+          var copyBtn = '<button class="chat-code-copy" title="Copy"><i class="fas fa-copy"></i></button>';
+          result += '<div class="chat-code-block"' + langAttr + "><div class=\"chat-code-header\">" + langLabel + copyBtn + "</div><pre><code>" + escapeHtml(block) + "</code></pre></div>";
         }
       }
     }
@@ -574,9 +575,36 @@
     }, 150);
   }
 
+  function formatTime() {
+    var now = new Date();
+    var h = now.getHours();
+    var m = now.getMinutes();
+    var ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return h + ":" + (m < 10 ? "0" : "") + m + " " + ampm;
+  }
+
+  function isNearBottom() {
+    var threshold = 100;
+    return messages.scrollHeight - messages.scrollTop - messages.clientHeight < threshold;
+  }
+
+  function scrollToBottom() {
+    messages.scrollTo({ top: messages.scrollHeight, behavior: "smooth" });
+  }
+
   function addMessage(role, text) {
+    var shouldScroll = isNearBottom();
+
     var wrapper = document.createElement("div");
     wrapper.className = "chat-msg chat-msg-" + role;
+
+    // Avatar
+    var avatar = document.createElement("div");
+    avatar.className = "chat-msg-avatar";
+    avatar.innerHTML = role === "assistant"
+      ? '<i class="fas fa-robot"></i>'
+      : '<i class="fas fa-user"></i>';
 
     var bubble = document.createElement("div");
     bubble.className = "chat-msg-bubble";
@@ -587,11 +615,35 @@
       content.innerHTML = renderMarkdown(text);
     }
 
+    // Timestamp
+    var time = document.createElement("div");
+    time.className = "chat-msg-time";
+    time.textContent = formatTime();
+
     bubble.appendChild(content);
+    bubble.appendChild(time);
+    wrapper.appendChild(avatar);
     wrapper.appendChild(bubble);
     messages.appendChild(wrapper);
-    messages.scrollTop = messages.scrollHeight;
+
+    if (shouldScroll) scrollToBottom();
     if (text) renderMermaidBlocks(content);
     return wrapper;
   }
+
+  // Copy button handler (event delegation)
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest(".chat-code-copy");
+    if (!btn) return;
+    var block = btn.closest(".chat-code-block");
+    if (!block) return;
+    var code = block.querySelector("code");
+    if (!code) return;
+    navigator.clipboard.writeText(code.textContent).then(function () {
+      btn.innerHTML = '<i class="fas fa-check"></i>';
+      setTimeout(function () {
+        btn.innerHTML = '<i class="fas fa-copy"></i>';
+      }, 1500);
+    });
+  });
 })();
