@@ -53,10 +53,30 @@ window.updateMermaidTheme = function(theme) {
         });
     }
 
+    // Pastel palettes per project accent color
+    var palettes = {
+        blue:   { fill: '#dbeafe', stroke: '#60a5fa' },
+        green:  { fill: '#d1fae5', stroke: '#34d399' },
+        amber:  { fill: '#fef3c7', stroke: '#fbbf24' },
+        purple: { fill: '#ede9fe', stroke: '#a78bfa' }
+    };
+
     // === Project card diagrams ===
-    document.querySelectorAll('.project-card svg').forEach(function(svg) {
+    document.querySelectorAll('.project-card').forEach(function(card) {
+        var svg = card.querySelector('svg');
+        if (!svg) return;
+
+        // Determine pastel palette from card accent
+        var p = palettes.blue;
+        if (card.querySelector('.project-card-accent-green')) p = palettes.green;
+        else if (card.querySelector('.project-card-accent-amber')) p = palettes.amber;
+        else if (card.querySelector('.project-card-accent-purple')) p = palettes.purple;
+
         overrideEls(svg, '.node rect, .node polygon, .node circle', function(el) {
-            el.style.setProperty('fill', '#ffffff', 'important');
+            var orig = el.getAttribute(ATTR) || '';
+            var isNeutral = orig.indexOf('1e293b') !== -1;
+            el.style.setProperty('fill', isNeutral ? '#f1f5f9' : p.fill, 'important');
+            el.style.setProperty('stroke', p.stroke, 'important');
         });
         overrideEls(svg, '.nodeLabel', function(el) {
             el.style.setProperty('color', '#1e293b', 'important');
@@ -80,25 +100,25 @@ window.updateMermaidTheme = function(theme) {
     // === Chatbot diagrams (always dark background in both themes) ===
     document.querySelectorAll('.chat-mermaid-block svg').forEach(function(svg) {
         svg.querySelectorAll('.node rect, .node polygon, .node circle').forEach(function(el) {
-            el.style.setProperty('fill', '#1e3a5f', 'important');
-            el.style.setProperty('stroke', '#3b82f6', 'important');
+            el.style.setProperty('fill', '#1d4ed8', 'important');
+            el.style.setProperty('stroke', '#60a5fa', 'important');
         });
         svg.querySelectorAll('.nodeLabel').forEach(function(el) {
-            el.style.setProperty('color', '#93c5fd', 'important');
+            el.style.setProperty('color', '#dbeafe', 'important');
         });
         svg.querySelectorAll('.edgeLabel rect, .edgeLabel polygon').forEach(function(el) {
             el.style.setProperty('fill', '#0f172a', 'important');
             el.style.setProperty('stroke', 'none', 'important');
         });
         svg.querySelectorAll('.edgeLabel span').forEach(function(el) {
-            el.style.setProperty('color', '#94a3b8', 'important');
+            el.style.setProperty('color', '#cbd5e1', 'important');
         });
         svg.querySelectorAll('.flowchart-link').forEach(function(el) {
-            el.style.setProperty('stroke', '#475569', 'important');
+            el.style.setProperty('stroke', '#64748b', 'important');
         });
         svg.querySelectorAll('marker path').forEach(function(el) {
-            el.style.setProperty('fill', '#475569', 'important');
-            el.style.setProperty('stroke', '#475569', 'important');
+            el.style.setProperty('fill', '#64748b', 'important');
+            el.style.setProperty('stroke', '#64748b', 'important');
         });
     });
 };

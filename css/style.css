@@ -825,13 +825,13 @@ html {
 /* Chatbot mermaid always on dark background - visible node fills */
 .chat-mermaid-block .node rect,
 .chat-mermaid-block .node polygon,
-.chat-mermaid-block .node circle { fill: #1e3a5f !important; stroke: #3b82f6 !important; }
-.chat-mermaid-block .nodeLabel { color: #93c5fd !important; }
+.chat-mermaid-block .node circle { fill: #1d4ed8 !important; stroke: #60a5fa !important; }
+.chat-mermaid-block .nodeLabel { color: #dbeafe !important; }
 .chat-mermaid-block .edgeLabel rect,
 .chat-mermaid-block .edgeLabel polygon { fill: #0f172a !important; stroke: none !important; }
-.chat-mermaid-block .edgeLabel span { color: #94a3b8 !important; }
-.chat-mermaid-block .flowchart-link { stroke: #475569 !important; }
-.chat-mermaid-block marker path { fill: #475569 !important; stroke: #475569 !important; }
+.chat-mermaid-block .edgeLabel span { color: #cbd5e1 !important; }
+.chat-mermaid-block .flowchart-link { stroke: #64748b !important; }
+.chat-mermaid-block marker path { fill: #64748b !important; stroke: #64748b !important; }
 .chat-mermaid-block svg {
     max-width: 100%;
     height: auto;

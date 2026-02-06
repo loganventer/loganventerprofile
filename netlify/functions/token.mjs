@@ -56,6 +56,26 @@ function cors(body, status = 200) {
   });
 }
 
+// Email notification via Netlify Forms (configured in dashboard)
+async function notifyTokenRequest(data) {
+  try {
+    const siteUrl = process.env.URL || "https://loganventer.netlify.app";
+    await fetch(siteUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        "form-name": "token-request",
+        ip: data.ip,
+        ua: data.ua,
+        time: new Date(data.ts).toISOString(),
+        "request-id": data.id,
+      }).toString(),
+    });
+  } catch (e) {
+    console.error("Token request notification failed:", e);
+  }
+}
+
 // Rate limiting for token requests
 const requestLimits = new Map();
 function checkRequestLimit(ip) {
@@ -106,13 +126,15 @@ export default async (request, context) => {
     }
     const requestId = generateId();
     const ua = request.headers.get("user-agent") || "unknown";
+    const ts = Date.now();
     await pending.setJSON(requestId, {
       id: requestId,
       ip,
       ua: ua.substring(0, 120),
-      ts: Date.now(),
+      ts,
       status: "pending",
     });
+    await notifyTokenRequest({ id: requestId, ip, ua: ua.substring(0, 120), ts });
     return cors({ request_id: requestId });
   }
 
