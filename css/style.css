@@ -495,7 +495,18 @@ html {
     border-radius: 8px;
     padding: 16px;
 }
-/* Keep original dark node fills + light text from mermaid style directives */
+/* White node fills with accent strokes, dark text */
+[data-theme="light"] .project-card .node rect,
+[data-theme="light"] .project-card .node polygon,
+[data-theme="light"] .project-card .node circle {
+    fill: #ffffff !important;
+}
+[data-theme="light"] .project-card .nodeLabel,
+[data-theme="light"] .project-card .nodeLabel div,
+[data-theme="light"] .project-card .nodeLabel span,
+[data-theme="light"] .project-card .nodeLabel p {
+    color: #1e293b !important;
+}
 /* Edge labels: dark text, light bg */
 [data-theme="light"] .project-card .mermaid .edgeLabel span { color: #334155 !important; }
 [data-theme="light"] .project-card .mermaid .edgeLabel rect,
