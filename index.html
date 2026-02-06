@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logan Venter | Senior Software Developer</title>
-    
+    <title>Logan Venter | Senior AI/Platform Engineer & MCP Framework Author</title>
+
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Senior Software Developer with over 20 years of experience specializing in C#, back-end API development, and AI-driven applications. Expert in system architecture and Domain-Driven Design.">
-    <meta name="keywords" content="software developer, C#, API development, system architecture, DDD, AI applications, senior developer, South Africa">
+    <meta name="description" content="Senior AI/Platform Engineer and MCP Framework Author. Building production RAG systems, LLM orchestration frameworks, and agentic AI platforms with .NET 9, Python, gRPC, and SignalR.">
+    <meta name="keywords" content="MCP, Model Context Protocol, RAG, Retrieval-Augmented Generation, LLM Orchestration, Vector Database, .NET 9, gRPC, SignalR, FastAPI, Clean Architecture, iDesign, AI Platform, Agentic Systems, Semantic Search, Prompt Engineering, senior software developer, C#, Python, South Africa">
     <meta name="author" content="Logan Venter">
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://loganventer.com/">
-    <meta property="og:title" content="Logan Venter | Senior Software Developer">
-    <meta property="og:description" content="Senior Software Developer with over 20 years of experience specializing in C#, back-end API development, and AI-driven applications.">
+    <meta property="og:title" content="Logan Venter | Senior AI/Platform Engineer & MCP Framework Author">
+    <meta property="og:description" content="Senior AI/Platform Engineer building production MCP servers, RAG systems, and agentic AI platforms with .NET 9 and Python.">
     <meta property="og:image" content="https://loganventer.com/assets/images/og-image.jpg">
-    
+
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://loganventer.com/">
-    <meta property="twitter:title" content="Logan Venter | Senior Software Developer">
-    <meta property="twitter:description" content="Senior Software Developer with over 20 years of experience specializing in C#, back-end API development, and AI-driven applications.">
+    <meta property="twitter:title" content="Logan Venter | Senior AI/Platform Engineer & MCP Framework Author">
+    <meta property="twitter:description" content="Senior AI/Platform Engineer building production MCP servers, RAG systems, and agentic AI platforms with .NET 9 and Python.">
     <meta property="twitter:image" content="https://loganventer.com/assets/images/og-image.jpg">
     
     <!-- Favicon -->
@@ -46,6 +46,33 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     
+    <!-- Mermaid Diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'dark',
+                themeVariables: {
+                    darkMode: true,
+                    background: 'transparent',
+                    primaryColor: '#1e293b',
+                    primaryTextColor: '#94a3b8',
+                    primaryBorderColor: '#475569',
+                    lineColor: '#475569',
+                    secondaryColor: '#1e293b',
+                    tertiaryColor: '#1e293b',
+                    fontFamily: 'Inter, sans-serif',
+                    fontSize: '13px'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 15
+                }
+            });
+        });
+    </script>
+
     <!-- Custom Styles -->
     <link rel="stylesheet" href="css/style.css">
     
@@ -139,7 +166,13 @@
                         <a href="#" onclick="showSection('skills-concepts', this)">Architectural Concepts</a>
                     </div>
                 </div>
-                <a href="#" class="nav-item" onclick="showSection('personal-interests', this)">Projects</a>
+                <div class="dropdown relative">
+                    <button class="nav-item focus:outline-none">Projects <i class="fas fa-chevron-down fa-xs"></i></button>
+                    <div class="dropdown-content">
+                        <a href="#" onclick="showSection('featured-projects', this)">Featured Projects</a>
+                        <a href="#" onclick="showSection('personal-interests', this)">Personal Interests</a>
+                    </div>
+                </div>
                 <a href="#" class="nav-item" onclick="showSection('references', this)">References</a>
                 <a href="assets/documents/Logan Venter Curriculum Vitae 13-06-2025.pdf" download="Logan Venter Curriculum Vitae 13-06-2025.pdf" class="btn-primary text-white font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center whitespace-nowrap">
                     <i class="fas fa-download mr-2"></i>Download My CV
@@ -180,7 +213,9 @@
             <a href="#" class="block py-2 text-white text-lg" onclick="showSection('skills-frameworks', this); toggleMobileMenu();">Frameworks &amp; Methodologies</a>
             <a href="#" class="block py-2 text-white text-lg" onclick="showSection('skills-concepts', this); toggleMobileMenu();">Architectural Concepts</a>
             
-            <a href="#" class="block py-3 text-white text-xl mt-4" onclick="showSection('personal-interests', this); toggleMobileMenu();">Interests &amp; Projects</a>
+            <h3 class="text-gray-400 mt-6 mb-2 font-bold">Projects</h3>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('featured-projects', this); toggleMobileMenu();">Featured Projects</a>
+            <a href="#" class="block py-2 text-white text-lg" onclick="showSection('personal-interests', this); toggleMobileMenu();">Personal Interests</a>
             <a href="#" class="block py-3 text-white text-xl" onclick="showSection('references', this); toggleMobileMenu();">References</a>
             <a href="assets/documents/Logan Venter Curriculum Vitae 13-06-2025.pdf" download="Logan Venter Curriculum Vitae 13-06-2025.pdf" class="mt-8 inline-flex items-center justify-center btn-primary text-white font-bold py-3 px-5 rounded-lg whitespace-nowrap">
                 <i class="fas fa-download mr-2"></i>Download CV
@@ -200,16 +235,37 @@
                 </div>
                 <h1 class="text-4xl font-bold mb-4">About Me</h1>
                 <p class="text-lg leading-relaxed mb-4">
-                    Highly analytical Senior Software Developer with over two decades of experience, specializing in C# and robust back-end API development. Possesses a deep passion for continuous learning and intellectual inquiry, notably demonstrated by pioneering an AI-driven application for dynamic prompt generation and execution on OpenAI's API. 
+                    I architect and build production AI platforms. Over 20 years in software development, I've evolved from backend engineer to platform architect — designing ecosystems, not just APIs. My current focus: enabling organizations to deploy LLM-powered systems with enterprise-grade reliability.
                 </p>
-                <p class="text-lg leading-relaxed mb-4">
-                    This groundbreaking system interpreted JSON definition files to create executable steps, interpret C# code call chains and models, and build custom, reusable prompts from further JSON components. It featured a flexible factory pattern for swapping source components (e.g., C#, plain text, SQL queries), recursive chaining of steps for complex AI queries, and support for diverse data sources (HTTP, disk, memory).
-                </p>
-                <p class="text-lg leading-relaxed mb-4">
-                    This experimental work significantly advanced automation testing by generating tests from various data and code contexts, effectively lifting a substantial burden from Quality Assurance efforts.
-                </p>
+
+                <h3 class="text-xl font-bold mb-3 text-sky-400">What I've Built</h3>
+                <ul class="list-disc list-inside space-y-2 mb-6 text-lg">
+                    <li>Production MCP (Model Context Protocol) server framework for .NET 9 supporting 5 transport protocols (stdio, REST, SSE, SignalR, gRPC)</li>
+                    <li>Agentic chatbot platform with pluggable LLM providers (Azure OpenAI, Anthropic, Ollama, custom endpoints)</li>
+                    <li>RAG orchestration systems integrating Qdrant, FAISS, Pinecone, ChromaDB, and Weaviate</li>
+                    <li>Knowledge base platforms with semantic search, hierarchical document management, and streaming responses</li>
+                    <li>Cross-platform chat interfaces (React, Flutter) with real-time SSE/WebSocket streaming</li>
+                    <li>Azure DevOps integration tools for AI-assisted development workflows</li>
+                </ul>
+
+                <h3 class="text-xl font-bold mb-3 text-sky-400">Technical Foundation</h3>
+                <div class="grid md:grid-cols-2 gap-x-8 gap-y-2 mb-6 text-lg">
+                    <div><strong class="text-white">Languages:</strong> C# (.NET 9), Python (FastAPI, Pydantic), TypeScript/React, Dart/Flutter</div>
+                    <div><strong class="text-white">Architecture:</strong> iDesign Methodology (trained by Juval L&ouml;wy), Clean Architecture, DDD</div>
+                    <div><strong class="text-white">AI/ML:</strong> LLM orchestration, RAG pipelines, vector embeddings, prompt engineering</div>
+                    <div><strong class="text-white">Infrastructure:</strong> Docker, Azure, multi-protocol APIs, distributed systems</div>
+                </div>
+
+                <h3 class="text-xl font-bold mb-3 text-sky-400">What I Believe In</h3>
+                <ul class="list-disc list-inside space-y-2 mb-6 text-lg">
+                    <li>Clean architecture over clever hacks</li>
+                    <li>Deterministic systems where possible, graceful degradation where not</li>
+                    <li>Code that communicates intent</li>
+                    <li>Direct feedback and honest technical discourse</li>
+                </ul>
+
                 <p class="text-lg leading-relaxed">
-                    A proven track record of delivering scalable, secure, and performant solutions is complemented by advanced training in system architecture through Juval Löwy's prestigious Architect's Master Class. Adept at problem-solving, applying iDesign principles, implementing Domain-Driven Design (DDD), and providing technical leadership with a focus on driving project success and fostering team growth.
+                    Currently building a C# RPG campaign engine integrating Ollama and DeepSeek for procedural narrative generation.
                 </p>
                 <div class="mt-8 text-center lg:text-left">
                     <a href="mailto:logan.venter@outlook.com" class="text-sky-400 text-lg hover:underline"><i class="fas fa-envelope mr-2"></i>logan.venter@outlook.com</a>
@@ -229,16 +285,15 @@
                 <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.derivco.com/" target="_blank" class="hover:underline">Derivco</a> | Nov 2018 - Jun 2025</h3>
                 <div class="grid md:grid-cols-3 gap-8">
                     <ul class="list-disc list-inside space-y-3 md:col-span-2">
+                        <li>Led technical development of internal AI initiative, creating a dynamic prompt generation system that interprets JSON definitions to construct customizable, reusable prompts for OpenAI API integration.</li>
+                        <li>Architected LLM-powered automation tools that reduced SDET workload for test generation and code review workflows.</li>
+                        <li>Applied iDesign architectural methodology to create maintainable, scalable backend systems.</li>
                         <li>Led the technical development, release, and maintenance of end-to-end software systems.</li>
                         <li>Drove continuous integration and continuous delivery pipelines.</li>
                         <li>Defined and drove the technical roadmap for multiple software products.</li>
                         <li>Assessed complexity, scope, risk, and engineering effort for significant software development projects.</li>
                         <li>Contributed to architecture roadmaps, ensuring adherence to established standards and principles.</li>
-                        <li>Ensured overarching software quality across systems.</li>
                         <li>Mentored junior developers, providing guidance and support.</li>
-                        <li>Collaborated with cross-functional teams to ensure seamless project delivery.</li>
-                        <li>Troubleshot and resolved complex technical issues.</li>
-                        <li>Stayed abreast of industry trends and emerging technologies.</li>
                     </ul>
                     <div class="md:border-l md:pl-8 border-gray-400">
                         <h4 class="text-lg font-bold mb-2">Key References:</h4>
@@ -556,24 +611,32 @@
                 <h2 class="text-3xl font-bold mb-4">Programming Languages</h2>
                 <div class="space-y-4">
                     <div>
-                        <h3 class="text-xl font-semibold text-sky-600">C# &amp; .NET Ecosystem</h3>
-                        <p>Architecting and developing high-performance, scalable back-end services and APIs as my primary specialty. Deep, expert-level proficiency across the full framework, from legacy systems to .NET 8.</p>
+                        <h3 class="text-xl font-semibold text-sky-600">C# &amp; .NET 9 Ecosystem</h3>
+                        <p>Primary specialty. Architecting and developing high-performance, scalable back-end services, APIs, and AI platform frameworks. Deep expert-level proficiency from legacy .NET Framework through to .NET 9.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">Python (FastAPI, Pydantic)</h3>
+                        <p>Building RAG orchestration services, agentic chatbot backends, and LLM integration layers with FastAPI, LangChain, and LangGraph.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">TypeScript / React</h3>
+                        <p>Building modern frontend interfaces for AI platforms, admin dashboards, and real-time chat applications with streaming support.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">Dart / Flutter</h3>
+                        <p>Cross-platform mobile and desktop chat interfaces with real-time SSE/WebSocket streaming integration.</p>
                     </div>
                     <div>
                         <h3 class="text-xl font-semibold text-sky-600">SQL (T-SQL/General)</h3>
-                        <p>Designing and implementing complex database schemas, writing optimized queries, and ensuring data integrity for mission-critical financial and communication systems.</p>
+                        <p>Designing and implementing complex database schemas, writing optimized queries, and ensuring data integrity for mission-critical systems.</p>
                     </div>
                     <div>
                         <h3 class="text-xl font-semibold text-sky-600">C++</h3>
-                        <p>Utilized for performance-critical components in secure communications applications, interfacing directly with low-level libraries and protocols.</p>
-                    </div>
-                     <div>
-                        <h3 class="text-xl font-semibold text-sky-600">Web Technologies (ASP.NET, JavaScript)</h3>
-                        <p>Building and maintaining both the front-end and back-end logic for comprehensive web-based enterprise systems.</p>
+                        <p>Performance-critical components in secure communications applications, interfacing directly with low-level libraries and protocols.</p>
                     </div>
                     <div>
                         <h3 class="text-xl font-semibold text-sky-600">Legacy &amp; Other (COBOL, Delphi, VB)</h3>
-                        <p>Foundational experience in maintaining and developing for legacy systems, demonstrating a broad and adaptable understanding of different programming paradigms.</p>
+                        <p>Foundational experience in maintaining and developing for legacy systems, demonstrating broad adaptability across programming paradigms.</p>
                     </div>
                 </div>
             </div>
@@ -584,16 +647,24 @@
                 <h2 class="text-3xl font-bold mb-4">Frameworks &amp; Methodologies</h2>
                 <div class="space-y-4">
                     <div>
-                        <h3 class="text-xl font-semibold text-sky-600">Back-end &amp; API Development</h3>
-                        <p>Specializing in the design and implementation of robust, secure, and scalable RESTful APIs for complex domains like fund management and secure communications.</p>
-                    </div>
-                     <div>
-                        <h3 class="text-xl font-semibold text-sky-600">AI &amp; LLM Integration</h3>
-                        <p>Pioneering the design and implementation of AI-driven applications. Extensive hands-on experience with dynamic prompt generation and execution, leveraging models from OpenAI, Ollama, and DeepSeek. Architected systems for interpreting JSON definitions, recursive chaining for complex queries, and building flexible, reusable prompt components.</p>
+                        <h3 class="text-xl font-semibold text-sky-600">AI/ML Engineering</h3>
+                        <p>Model Context Protocol (MCP), Retrieval-Augmented Generation (RAG), LLM Orchestration, Vector Databases (Qdrant, FAISS, Pinecone, ChromaDB, Weaviate), Prompt Engineering, Semantic Search, Embeddings.</p>
                     </div>
                     <div>
-                        <h3 class="text-xl font-semibold text-sky-600">CI/CD &amp; DevOps</h3>
-                        <p>Driving the implementation and maintenance of full continuous integration and continuous delivery pipelines using tools like Bamboo and Azure DevOps to streamline workflows and improve release velocity.</p>
+                        <h3 class="text-xl font-semibold text-sky-600">Multi-Protocol Backend Architecture</h3>
+                        <p>Designing and implementing APIs across gRPC, SignalR, Server-Sent Events (SSE), WebSocket, and REST. Building multi-transport server frameworks that support session management, authentication, and automatic tool discovery.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">Frontend &amp; Mobile</h3>
+                        <p>React, TypeScript, Flutter, Dart, Tailwind CSS. Building real-time streaming interfaces for AI chat platforms across web and mobile.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">DevOps &amp; Infrastructure</h3>
+                        <p>Docker, Docker Compose, Azure, CI/CD Pipelines, containerized deployments. Driving continuous integration and delivery pipelines using Azure DevOps.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">Testing</h3>
+                        <p>xUnit, Vitest, integration testing, architecture testing. Building test generation tools powered by LLMs to reduce QA burden.</p>
                     </div>
                 </div>
             </div>
@@ -604,21 +675,244 @@
                 <h2 class="text-3xl font-bold mb-4">Architectural Concepts</h2>
                 <div class="space-y-4">
                     <div>
-                        <h3 class="text-xl font-semibold text-sky-600">iDesign &amp; Domain-Driven Design (DDD)</h3>
-                        <p>Formally trained in advanced system architecture through Juval Löwy's Architect's Master Class. Proficient in applying the iDesign methodology and Domain-Driven Design principles to decompose complex systems and build robust, maintainable, and scalable software.</p>
+                        <h3 class="text-xl font-semibold text-sky-600">iDesign Methodology &amp; Domain-Driven Design (DDD)</h3>
+                        <p>Formally trained in advanced system architecture through Juval L&ouml;wy's prestigious Architect's Master Class. Proficient in applying the iDesign methodology and Domain-Driven Design principles to decompose complex systems into robust, maintainable, and scalable software.</p>
                     </div>
-                     <div>
-                        <h3 class="text-xl font-semibold text-sky-600">Microservices &amp; Scalable Architectures</h3>
-                        <p>Experience in architecting and decomposing monolithic systems into scalable, independently deployable microservices, leveraging Azure for orchestration and deployment.</p>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">Clean Architecture</h3>
+                        <p>Structuring AI platforms and backend services with clear separation of concerns, dependency inversion, and testable domain logic independent of frameworks and infrastructure.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">Microservices &amp; Event-Driven Architecture</h3>
+                        <p>Architecting and decomposing systems into scalable, independently deployable microservices with event-driven communication patterns, leveraging Azure for orchestration and deployment.</p>
                     </div>
                     <div>
                         <h3 class="text-xl font-semibold text-sky-600">Authentication &amp; Security</h3>
-                        <p>Implementing and enforcing robust security protocols, including token-based authentication (JWT), and integrating with various authentication providers to secure critical data.</p>
+                        <p>JWT and API key authentication, multi-provider auth integration, and security-first design for AI platform APIs and MCP server frameworks.</p>
                     </div>
-                     <div>
-                        <h3 class="text-xl font-semibold text-sky-600">Database Integration &amp; Optimization</h3>
-                        <p>Expertise in integrating applications with SQL databases, optimizing data access patterns with techniques like caching (Redis, in-memory) to ensure high performance and low latency.</p>
+                    <div>
+                        <h3 class="text-xl font-semibold text-sky-600">Database &amp; Vector Storage</h3>
+                        <p>SQL databases (PostgreSQL, SQLite), vector databases (Qdrant, FAISS, Pinecone, ChromaDB, Weaviate), caching (Redis, in-memory), and optimized data access patterns for hybrid search systems.</p>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="featured-projects" class="section">
+            <div class="content-card p-8">
+                <h2 class="text-3xl font-bold mb-2">Featured Projects</h2>
+                <p class="text-lg mb-8 text-gray-400">Personal open-source work and independent platform engineering.</p>
+
+                <div class="grid md:grid-cols-2 gap-8">
+
+                    <!-- Project 1: MCP Server Framework -->
+                    <div class="project-card">
+                        <div class="project-card-accent project-card-accent-blue"></div>
+                        <div class="project-card-body">
+                            <span class="project-label project-label-blue">Open Source Framework</span>
+                            <h3 class="text-2xl font-bold mb-3">Production MCP Server Framework for .NET 9</h3>
+                            <p class="text-gray-400 mb-4">
+                                A Model Context Protocol server framework supporting five transport protocols
+                                with session management, JWT &amp; API key authentication, JSON schema validation,
+                                and automatic tool discovery. Built for enterprise AI agent integrations.
+                            </p>
+                            <div class="project-image-placeholder mb-4">
+                                <i class="fas fa-image text-3xl text-gray-600"></i>
+                                <span class="text-gray-600 text-sm mt-2">Image coming soon</span>
+                            </div>
+                            <div class="mermaid mb-4">
+graph TB
+    Agent[AI Agent / Client] --> Gateway[MCP Gateway]
+    Gateway --> Auth[Auth Layer]
+    Auth --> Router[Transport Router]
+    Router --> STDIO[stdio]
+    Router --> REST[REST API]
+    Router --> SSE[SSE Stream]
+    Router --> SR[SignalR Hub]
+    Router --> GRPC[gRPC Service]
+    Router --> Session[Session Manager]
+    Router --> Discovery[Tool Discovery]
+    Discovery --> Tools[Registered Tools]
+
+    style Agent fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
+    style Gateway fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
+    style Auth fill:#1e293b,stroke:#475569,color:#94a3b8
+    style Router fill:#1e293b,stroke:#475569,color:#94a3b8
+    style Session fill:#1e293b,stroke:#475569,color:#94a3b8
+    style Discovery fill:#1e293b,stroke:#475569,color:#94a3b8
+    style STDIO fill:#172554,stroke:#3b82f6,color:#93c5fd
+    style REST fill:#172554,stroke:#3b82f6,color:#93c5fd
+    style SSE fill:#172554,stroke:#3b82f6,color:#93c5fd
+    style SR fill:#172554,stroke:#3b82f6,color:#93c5fd
+    style GRPC fill:#172554,stroke:#3b82f6,color:#93c5fd
+    style Tools fill:#172554,stroke:#3b82f6,color:#93c5fd
+                            </div>
+                            <div class="flex flex-wrap gap-2 mt-4">
+                                <span class="project-tag project-tag-blue">.NET 9</span>
+                                <span class="project-tag project-tag-blue">C#</span>
+                                <span class="project-tag project-tag-blue">gRPC</span>
+                                <span class="project-tag project-tag-blue">SignalR</span>
+                                <span class="project-tag project-tag-blue">Polly</span>
+                                <span class="project-tag project-tag-blue">FluentValidation</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 2: Agentic Chatbot Platform -->
+                    <div class="project-card">
+                        <div class="project-card-accent project-card-accent-green"></div>
+                        <div class="project-card-body">
+                            <span class="project-label project-label-green">Full-Stack AI Platform</span>
+                            <h3 class="text-2xl font-bold mb-3">Enterprise Agentic Chatbot Framework</h3>
+                            <p class="text-gray-400 mb-4">
+                                Full-stack chatbot platform with pluggable LLM providers, RAG pipeline with multiple
+                                vector store backends, streaming responses via SSE/WebSocket, and React &amp; Flutter
+                                frontends. Supports multi-bot routing, A/B testing, and comprehensive metrics.
+                            </p>
+                            <div class="project-image-placeholder mb-4">
+                                <i class="fas fa-image text-3xl text-gray-600"></i>
+                                <span class="text-gray-600 text-sm mt-2">Image coming soon</span>
+                            </div>
+                            <div class="mermaid mb-4">
+graph TB
+    User[User] --> UI[React / Flutter UI]
+    UI -->|SSE / WebSocket| API[FastAPI Backend]
+    API --> BotRouter[Bot Router]
+    BotRouter --> LLM[LLM Providers]
+    BotRouter --> RAG[RAG Pipeline]
+    RAG --> VectorDB[Vector Stores]
+    API --> Metrics[Metrics Collector]
+
+    LLM --> OpenAI[Azure OpenAI]
+    LLM --> Anthropic[Anthropic]
+    LLM --> Ollama[Ollama]
+
+    VectorDB --> Qdrant[Qdrant]
+    VectorDB --> FAISS[FAISS]
+
+    style User fill:#1a3a2a,stroke:#10b981,color:#6ee7b7
+    style UI fill:#1a3a2a,stroke:#10b981,color:#6ee7b7
+    style API fill:#1e293b,stroke:#475569,color:#94a3b8
+    style BotRouter fill:#1e293b,stroke:#475569,color:#94a3b8
+    style LLM fill:#1e293b,stroke:#475569,color:#94a3b8
+    style RAG fill:#1e293b,stroke:#475569,color:#94a3b8
+    style Metrics fill:#1e293b,stroke:#475569,color:#94a3b8
+    style VectorDB fill:#1e293b,stroke:#475569,color:#94a3b8
+    style OpenAI fill:#14332a,stroke:#10b981,color:#6ee7b7
+    style Anthropic fill:#14332a,stroke:#10b981,color:#6ee7b7
+    style Ollama fill:#14332a,stroke:#10b981,color:#6ee7b7
+    style Qdrant fill:#14332a,stroke:#10b981,color:#6ee7b7
+    style FAISS fill:#14332a,stroke:#10b981,color:#6ee7b7
+                            </div>
+                            <div class="flex flex-wrap gap-2 mt-4">
+                                <span class="project-tag project-tag-green">Python</span>
+                                <span class="project-tag project-tag-green">FastAPI</span>
+                                <span class="project-tag project-tag-green">React</span>
+                                <span class="project-tag project-tag-green">TypeScript</span>
+                                <span class="project-tag project-tag-green">Flutter</span>
+                                <span class="project-tag project-tag-green">Qdrant</span>
+                                <span class="project-tag project-tag-green">FAISS</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 3: Azure DevOps MCP -->
+                    <div class="project-card">
+                        <div class="project-card-accent project-card-accent-amber"></div>
+                        <div class="project-card-body">
+                            <span class="project-label project-label-amber">Enterprise AI Integration</span>
+                            <h3 class="text-2xl font-bold mb-3">AI-Powered Azure DevOps Integration via MCP</h3>
+                            <p class="text-gray-400 mb-4">
+                                MCP server exposing Azure DevOps operations as AI-callable tools. Enables LLM agents
+                                to query backlogs, create work items, manage repositories, trigger pipelines, and interact
+                                with DevOps workflows through natural language.
+                            </p>
+                            <div class="project-image-placeholder mb-4">
+                                <i class="fas fa-image text-3xl text-gray-600"></i>
+                                <span class="text-gray-600 text-sm mt-2">Image coming soon</span>
+                            </div>
+                            <div class="mermaid mb-4">
+graph LR
+    Agent[LLM Agent] -->|MCP| Server[MCP Server]
+    Server --> WorkItems[Work Items]
+    Server --> Repos[Repositories]
+    Server --> Pipelines[Pipelines]
+    Server --> PRs[Pull Requests]
+    Server --> Backlogs[Backlogs]
+    WorkItems --> ADO[Azure DevOps API]
+    Repos --> ADO
+    Pipelines --> ADO
+    PRs --> ADO
+    Backlogs --> ADO
+
+    style Agent fill:#3b2a1a,stroke:#f59e0b,color:#fcd34d
+    style Server fill:#1e293b,stroke:#475569,color:#94a3b8
+    style WorkItems fill:#1e293b,stroke:#475569,color:#94a3b8
+    style Repos fill:#1e293b,stroke:#475569,color:#94a3b8
+    style Pipelines fill:#1e293b,stroke:#475569,color:#94a3b8
+    style PRs fill:#1e293b,stroke:#475569,color:#94a3b8
+    style Backlogs fill:#1e293b,stroke:#475569,color:#94a3b8
+    style ADO fill:#3b2a1a,stroke:#f59e0b,color:#fcd34d
+                            </div>
+                            <div class="flex flex-wrap gap-2 mt-4">
+                                <span class="project-tag project-tag-amber">.NET 9</span>
+                                <span class="project-tag project-tag-amber">C#</span>
+                                <span class="project-tag project-tag-amber">Azure DevOps REST API</span>
+                                <span class="project-tag project-tag-amber">MCP</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 4: Knowledge Base System -->
+                    <div class="project-card">
+                        <div class="project-card-accent project-card-accent-purple"></div>
+                        <div class="project-card-body">
+                            <span class="project-label project-label-purple">Knowledge Management Platform</span>
+                            <h3 class="text-2xl font-bold mb-3">AI-Powered Knowledge Base System</h3>
+                            <p class="text-gray-400 mb-4">
+                                Production knowledge management platform with hierarchical document organization,
+                                semantic search via vector embeddings, dynamic Qdrant container management, and
+                                conversational RAG interface. Includes admin dashboard, file upload, and audit logging.
+                            </p>
+                            <div class="project-image-placeholder mb-4">
+                                <i class="fas fa-image text-3xl text-gray-600"></i>
+                                <span class="text-gray-600 text-sm mt-2">Image coming soon</span>
+                            </div>
+                            <div class="mermaid mb-4">
+graph TB
+    Upload[Document Upload] --> Ingest[Ingestion Engine]
+    Ingest --> Parse[Document Parser]
+    Ingest --> Embed[Embedding Service]
+    Embed --> Qdrant[Qdrant Vector Store]
+    User[User Query] --> RAG[RAG Interface]
+    RAG --> Search[Semantic Search]
+    Search --> Qdrant
+    RAG --> LLM[LLM Response]
+    Admin[Admin Dashboard] --> Manage[Collection Manager]
+    Manage --> Qdrant
+
+    style Upload fill:#2a1a3b,stroke:#8b5cf6,color:#c4b5fd
+    style User fill:#2a1a3b,stroke:#8b5cf6,color:#c4b5fd
+    style Admin fill:#2a1a3b,stroke:#8b5cf6,color:#c4b5fd
+    style Ingest fill:#1e293b,stroke:#475569,color:#94a3b8
+    style Parse fill:#1e293b,stroke:#475569,color:#94a3b8
+    style Embed fill:#1e293b,stroke:#475569,color:#94a3b8
+    style RAG fill:#1e293b,stroke:#475569,color:#94a3b8
+    style Search fill:#1e293b,stroke:#475569,color:#94a3b8
+    style LLM fill:#1e293b,stroke:#475569,color:#94a3b8
+    style Manage fill:#1e293b,stroke:#475569,color:#94a3b8
+    style Qdrant fill:#2a1a3b,stroke:#8b5cf6,color:#c4b5fd
+                            </div>
+                            <div class="flex flex-wrap gap-2 mt-4">
+                                <span class="project-tag project-tag-purple">.NET 9</span>
+                                <span class="project-tag project-tag-purple">Python</span>
+                                <span class="project-tag project-tag-purple">React</span>
+                                <span class="project-tag project-tag-purple">Qdrant</span>
+                                <span class="project-tag project-tag-purple">MCP</span>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
