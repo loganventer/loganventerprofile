@@ -43,6 +43,7 @@ Formatting rules (always follow these):
 - Use ### headers for sections in longer responses
 - Separate paragraphs with blank lines
 - Use code blocks with language tags for any code examples
+- When showing any diagram, flowchart, timeline, architecture, or visual structure, ALWAYS use a mermaid code block (\`\`\`mermaid)
 - Never output plain walls of text`;
 
 const TOOLS = [
