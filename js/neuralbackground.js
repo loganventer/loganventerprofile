@@ -573,17 +573,17 @@ class ParticleSystem {
     
     updateColors(theme) {
         if (theme === 'light') {
-            this.config.PARTICLE_COLOR = '#0284C7';
-            this.config.PARTICLE_GRADIENT_INNER_COLOR = 'rgba(2, 132, 199, 1)';
-            this.config.PARTICLE_GRADIENT_OUTER_COLOR = 'rgba(2, 132, 199, 0)';
-            this.config.LINE_SHADOW_COLOR = 'rgba(2, 132, 199, 0.6)';
-            this.config.PROXIMITY_LINE_COLOR = 'rgba(2, 132, 199, OPACITY)';
-            this.config.FIRING_LINE_COLOR = 'rgba(2, 100, 180, OPACITY)';
-            this.config.SIGNAL_HEAD_FILL_COLOR = 'rgba(2, 132, 199, OPACITY)';
-            this.config.SIGNAL_HEAD_STROKE_COLOR = 'rgba(2, 132, 199, OPACITY)';
-            this.config.SIGNAL_HEAD_GLOW_COLOR = 'rgba(2, 132, 199, 0.9)';
-            this.config.STATIC_DENDRITE_OPACITY = 0.10;
-            this.config.PROXIMITY_LINE_OPACITY = 0.3;
+            this.config.PARTICLE_COLOR = '#0369a1';
+            this.config.PARTICLE_GRADIENT_INNER_COLOR = 'rgba(3, 105, 161, 1)';
+            this.config.PARTICLE_GRADIENT_OUTER_COLOR = 'rgba(3, 105, 161, 0)';
+            this.config.LINE_SHADOW_COLOR = 'rgba(3, 105, 161, 0.7)';
+            this.config.PROXIMITY_LINE_COLOR = 'rgba(3, 105, 161, OPACITY)';
+            this.config.FIRING_LINE_COLOR = 'rgba(2, 80, 140, OPACITY)';
+            this.config.SIGNAL_HEAD_FILL_COLOR = 'rgba(3, 105, 161, OPACITY)';
+            this.config.SIGNAL_HEAD_STROKE_COLOR = 'rgba(3, 105, 161, OPACITY)';
+            this.config.SIGNAL_HEAD_GLOW_COLOR = 'rgba(3, 105, 161, 0.9)';
+            this.config.STATIC_DENDRITE_OPACITY = 0.25;
+            this.config.PROXIMITY_LINE_OPACITY = 0.5;
         } else {
             this.config.PARTICLE_COLOR = '#38BDF8';
             this.config.PARTICLE_GRADIENT_INNER_COLOR = 'rgba(255, 255, 255, 1)';

@@ -488,15 +488,32 @@ html {
 .project-card .edgeLabel polygon { fill: var(--mermaid-edge-bg) !important; stroke: none !important; }
 .project-card .edgeLabel span { color: var(--mermaid-edge-text) !important; }
 
-/* In light mode, keep mermaid diagrams on a dark background (like code blocks) */
+/* In light mode, make mermaid diagrams adapt to light background */
 [data-theme="light"] .project-card pre.mermaid {
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(241, 245, 249, 0.6);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
     padding: 16px;
 }
-[data-theme="light"] .project-card .mermaid .edgeLabel span { color: #e2e8f0 !important; }
+/* Override dark node fills with light fills, keep accent strokes */
+[data-theme="light"] .project-card .node rect,
+[data-theme="light"] .project-card .node polygon,
+[data-theme="light"] .project-card .node circle {
+    fill: #f1f5f9 !important;
+}
+/* Dark text on light nodes */
+[data-theme="light"] .project-card .nodeLabel,
+[data-theme="light"] .project-card .nodeLabel p,
+[data-theme="light"] .project-card .nodeLabel span {
+    color: #1e293b !important;
+}
+/* Edge labels: dark text, light bg */
+[data-theme="light"] .project-card .mermaid .edgeLabel span { color: #334155 !important; }
 [data-theme="light"] .project-card .mermaid .edgeLabel rect,
-[data-theme="light"] .project-card .mermaid .edgeLabel polygon { fill: #1e293b !important; }
+[data-theme="light"] .project-card .mermaid .edgeLabel polygon { fill: #e2e8f0 !important; }
+/* Lines/arrows */
+[data-theme="light"] .project-card .mermaid .flowchart-link { stroke: #94a3b8 !important; }
+[data-theme="light"] .project-card .mermaid marker path { fill: #94a3b8 !important; }
 
 /* Chatbot Demo */
 .chatbot-container {
