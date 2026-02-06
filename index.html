@@ -82,7 +82,12 @@
                 var diagrams = document.querySelectorAll('pre.mermaid:not([data-processed])');
                 if (diagrams.length > 0) {
                     mermaidRendered = true;
-                    mermaid.run({ nodes: diagrams });
+                    mermaid.run({ nodes: diagrams }).then(function() {
+                        if (typeof window.updateMermaidTheme === 'function') {
+                            var theme = document.documentElement.getAttribute('data-theme') || 'dark';
+                            window.updateMermaidTheme(theme);
+                        }
+                    });
                 }
             }
             // Hook into showSection after it's defined

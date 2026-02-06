@@ -11,6 +11,7 @@ window.toggleTheme = function() {
     if (particleSystem && particleSystem.updateColors) {
         particleSystem.updateColors(next);
     }
+    updateMermaidTheme(next);
 };
 
 function updateThemeIcons(theme) {
@@ -26,6 +27,61 @@ function updateThemeIcons(theme) {
     var theme = document.documentElement.getAttribute('data-theme') || 'dark';
     document.addEventListener('DOMContentLoaded', function() { updateThemeIcons(theme); });
 })();
+
+// --- Mermaid Theme Override (JS-based, bypasses CSS specificity issues) ---
+window.updateMermaidTheme = function(theme) {
+    var isLight = theme === 'light';
+    document.querySelectorAll('.project-card svg').forEach(function(svg) {
+        // Node shapes - override fills set by mermaid style directives
+        svg.querySelectorAll('.node rect, .node polygon, .node circle').forEach(function(el) {
+            if (isLight) {
+                el.style.setProperty('fill', '#ffffff', 'important');
+            } else {
+                el.style.removeProperty('fill');
+            }
+        });
+
+        // Node label text color
+        svg.querySelectorAll('.nodeLabel').forEach(function(el) {
+            if (isLight) {
+                el.style.setProperty('color', '#1e293b', 'important');
+            } else {
+                el.style.removeProperty('color');
+            }
+        });
+
+        // Edge label backgrounds (explicit for both modes since mermaid defaults are light)
+        svg.querySelectorAll('.edgeLabel rect, .edgeLabel polygon').forEach(function(el) {
+            el.style.setProperty('fill', isLight ? '#e2e8f0' : '#1e293b', 'important');
+            el.style.setProperty('stroke', 'none', 'important');
+        });
+
+        // Edge label text
+        svg.querySelectorAll('.edgeLabel span').forEach(function(el) {
+            el.style.setProperty('color', isLight ? '#334155' : '#e2e8f0', 'important');
+        });
+
+        // Flowchart connection lines
+        svg.querySelectorAll('.flowchart-link').forEach(function(el) {
+            if (isLight) {
+                el.style.setProperty('stroke', '#94a3b8', 'important');
+            } else {
+                el.style.removeProperty('stroke');
+            }
+        });
+
+        // Arrow markers
+        svg.querySelectorAll('marker path').forEach(function(el) {
+            if (isLight) {
+                el.style.setProperty('fill', '#94a3b8', 'important');
+                el.style.setProperty('stroke', '#94a3b8', 'important');
+            } else {
+                el.style.removeProperty('fill');
+                el.style.removeProperty('stroke');
+            }
+        });
+    });
+};
 
 // --- Performance & Loading States ---
 let isPageLoaded = false;
