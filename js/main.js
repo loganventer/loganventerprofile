@@ -97,28 +97,35 @@ window.updateMermaidTheme = function(theme) {
         });
     });
 
-    // === Chatbot diagrams (always dark background in both themes) ===
+    // === Chatbot diagrams (theme-aware: pastels in light, dark fills in dark) ===
+    var chatFill   = isLight ? '#dbeafe' : '#1d4ed8';
+    var chatStroke = '#60a5fa';
+    var chatText   = isLight ? '#1e293b' : '#dbeafe';
+    var chatEdgeBg = isLight ? '#e2e8f0' : '#0f172a';
+    var chatEdgeText = isLight ? '#334155' : '#cbd5e1';
+    var chatLine   = isLight ? '#94a3b8' : '#64748b';
+
     document.querySelectorAll('.chat-mermaid-block svg').forEach(function(svg) {
         svg.querySelectorAll('.node rect, .node polygon, .node circle').forEach(function(el) {
-            el.style.setProperty('fill', '#1d4ed8', 'important');
-            el.style.setProperty('stroke', '#60a5fa', 'important');
+            el.style.setProperty('fill', chatFill, 'important');
+            el.style.setProperty('stroke', chatStroke, 'important');
         });
         svg.querySelectorAll('.nodeLabel').forEach(function(el) {
-            el.style.setProperty('color', '#dbeafe', 'important');
+            el.style.setProperty('color', chatText, 'important');
         });
         svg.querySelectorAll('.edgeLabel rect, .edgeLabel polygon').forEach(function(el) {
-            el.style.setProperty('fill', '#0f172a', 'important');
+            el.style.setProperty('fill', chatEdgeBg, 'important');
             el.style.setProperty('stroke', 'none', 'important');
         });
         svg.querySelectorAll('.edgeLabel span').forEach(function(el) {
-            el.style.setProperty('color', '#cbd5e1', 'important');
+            el.style.setProperty('color', chatEdgeText, 'important');
         });
         svg.querySelectorAll('.flowchart-link').forEach(function(el) {
-            el.style.setProperty('stroke', '#64748b', 'important');
+            el.style.setProperty('stroke', chatLine, 'important');
         });
         svg.querySelectorAll('marker path').forEach(function(el) {
-            el.style.setProperty('fill', '#64748b', 'important');
-            el.style.setProperty('stroke', '#64748b', 'important');
+            el.style.setProperty('fill', chatLine, 'important');
+            el.style.setProperty('stroke', chatLine, 'important');
         });
     });
 };

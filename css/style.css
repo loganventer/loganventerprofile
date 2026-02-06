@@ -818,11 +818,20 @@ html {
     margin: 8px 0;
     overflow-x: auto;
 }
-/* In light mode, keep chatbot mermaid diagrams on a dark background */
+/* Light mode chatbot mermaid: light background with pastels */
 [data-theme="light"] .chat-mermaid-block {
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(241, 245, 249, 0.95);
 }
-/* Chatbot mermaid always on dark background - visible node fills */
+[data-theme="light"] .chat-mermaid-block .node rect,
+[data-theme="light"] .chat-mermaid-block .node polygon,
+[data-theme="light"] .chat-mermaid-block .node circle { fill: #dbeafe !important; stroke: #60a5fa !important; }
+[data-theme="light"] .chat-mermaid-block .nodeLabel { color: #1e293b !important; }
+[data-theme="light"] .chat-mermaid-block .edgeLabel rect,
+[data-theme="light"] .chat-mermaid-block .edgeLabel polygon { fill: #e2e8f0 !important; stroke: none !important; }
+[data-theme="light"] .chat-mermaid-block .edgeLabel span { color: #334155 !important; }
+[data-theme="light"] .chat-mermaid-block .flowchart-link { stroke: #94a3b8 !important; }
+[data-theme="light"] .chat-mermaid-block marker path { fill: #94a3b8 !important; stroke: #94a3b8 !important; }
+/* Dark mode chatbot mermaid */
 .chat-mermaid-block .node rect,
 .chat-mermaid-block .node polygon,
 .chat-mermaid-block .node circle { fill: #1d4ed8 !important; stroke: #60a5fa !important; }
