@@ -506,8 +506,9 @@ html {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: 500px;
-    max-height: 70vh;
+    height: calc(100vh - 240px);
+    height: calc(100dvh - 240px);
+    min-height: 350px;
 }
 
 .chatbot-messages {
