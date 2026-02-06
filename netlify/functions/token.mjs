@@ -56,20 +56,32 @@ function cors(body, status = 200) {
   });
 }
 
-// Email notification via Netlify Forms (configured in dashboard)
+// Email notification via Resend (requires RESEND_API_KEY env var)
 async function notifyTokenRequest(data) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return;
   try {
-    const siteUrl = process.env.URL || "https://loganventer.netlify.app";
-    await fetch(siteUrl, {
+    await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        "form-name": "token-request",
-        ip: data.ip,
-        ua: data.ua,
-        time: new Date(data.ts).toISOString(),
-        "request-id": data.id,
-      }).toString(),
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Portfolio Bot <onboarding@resend.dev>",
+        to: ["logan.venter@outlook.com"],
+        subject: "New Chatbot Token Request",
+        text: [
+          "New chatbot token request:",
+          "",
+          `IP: ${data.ip}`,
+          `User Agent: ${data.ua}`,
+          `Time: ${new Date(data.ts).toISOString()}`,
+          `Request ID: ${data.id}`,
+          "",
+          "Go to your admin portal to approve or deny.",
+        ].join("\n"),
+      }),
     });
   } catch (e) {
     console.error("Token request notification failed:", e);
