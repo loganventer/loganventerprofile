@@ -1,61 +1,61 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Dendrite branches (organic curves with S-bends) -->
-  <g stroke="#38BDF8" fill="none" stroke-linecap="round" opacity="0.7">
+  <!-- Dendrite branches (organic curves, thick for favicon visibility) -->
+  <g stroke="#38BDF8" fill="none" stroke-linecap="round" opacity="0.85">
     <!-- Upper-left dendrite -->
-    <path d="M32,32 Q24,28 24,22 Q22,16 18,14" stroke-width="1.5"/>
-    <path d="M24,22 Q18,20 14,20" stroke-width="1"/>
-    <path d="M18,14 Q13,13 12,10" stroke-width="0.8"/>
-    <path d="M18,14 Q15,10 16,8" stroke-width="0.8"/>
+    <path d="M32,32 Q24,28 24,22 Q22,16 18,14" stroke-width="3"/>
+    <path d="M24,22 Q18,20 14,20" stroke-width="2"/>
+    <path d="M18,14 Q13,13 12,10" stroke-width="1.5"/>
+    <path d="M18,14 Q15,10 16,8" stroke-width="1.5"/>
     <!-- Upper-right dendrite -->
-    <path d="M32,32 Q40,28 42,20 Q46,16 48,12" stroke-width="1.5"/>
-    <path d="M42,20 Q48,18 52,18" stroke-width="1"/>
-    <path d="M48,12 Q53,10 54,8" stroke-width="0.8"/>
-    <path d="M48,12 Q51,8 50,6" stroke-width="0.8"/>
+    <path d="M32,32 Q40,28 42,20 Q46,16 48,12" stroke-width="3"/>
+    <path d="M42,20 Q48,18 52,18" stroke-width="2"/>
+    <path d="M48,12 Q53,10 54,8" stroke-width="1.5"/>
+    <path d="M48,12 Q51,8 50,6" stroke-width="1.5"/>
     <!-- Right dendrite -->
-    <path d="M32,32 Q38,36 44,34 Q50,28 54,30" stroke-width="1.5"/>
-    <path d="M44,34 Q49,40 56,36" stroke-width="1"/>
-    <path d="M54,30 Q58,26 60,28" stroke-width="0.8"/>
+    <path d="M32,32 Q38,36 44,34 Q50,28 54,30" stroke-width="3"/>
+    <path d="M44,34 Q49,40 56,36" stroke-width="2"/>
+    <path d="M54,30 Q58,26 60,28" stroke-width="1.5"/>
     <!-- Lower-right dendrite -->
-    <path d="M32,32 Q34,42 40,44 Q48,48 46,52" stroke-width="1.5"/>
-    <path d="M40,44 Q46,46 50,46" stroke-width="1"/>
-    <path d="M46,52 Q47,57 50,58" stroke-width="0.8"/>
-    <path d="M46,52 Q50,51 52,54" stroke-width="0.8"/>
+    <path d="M32,32 Q34,42 40,44 Q48,48 46,52" stroke-width="3"/>
+    <path d="M40,44 Q46,46 50,46" stroke-width="2"/>
+    <path d="M46,52 Q47,57 50,58" stroke-width="1.5"/>
+    <path d="M46,52 Q50,51 52,54" stroke-width="1.5"/>
     <!-- Lower-left dendrite -->
-    <path d="M32,32 Q28,40 22,42 Q14,46 16,50" stroke-width="1.5"/>
-    <path d="M22,42 Q16,44 12,44" stroke-width="1"/>
-    <path d="M16,50 Q11,53 10,54" stroke-width="0.8"/>
-    <path d="M16,50 Q13,55 14,56" stroke-width="0.8"/>
+    <path d="M32,32 Q28,40 22,42 Q14,46 16,50" stroke-width="3"/>
+    <path d="M22,42 Q16,44 12,44" stroke-width="2"/>
+    <path d="M16,50 Q11,53 10,54" stroke-width="1.5"/>
+    <path d="M16,50 Q13,55 14,56" stroke-width="1.5"/>
     <!-- Left dendrite -->
-    <path d="M32,32 Q26,28 20,30 Q12,30 10,34" stroke-width="1.5"/>
-    <path d="M20,30 Q14,24 8,28" stroke-width="1"/>
-    <path d="M10,34 Q5,37 4,36" stroke-width="0.8"/>
+    <path d="M32,32 Q26,28 20,30 Q12,30 10,34" stroke-width="3"/>
+    <path d="M20,30 Q14,24 8,28" stroke-width="2"/>
+    <path d="M10,34 Q5,37 4,36" stroke-width="1.5"/>
     <!-- Axon (downward, gentle S-curve) -->
-    <path d="M32,32 Q35,40 32,46 Q29,52 30,56" stroke-width="2"/>
-    <path d="M30,56 Q27,60 28,62" stroke-width="1"/>
-    <path d="M30,56 Q34,58 34,60" stroke-width="1"/>
+    <path d="M32,32 Q35,40 32,46 Q29,52 30,56" stroke-width="3.5"/>
+    <path d="M30,56 Q27,60 28,62" stroke-width="2"/>
+    <path d="M30,56 Q34,58 34,60" stroke-width="2"/>
   </g>
-  <!-- Synaptic terminals (small dots at branch ends) -->
-  <g fill="#38BDF8" opacity="0.5">
-    <circle cx="12" cy="10" r="1.2"/>
-    <circle cx="16" cy="8" r="1"/>
-    <circle cx="14" cy="20" r="1"/>
-    <circle cx="54" cy="8" r="1.2"/>
-    <circle cx="50" cy="6" r="1"/>
-    <circle cx="52" cy="18" r="1"/>
-    <circle cx="60" cy="28" r="1.2"/>
-    <circle cx="56" cy="36" r="1"/>
-    <circle cx="50" cy="58" r="1.2"/>
-    <circle cx="52" cy="54" r="1"/>
-    <circle cx="10" cy="54" r="1.2"/>
-    <circle cx="14" cy="56" r="1"/>
-    <circle cx="12" cy="44" r="1"/>
-    <circle cx="4" cy="36" r="1.2"/>
-    <circle cx="8" cy="28" r="1"/>
-    <circle cx="28" cy="62" r="1"/>
-    <circle cx="34" cy="60" r="1"/>
+  <!-- Synaptic terminals (dots at branch ends) -->
+  <g fill="#38BDF8" opacity="0.6">
+    <circle cx="12" cy="10" r="2"/>
+    <circle cx="16" cy="8" r="1.5"/>
+    <circle cx="14" cy="20" r="1.5"/>
+    <circle cx="54" cy="8" r="2"/>
+    <circle cx="50" cy="6" r="1.5"/>
+    <circle cx="52" cy="18" r="1.5"/>
+    <circle cx="60" cy="28" r="2"/>
+    <circle cx="56" cy="36" r="1.5"/>
+    <circle cx="50" cy="58" r="2"/>
+    <circle cx="52" cy="54" r="1.5"/>
+    <circle cx="10" cy="54" r="2"/>
+    <circle cx="14" cy="56" r="1.5"/>
+    <circle cx="12" cy="44" r="1.5"/>
+    <circle cx="4" cy="36" r="2"/>
+    <circle cx="8" cy="28" r="1.5"/>
+    <circle cx="28" cy="62" r="1.5"/>
+    <circle cx="34" cy="60" r="1.5"/>
   </g>
   <!-- Soma (cell body) with glow -->
-  <circle cx="32" cy="32" r="6" fill="#0EA5E9" opacity="0.3"/>
-  <circle cx="32" cy="32" r="4" fill="#38BDF8"/>
-  <circle cx="32" cy="32" r="2" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="32" cy="32" r="7" fill="#0EA5E9" opacity="0.3"/>
+  <circle cx="32" cy="32" r="5" fill="#38BDF8"/>
+  <circle cx="32" cy="32" r="2.5" fill="#FFFFFF" opacity="0.8"/>
 </svg>
