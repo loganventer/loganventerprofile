@@ -605,18 +605,17 @@
       var nodes = container.querySelectorAll("pre.mermaid:not([data-processed])");
       if (nodes.length === 0) return;
       try {
-        var result = mermaid.run({ nodes: nodes });
-        if (result && result.then) {
-          result.then(function() {
-            if (typeof window.updateMermaidTheme === 'function') {
-              var theme = document.documentElement.getAttribute('data-theme') || 'dark';
-              window.updateMermaidTheme(theme);
-            }
-          });
-        }
+        mermaid.run({ nodes: nodes });
       } catch (e) {
         // Fallback: leave raw text visible
       }
+      // Apply theme after mermaid finishes rendering
+      setTimeout(function() {
+        if (typeof window.updateMermaidTheme === 'function') {
+          var theme = document.documentElement.getAttribute('data-theme') || 'dark';
+          window.updateMermaidTheme(theme);
+        }
+      }, 500);
     }, 150);
   }
 
