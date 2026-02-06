@@ -564,21 +564,34 @@
   function renderMermaidBlocks(container) {
     if (typeof mermaid === "undefined") return;
     var blocks = container.querySelectorAll(".chat-mermaid-block:not([data-rendered])");
+    if (blocks.length === 0) return;
+
+    // Convert to pre.mermaid elements for mermaid.run() compatibility
+    var nodes = [];
     blocks.forEach(function (block) {
       block.setAttribute("data-rendered", "true");
       var source = block.textContent;
-      mermaid
-        .render(block.id + "-svg", source)
-        .then(function (result) {
-          block.innerHTML = result.svg;
-        })
-        .catch(function () {
-          // Fallback: show as code block
+      var pre = document.createElement("pre");
+      pre.className = "mermaid";
+      pre.textContent = source;
+      block.innerHTML = "";
+      block.appendChild(pre);
+      nodes.push(pre);
+    });
+
+    // Use mermaid.run() which is the recommended v10+ API
+    mermaid.run({ nodes: nodes }).catch(function () {
+      // Fallback: show source as code block on failure
+      blocks.forEach(function (block) {
+        var pre = block.querySelector("pre.mermaid");
+        if (pre && !pre.querySelector("svg")) {
+          var source = pre.textContent;
           block.innerHTML =
             '<pre style="color:#94a3b8;font-size:12px;white-space:pre-wrap;">' +
             escapeHtml(source) +
             "</pre>";
-        });
+        }
+      });
     });
   }
 
