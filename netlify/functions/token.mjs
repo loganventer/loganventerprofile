@@ -129,6 +129,7 @@ export default async (request, context) => {
   const adminKey = process.env.CHATBOT_ADMIN_KEY;
   const signingSecret = process.env.CHATBOT_SIGNING_SECRET || adminKey;
   const { pending, tokens } = getStores();
+  const PENDING_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
   // --- Visitor: Request access ---
   if (action === "request") {
@@ -156,7 +157,13 @@ export default async (request, context) => {
     if (!requestId) return cors({ status: "unknown" });
 
     const req = await pending.get(requestId, { type: "json" });
-    if (req) return cors({ status: "pending" });
+    if (req) {
+      if (Date.now() - req.ts > PENDING_TTL) {
+        await pending.delete(requestId);
+        return cors({ status: "expired" });
+      }
+      return cors({ status: "pending" });
+    }
 
     // Check if a token was issued for this request
     const tokenList = await tokens.list();
@@ -198,13 +205,19 @@ export default async (request, context) => {
     return cors({ error: "Unauthorized" }, 401);
   }
 
-  // --- Admin: List pending requests ---
+  // --- Admin: List pending requests (auto-prune expired) ---
   if (action === "pending") {
     const list = await pending.list();
     const items = [];
+    const now = Date.now();
     for (const entry of list.blobs) {
       const data = await pending.get(entry.key, { type: "json" });
-      if (data) items.push(data);
+      if (!data) continue;
+      if (now - data.ts > PENDING_TTL) {
+        await pending.delete(entry.key);
+        continue;
+      }
+      items.push(data);
     }
     items.sort((a, b) => b.ts - a.ts);
     return cors({ pending: items });

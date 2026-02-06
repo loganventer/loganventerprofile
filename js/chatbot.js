@@ -13,7 +13,7 @@
   var streaming = false;
   var usePrimary = null;
   var accessToken = localStorage.getItem("cb_token") || null;
-  var requestId = sessionStorage.getItem("cb_request_id") || null;
+  var requestId = localStorage.getItem("cb_request_id") || null;
   var pollTimer = null;
 
   // --- DOM ---
@@ -167,7 +167,7 @@
       }
 
       requestId = data.request_id;
-      sessionStorage.setItem("cb_request_id", requestId);
+      localStorage.setItem("cb_request_id", requestId);
       gateBtn.textContent = "Awaiting Approval";
       setGateStatus("waiting", "Your request has been sent. Waiting for approval...");
       startPolling();
@@ -209,19 +209,19 @@
         stopPolling();
         accessToken = data.token;
         localStorage.setItem("cb_token", accessToken);
-        sessionStorage.removeItem("cb_request_id");
+        localStorage.removeItem("cb_request_id");
         requestId = null;
         showChat();
       } else if (data.status === "denied") {
         stopPolling();
-        sessionStorage.removeItem("cb_request_id");
+        localStorage.removeItem("cb_request_id");
         requestId = null;
         setGateStatus("error", "Access denied.");
         gateBtn.disabled = false;
         gateBtn.textContent = "Request Access";
       } else if (data.status === "expired") {
         stopPolling();
-        sessionStorage.removeItem("cb_request_id");
+        localStorage.removeItem("cb_request_id");
         requestId = null;
         setGateStatus("error", "Token expired. Request again.");
         gateBtn.disabled = false;
