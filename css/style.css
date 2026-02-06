@@ -801,6 +801,13 @@ html {
     margin: 8px 0;
     overflow-x: auto;
 }
+/* In light mode, keep chatbot mermaid diagrams on a dark background */
+[data-theme="light"] .chat-mermaid-block {
+    background: rgba(15, 23, 42, 0.95);
+}
+[data-theme="light"] .chat-mermaid-block .edgeLabel span { color: #e2e8f0 !important; }
+[data-theme="light"] .chat-mermaid-block .edgeLabel rect,
+[data-theme="light"] .chat-mermaid-block .edgeLabel polygon { fill: #1e293b !important; }
 .chat-mermaid-block svg {
     max-width: 100%;
     height: auto;
