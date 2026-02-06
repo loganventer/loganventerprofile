@@ -126,6 +126,7 @@ window.updateMermaidTheme = function(theme) {
             var p = chatNodePalettes[i % chatNodePalettes.length];
             node.querySelectorAll('rect, polygon, circle').forEach(function(el) {
                 el.style.setProperty('fill', p.fill, 'important');
+                el.style.setProperty('fill-opacity', isLight ? '1' : '0.55', 'important');
                 el.style.setProperty('stroke', p.stroke, 'important');
             });
             node.querySelectorAll('.nodeLabel').forEach(function(el) {
