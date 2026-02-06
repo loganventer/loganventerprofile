@@ -171,6 +171,12 @@ class ParticleSystem {
             PARTICLE_GRADIENT_INNER_COLOR: 'rgba(255, 255, 255, 1)',  // Inner particle color
             PARTICLE_GRADIENT_MIDDLE_STOP: 0.4,           // Middle gradient stop position
             PARTICLE_GRADIENT_OUTER_COLOR: 'rgba(56, 189, 248, 0)',   // Outer particle color
+
+            // Theme-aware connection colors
+            PROXIMITY_LINE_COLOR: 'rgba(56, 189, 248, OPACITY)',      // Static connection line color
+            FIRING_LINE_COLOR: 'rgba(200, 240, 255, OPACITY)',        // Firing connection line color
+            SIGNAL_HEAD_FILL_COLOR: 'rgba(255, 255, 255, OPACITY)',   // Signal head fill
+            SIGNAL_HEAD_STROKE_COLOR: 'rgba(255, 255, 255, OPACITY)', // Signal head stroke
             
             // Wobble animation settings
             WOBBLE_SPEED: 0.0002,                         // Speed of wobble animation (lower = slower)
@@ -387,7 +393,7 @@ class ParticleSystem {
                     const distance = Math.sqrt(distanceSq);
                     const opacity = (1 - (distance / this.config.MAX_CONNECTION_DISTANCE)) * this.config.PROXIMITY_LINE_OPACITY;
                     this._drawStaticJaggedLine(pA, pB, {
-                        color: 'rgba(56, 189, 248, OPACITY)',
+                        color: this.config.PROXIMITY_LINE_COLOR,
                         lineWidth: this.config.PROXIMITY_LINE_WIDTH,
                         roughness: this.config.PROXIMITY_LINE_ROUGHNESS,
                         opacity: opacity
@@ -467,7 +473,7 @@ class ParticleSystem {
             }
 
             this._drawJaggedLine(conn, {
-                color: `rgba(200, 240, 255, OPACITY)`,
+                color: this.config.FIRING_LINE_COLOR,
                 lineWidth: this.config.FIRING_LINE_WIDTH,
                 roughness: this.config.FIRING_LINE_ROUGHNESS,
                 opacity: conn.alpha * 0.9
@@ -538,7 +544,7 @@ class ParticleSystem {
                 const dotPos = path[headIndex];
                 if (dotPos) {
                     const radius = (this.config.SIGNAL_HEAD_WIDTH / 2) + pulse;
-                    this.ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                    this.ctx.fillStyle = this.config.SIGNAL_HEAD_FILL_COLOR.replace('OPACITY', opacity.toString());
                     this.ctx.shadowColor = this.config.SIGNAL_HEAD_GLOW_COLOR;
                     this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR + (pulse * 2);
                     this.ctx.beginPath();
@@ -549,7 +555,7 @@ class ParticleSystem {
                 const tailProgress = progress - this.config.SIGNAL_HEAD_LENGTH;
                 const tailIndex = Math.max(0, Math.floor(tailProgress * (path.length - 1)));
                 if (headIndex > tailIndex) {
-                    this.ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                    this.ctx.strokeStyle = this.config.SIGNAL_HEAD_STROKE_COLOR.replace('OPACITY', opacity.toString());
                     this.ctx.lineWidth = this.config.SIGNAL_HEAD_WIDTH + pulse;
                     this.ctx.shadowColor = this.config.SIGNAL_HEAD_GLOW_COLOR;
                     this.ctx.shadowBlur = this.config.SIGNAL_HEAD_GLOW_BLUR + (pulse * 2);
@@ -568,14 +574,26 @@ class ParticleSystem {
     updateColors(theme) {
         if (theme === 'light') {
             this.config.PARTICLE_COLOR = '#0284C7';
+            this.config.PARTICLE_GRADIENT_INNER_COLOR = 'rgba(2, 132, 199, 1)';
             this.config.PARTICLE_GRADIENT_OUTER_COLOR = 'rgba(2, 132, 199, 0)';
             this.config.LINE_SHADOW_COLOR = 'rgba(2, 132, 199, 0.6)';
+            this.config.PROXIMITY_LINE_COLOR = 'rgba(2, 132, 199, OPACITY)';
+            this.config.FIRING_LINE_COLOR = 'rgba(2, 100, 180, OPACITY)';
+            this.config.SIGNAL_HEAD_FILL_COLOR = 'rgba(2, 132, 199, OPACITY)';
+            this.config.SIGNAL_HEAD_STROKE_COLOR = 'rgba(2, 132, 199, OPACITY)';
+            this.config.SIGNAL_HEAD_GLOW_COLOR = 'rgba(2, 132, 199, 0.9)';
             this.config.STATIC_DENDRITE_OPACITY = 0.10;
             this.config.PROXIMITY_LINE_OPACITY = 0.3;
         } else {
             this.config.PARTICLE_COLOR = '#38BDF8';
+            this.config.PARTICLE_GRADIENT_INNER_COLOR = 'rgba(255, 255, 255, 1)';
             this.config.PARTICLE_GRADIENT_OUTER_COLOR = 'rgba(56, 189, 248, 0)';
             this.config.LINE_SHADOW_COLOR = 'rgba(125, 211, 252, 1)';
+            this.config.PROXIMITY_LINE_COLOR = 'rgba(56, 189, 248, OPACITY)';
+            this.config.FIRING_LINE_COLOR = 'rgba(200, 240, 255, OPACITY)';
+            this.config.SIGNAL_HEAD_FILL_COLOR = 'rgba(255, 255, 255, OPACITY)';
+            this.config.SIGNAL_HEAD_STROKE_COLOR = 'rgba(255, 255, 255, OPACITY)';
+            this.config.SIGNAL_HEAD_GLOW_COLOR = 'rgba(255, 255, 255, 0.9)';
             this.config.STATIC_DENDRITE_OPACITY = 0.18;
             this.config.PROXIMITY_LINE_OPACITY = 0.5;
         }

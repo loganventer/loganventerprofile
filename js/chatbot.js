@@ -5,7 +5,6 @@
   var PRIMARY_URL = "";
   var FALLBACK_URL = "/.netlify/functions/chat";
   var TOKEN_URL = "/.netlify/functions/token";
-  var MAX_MESSAGES = 25;
   var HEALTH_TIMEOUT = 3000;
   var POLL_INTERVAL = 3000;
 
@@ -13,7 +12,6 @@
   var history = [];
   var streaming = false;
   var usePrimary = null;
-  var msgCount = parseInt(sessionStorage.getItem("cb_count") || "0");
   var accessToken = localStorage.getItem("cb_token") || null;
   var requestId = sessionStorage.getItem("cb_request_id") || null;
   var pollTimer = null;
@@ -257,19 +255,9 @@
       return;
     }
 
-    if (msgCount >= MAX_MESSAGES) {
-      addMessage(
-        "assistant",
-        "You've reached the demo limit for this session. Refresh the page to start a new conversation."
-      );
-      return;
-    }
-
     addMessage("user", text);
     history.push({ role: "user", content: text });
     input.value = "";
-    msgCount++;
-    sessionStorage.setItem("cb_count", String(msgCount));
 
     var chipsContainer = document.getElementById("chatbot-chips");
     if (chipsContainer) chipsContainer.style.display = "none";
@@ -351,8 +339,6 @@
 
         // Server-side demo limit reached
         if (response.status === 429 && errData.error === "demo_limit") {
-          msgCount = MAX_MESSAGES;
-          sessionStorage.setItem("cb_count", String(msgCount));
           contentEl.textContent = "You've reached the demo message limit. The admin can reset your limit if needed.";
           return;
         }

@@ -488,6 +488,16 @@ html {
 .project-card .edgeLabel polygon { fill: var(--mermaid-edge-bg) !important; stroke: none !important; }
 .project-card .edgeLabel span { color: var(--mermaid-edge-text) !important; }
 
+/* In light mode, keep mermaid diagrams on a dark background (like code blocks) */
+[data-theme="light"] .project-card pre.mermaid {
+    background: rgba(15, 23, 42, 0.95);
+    border-radius: 8px;
+    padding: 16px;
+}
+[data-theme="light"] .project-card .mermaid .edgeLabel span { color: #e2e8f0 !important; }
+[data-theme="light"] .project-card .mermaid .edgeLabel rect,
+[data-theme="light"] .project-card .mermaid .edgeLabel polygon { fill: #1e293b !important; }
+
 /* Chatbot Demo */
 .chatbot-container {
     background: var(--bg-chatbot);
