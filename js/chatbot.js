@@ -704,21 +704,33 @@
 
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-    var svgData = new XMLSerializer().serializeToString(svg);
-    var svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-    var url = URL.createObjectURL(svgBlob);
+    var scale = 4;
+    var clone = svg.cloneNode(true);
+    var bbox = svg.getBoundingClientRect();
+    var w = bbox.width;
+    var h = bbox.height;
+
+    // Set the SVG to render at the scaled resolution natively
+    clone.setAttribute("width", w * scale);
+    clone.setAttribute("height", h * scale);
+    if (!clone.getAttribute("viewBox")) {
+      clone.setAttribute("viewBox", "0 0 " + w + " " + h);
+    }
+    // Ensure xmlns for standalone SVG
+    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+    var svgData = new XMLSerializer().serializeToString(clone);
+    var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData);
     var img = new Image();
 
     img.onload = function () {
-      var scale = 4;
       var canvas = document.createElement("canvas");
-      canvas.width = img.width * scale;
-      canvas.height = img.height * scale;
+      canvas.width = w * scale;
+      canvas.height = h * scale;
       var ctx = canvas.getContext("2d");
       ctx.fillStyle = "#1e293b";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      URL.revokeObjectURL(url);
 
       canvas.toBlob(function (blob) {
         var link = document.createElement("a");
@@ -734,7 +746,6 @@
     };
 
     img.onerror = function () {
-      URL.revokeObjectURL(url);
       btn.innerHTML = '<i class="fas fa-download"></i>';
     };
 
