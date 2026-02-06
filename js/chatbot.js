@@ -710,18 +710,31 @@
     var w = bbox.width;
     var h = bbox.height;
 
-    // Set the SVG to render at the scaled resolution natively
+    // Inline all computed styles so the standalone SVG renders correctly
+    var origEls = svg.querySelectorAll("*");
+    var cloneEls = clone.querySelectorAll("*");
+    for (var si = 0; si < origEls.length; si++) {
+      var cs = getComputedStyle(origEls[si]);
+      var style = "";
+      for (var pi = 0; pi < cs.length; pi++) {
+        style += cs[pi] + ":" + cs.getPropertyValue(cs[pi]) + ";";
+      }
+      cloneEls[si].setAttribute("style", style);
+    }
+
+    // Force the SVG to render at the target pixel resolution
+    var vb = svg.getAttribute("viewBox") || ("0 0 " + w + " " + h);
+    clone.setAttribute("viewBox", vb);
     clone.setAttribute("width", w * scale);
     clone.setAttribute("height", h * scale);
-    if (!clone.getAttribute("viewBox")) {
-      clone.setAttribute("viewBox", "0 0 " + w + " " + h);
-    }
-    // Ensure xmlns for standalone SVG
+    clone.removeAttribute("style");
     clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
     var svgData = new XMLSerializer().serializeToString(clone);
-    var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData);
+    var blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
     var img = new Image();
+    img.crossOrigin = "anonymous";
 
     img.onload = function () {
       var canvas = document.createElement("canvas");
@@ -731,11 +744,12 @@
       ctx.fillStyle = "#1e293b";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
 
-      canvas.toBlob(function (blob) {
+      canvas.toBlob(function (pngBlob) {
         var link = document.createElement("a");
         link.download = "diagram.png";
-        link.href = URL.createObjectURL(blob);
+        link.href = URL.createObjectURL(pngBlob);
         link.click();
         URL.revokeObjectURL(link.href);
         btn.innerHTML = '<i class="fas fa-check"></i>';
@@ -746,6 +760,7 @@
     };
 
     img.onerror = function () {
+      URL.revokeObjectURL(url);
       btn.innerHTML = '<i class="fas fa-download"></i>';
     };
 
