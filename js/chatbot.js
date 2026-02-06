@@ -54,6 +54,16 @@
       });
     });
 
+    // Quick action buttons
+    var actions = document.querySelectorAll(".chatbot-action");
+    actions.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (streaming) return;
+        input.value = btn.getAttribute("data-query");
+        handleSend();
+      });
+    });
+
     // Check existing token validity
     if (accessToken) {
       validateToken(accessToken).then(function (valid) {
@@ -265,6 +275,8 @@
 
     var chipsContainer = document.getElementById("chatbot-chips");
     if (chipsContainer) chipsContainer.style.display = "none";
+    var actionsContainer = document.getElementById("chatbot-actions");
+    if (actionsContainer) actionsContainer.style.display = "none";
 
     sendToBackend(text);
   }
@@ -277,7 +289,7 @@
     var msgEl = addMessage("assistant", "");
     var contentEl = msgEl.querySelector(".chat-msg-content");
     contentEl.innerHTML =
-      '<span class="typing-indicator"><span></span><span></span><span></span></span>';
+      '<span class="typing-indicator"><i class="fas fa-search" style="font-size:10px;color:#64748b;margin-right:6px;"></i><span></span><span></span><span></span></span>';
 
     if (usePrimary === null && PRIMARY_URL) {
       usePrimary = await checkPrimaryHealth();
