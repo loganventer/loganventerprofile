@@ -746,11 +746,11 @@
                 <div class="space-y-4">
                     <div>
                         <h3 class="text-xl font-semibold text-sky-600">AI/ML Engineering</h3>
-                        <p>LangChain, LangGraph, Model Context Protocol (MCP), Retrieval-Augmented Generation (RAG), LLM Orchestration, Vector Databases (Qdrant, FAISS, Pinecone, ChromaDB, Weaviate), Prompt Engineering, Semantic Search, Embeddings.</p>
+                        <p>LangChain, LangGraph, Model Context Protocol (MCP), Retrieval-Augmented Generation (RAG), LLM Orchestration, Multi-Agent Systems, Vector Databases (Qdrant, FAISS, Pinecone, ChromaDB, Weaviate), Prompt Engineering, Prompt Security, Semantic Search, Embeddings.</p>
                     </div>
                     <div>
                         <h3 class="text-xl font-semibold text-sky-600">Multi-Protocol Backend Architecture</h3>
-                        <p>Designing and implementing APIs across gRPC, SignalR, Server-Sent Events (SSE), WebSocket, and REST. Building multi-transport server frameworks that support session management, authentication, and automatic tool discovery.</p>
+                        <p>Designing and implementing APIs across gRPC, SignalR, Server-Sent Events (SSE), Streamable HTTP, WebSocket, and REST. Building multi-transport server frameworks that support session management, authentication, and automatic tool discovery.</p>
                     </div>
                     <div>
                         <h3 class="text-xl font-semibold text-sky-600">Frontend &amp; Mobile</h3>
@@ -758,7 +758,7 @@
                     </div>
                     <div>
                         <h3 class="text-xl font-semibold text-sky-600">DevOps &amp; Infrastructure</h3>
-                        <p>Docker, Docker Compose, Azure, CI/CD Pipelines, containerized deployments. Driving continuous integration and delivery pipelines using Azure DevOps.</p>
+                        <p>Docker, Docker Compose, Rancher, Azure, CI/CD Pipelines, cross-platform containerized deployments (Linux, Mac, Windows). Driving continuous integration and delivery pipelines using Azure DevOps.</p>
                     </div>
                     <div>
                         <h3 class="text-xl font-semibold text-sky-600">Testing</h3>
@@ -821,7 +821,7 @@
                             <pre class="mermaid mb-4">
 graph LR
   Client[AI Agents] --> Framework[MCP Framework]
-  Framework --> T1[5 Transport Protocols]
+  Framework --> T1[6 Transport Protocols]
   Framework --> T2[Auth + Sessions]
   Framework --> T3[Tool Registry]
   style Client fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
@@ -837,6 +837,7 @@ graph LR
                                 <span class="project-tag project-tag-blue">SignalR</span>
                                 <span class="project-tag project-tag-blue">Polly</span>
                                 <span class="project-tag project-tag-blue">FluentValidation</span>
+                                <span class="project-tag project-tag-blue">LangChain</span>
                             </div>
                         </div>
                     </div>
@@ -932,6 +933,39 @@ graph LR
                                 <span class="project-tag project-tag-purple">React</span>
                                 <span class="project-tag project-tag-purple">Qdrant</span>
                                 <span class="project-tag project-tag-purple">MCP</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 5: Code Review Agent System -->
+                    <div class="project-card">
+                        <div class="project-card-accent project-card-accent-rose"></div>
+                        <div class="project-card-body">
+                            <span class="project-label project-label-rose">Multi-Agent Orchestration</span>
+                            <h3 class="text-2xl font-bold mb-3">Hierarchical Code Review Agent System</h3>
+                            <p class="text-gray-400 mb-4">
+                                Multi-agent system for automated code review and fix orchestration. 30 specialized
+                                agents organized hierarchically with recursive depth control, covering backend
+                                (C#, Java, Python, Go, Node.js, Ruby, Rust, PHP) and frontend (React, Vue, Angular,
+                                Svelte) quality analysis, security, accessibility, and automated fixes.
+                            </p>
+                            <pre class="mermaid mb-4">
+graph LR
+  Master[Master Orchestrator] --> Quality[Quality Reviewers]
+  Master --> Fix[Fix Agents]
+  Quality --> BE[Backend 8 Languages]
+  Quality --> FE[Frontend 4 Frameworks]
+  style Master fill:#3b1a2a,stroke:#f43f5e,color:#fda4af
+  style Quality fill:#1e293b,stroke:#475569,color:#94a3b8
+  style Fix fill:#1e293b,stroke:#475569,color:#94a3b8
+  style BE fill:#3b1a2a,stroke:#f43f5e,color:#fda4af
+  style FE fill:#3b1a2a,stroke:#f43f5e,color:#fda4af
+                            </pre>
+                            <div class="flex flex-wrap gap-2 mt-4">
+                                <span class="project-tag project-tag-rose">Claude Opus</span>
+                                <span class="project-tag project-tag-rose">Claude Sonnet</span>
+                                <span class="project-tag project-tag-rose">Agent Orchestration</span>
+                                <span class="project-tag project-tag-rose">iDesign</span>
                             </div>
                         </div>
                     </div>

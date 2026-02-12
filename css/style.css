@@ -419,6 +419,7 @@ html {
 .project-card-accent-green { background: linear-gradient(180deg, #10b981, #06b6d4); }
 .project-card-accent-amber { background: linear-gradient(180deg, #f59e0b, #ef4444); }
 .project-card-accent-purple { background: linear-gradient(180deg, #8b5cf6, #ec4899); }
+.project-card-accent-rose { background: linear-gradient(180deg, #f43f5e, #f59e0b); }
 
 .project-card-body {
     padding: 24px;
@@ -439,6 +440,7 @@ html {
 .project-label-green { color: #10b981; }
 .project-label-amber { color: #f59e0b; }
 .project-label-purple { color: #8b5cf6; }
+.project-label-rose { color: #f43f5e; }
 
 .project-tag {
     padding: 4px 12px;
@@ -451,11 +453,13 @@ html {
 .project-tag-green { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); color: #6ee7b7; }
 .project-tag-amber { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.25); color: #fcd34d; }
 .project-tag-purple { background: rgba(139, 92, 246, 0.12); border: 1px solid rgba(139, 92, 246, 0.25); color: #c4b5fd; }
+.project-tag-rose { background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.25); color: #fda4af; }
 
 [data-theme="light"] .project-tag-blue { color: #2563eb; }
 [data-theme="light"] .project-tag-green { color: #059669; }
 [data-theme="light"] .project-tag-amber { color: #d97706; }
 [data-theme="light"] .project-tag-purple { color: #7c3aed; }
+[data-theme="light"] .project-tag-rose { color: #e11d48; }
 
 .project-image-placeholder {
     width: 100%;
