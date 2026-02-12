@@ -14,13 +14,14 @@
   var pollTimer = null;
 
   // --- DOM ---
-  var container, messages, input, sendBtn;
+  var container, scrollArea, messages, input, sendBtn;
   var gateOverlay, gateBtn, gateStatus;
 
   document.addEventListener("DOMContentLoaded", init);
 
   function init() {
     container = document.getElementById("chatbot-container");
+    scrollArea = container && container.querySelector(".chatbot-scroll-area");
     messages = document.getElementById("chatbot-messages");
     input = document.getElementById("chatbot-input");
     sendBtn = document.getElementById("chatbot-send");
@@ -627,12 +628,14 @@
   }
 
   function isNearBottom() {
+    var el = scrollArea || messages;
     var threshold = 100;
-    return messages.scrollHeight - messages.scrollTop - messages.clientHeight < threshold;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
   }
 
   function scrollToBottom() {
-    messages.scrollTo({ top: messages.scrollHeight, behavior: "smooth" });
+    var el = scrollArea || messages;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }
 
   function addMessage(role, text) {

@@ -575,18 +575,22 @@ html {
     min-height: 400px;
 }
 
-.chatbot-messages {
+.chatbot-scroll-area {
     flex: 1;
     overflow-y: auto;
+    min-height: 0;
+}
+
+.chatbot-scroll-area::-webkit-scrollbar { width: 6px; }
+.chatbot-scroll-area::-webkit-scrollbar-track { background: transparent; }
+.chatbot-scroll-area::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+
+.chatbot-messages {
     padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
-
-.chatbot-messages::-webkit-scrollbar { width: 6px; }
-.chatbot-messages::-webkit-scrollbar-track { background: transparent; }
-.chatbot-messages::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
 
 .chat-msg {
     display: flex;
