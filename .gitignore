@@ -9,7 +9,7 @@ Thumbs.db
 .vscode/
 
 # Generated RAG index (built at deploy time)
-netlify/functions/data/
+netlify/functions/rag-data.mjs
 
 # Logs
 npm-debug.log*
