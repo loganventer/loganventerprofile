@@ -1,30 +1,19 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getStore } from "@netlify/blobs";
 import { searchKnowledge, getProjectDetails, getExperience, getSkillsByCategory } from "./knowledge.mjs";
+import { verifyToken } from "./verify-token.mjs";
 
 const RATE_LIMIT_WINDOW = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 30;
 const MAX_TOOL_ROUNDS = 3;
 const rateLimits = new Map();
-
-// HMAC-SHA256 token verification (must match token.mjs)
-async function verifyToken(tokenStr, secret) {
-  try {
-    const { d, s } = JSON.parse(atob(tokenStr));
-    const key = await crypto.subtle.importKey(
-      "raw",
-      new TextEncoder().encode(secret),
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["verify"]
-    );
-    const sigBytes = new Uint8Array(s.match(/.{2}/g).map((h) => parseInt(h, 16)));
-    const valid = await crypto.subtle.verify("HMAC", key, sigBytes, new TextEncoder().encode(d));
-    if (!valid) return null;
-    return JSON.parse(d);
-  } catch {
-    return null;
-  }
+const ALLOWED_ORIGINS = [
+  "https://loganventer.com",
+  "https://loganventer.netlify.app",
+];
+function getAllowedOrigin(request) {
+  const origin = request.headers.get("origin") || "";
+  return ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
 }
 
 // --- Input Sanitization ---
@@ -188,7 +177,7 @@ export default async (request, context) => {
     return new Response(null, {
       status: 204,
       headers: {
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": getAllowedOrigin(request),
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
       },
@@ -218,7 +207,7 @@ export default async (request, context) => {
   if (!tokenStr) {
     return new Response(JSON.stringify({ error: "access_required" }), {
       status: 403,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": getAllowedOrigin(request) },
     });
   }
 
@@ -231,7 +220,7 @@ export default async (request, context) => {
   if (!payload || Date.now() > payload.exp) {
     return new Response(JSON.stringify({ error: "token_expired" }), {
       status: 403,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": getAllowedOrigin(request) },
     });
   }
 
@@ -241,7 +230,7 @@ export default async (request, context) => {
   if (!stored) {
     return new Response(JSON.stringify({ error: "token_revoked" }), {
       status: 403,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": getAllowedOrigin(request) },
     });
   }
 
@@ -252,7 +241,7 @@ export default async (request, context) => {
   if (countData.count >= 25) {
     return new Response(JSON.stringify({ error: "demo_limit" }), {
       status: 429,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": getAllowedOrigin(request) },
     });
   }
   countData.count++;
@@ -342,18 +331,22 @@ export default async (request, context) => {
             emit({ type: "delta", text: finalText.slice(i, i + chunkSize) });
           }
         } else {
-          // Exhausted tool rounds - stream final response
-          const stream = client.messages.stream({
+          // Exhausted tool rounds - collect final response and filter before emitting
+          const response = await client.messages.create({
             model: "claude-haiku-4-5-20251001",
             max_tokens: 1024,
             system: SYSTEM_PROMPT,
             messages: toolMessages,
           });
 
-          for await (const event of stream) {
-            if (event.type === "content_block_delta" && event.delta?.text) {
-              emit({ type: "delta", text: event.delta.text });
-            }
+          let text = response.content
+            .filter((b) => b.type === "text")
+            .map((b) => b.text)
+            .join("");
+          text = filterOutput(text);
+          const chunkSize = 20;
+          for (let i = 0; i < text.length; i += chunkSize) {
+            emit({ type: "delta", text: text.slice(i, i + chunkSize) });
           }
         }
 
@@ -372,7 +365,7 @@ export default async (request, context) => {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
       "Connection": "keep-alive",
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": getAllowedOrigin(request),
     },
   });
 };

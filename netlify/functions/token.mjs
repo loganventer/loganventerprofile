@@ -1,4 +1,14 @@
 import { getStore } from "@netlify/blobs";
+import { verifyToken } from "./verify-token.mjs";
+
+const ALLOWED_ORIGINS = [
+  "https://loganventer.com",
+  "https://loganventer.netlify.app",
+];
+function getAllowedOrigin(request) {
+  const origin = request.headers.get("origin") || "";
+  return ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+}
 
 function getStores() {
   const pending = getStore({ name: "chatbot-pending", consistency: "strong" });
@@ -27,31 +37,12 @@ async function signToken(payload, secret) {
   return btoa(JSON.stringify({ d: data, s: sigHex }));
 }
 
-async function verifyToken(tokenStr, secret) {
-  try {
-    const { d, s } = JSON.parse(atob(tokenStr));
-    const key = await crypto.subtle.importKey(
-      "raw",
-      new TextEncoder().encode(secret),
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["verify"]
-    );
-    const sigBytes = new Uint8Array(s.match(/.{2}/g).map((h) => parseInt(h, 16)));
-    const valid = await crypto.subtle.verify("HMAC", key, sigBytes, new TextEncoder().encode(d));
-    if (!valid) return null;
-    return JSON.parse(d);
-  } catch {
-    return null;
-  }
-}
-
-function cors(body, status = 200) {
+function cors(body, status = 200, origin = ALLOWED_ORIGINS[0]) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": origin,
     },
   });
 }
@@ -103,11 +94,13 @@ function checkRequestLimit(ip) {
 }
 
 export default async (request, context) => {
+  const origin = getAllowedOrigin(request);
+
   if (request.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
       headers: {
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": origin,
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
       },
@@ -115,14 +108,16 @@ export default async (request, context) => {
   }
 
   if (request.method !== "POST") {
-    return cors({ error: "Method not allowed" }, 405);
+    return cors({ error: "Method not allowed" }, 405, origin);
   }
+
+  const respond = (body, status) => cors(body, status, origin);
 
   let body;
   try {
     body = await request.json();
   } catch {
-    return cors({ error: "Invalid JSON" }, 400);
+    return respond({ error: "Invalid JSON" }, 400);
   }
 
   const action = (body.action || "").trim();
@@ -135,7 +130,7 @@ export default async (request, context) => {
   if (action === "request") {
     const ip = context.ip || "unknown";
     if (!checkRequestLimit(ip)) {
-      return cors({ error: "Too many requests. Try again later." }, 429);
+      return respond({ error: "Too many requests. Try again later." }, 429);
     }
     const requestId = generateId();
     const ua = request.headers.get("user-agent") || "unknown";
@@ -148,21 +143,21 @@ export default async (request, context) => {
       status: "pending",
     });
     await notifyTokenRequest({ id: requestId, ip, ua: ua.substring(0, 120), ts });
-    return cors({ request_id: requestId });
+    return respond({ request_id: requestId });
   }
 
   // --- Visitor: Poll for approval status ---
   if (action === "poll") {
     const requestId = (body.request_id || "").trim();
-    if (!requestId) return cors({ status: "unknown" });
+    if (!requestId) return respond({ status: "unknown" });
 
     const req = await pending.get(requestId, { type: "json" });
     if (req) {
       if (Date.now() - req.ts > PENDING_TTL) {
         await pending.delete(requestId);
-        return cors({ status: "expired" });
+        return respond({ status: "expired" });
       }
-      return cors({ status: "pending" });
+      return respond({ status: "pending" });
     }
 
     // Check if a token was issued for this request
@@ -172,37 +167,37 @@ export default async (request, context) => {
       if (data && data.request_id === requestId) {
         if (Date.now() > data.expires) {
           await tokens.delete(entry.key);
-          return cors({ status: "expired" });
+          return respond({ status: "expired" });
         }
-        return cors({ status: "approved", token: data.signed_token });
+        return respond({ status: "approved", token: data.signed_token });
       }
     }
-    return cors({ status: "denied" });
+    return respond({ status: "denied" });
   }
 
   // --- Visitor: Validate a token ---
   if (action === "validate") {
     const tokenStr = (body.token || "").trim();
-    if (!tokenStr) return cors({ valid: false });
+    if (!tokenStr) return respond({ valid: false });
 
     const payload = await verifyToken(tokenStr, signingSecret);
-    if (!payload) return cors({ valid: false, reason: "invalid_signature" });
-    if (Date.now() > payload.exp) return cors({ valid: false, reason: "expired" });
+    if (!payload) return respond({ valid: false, reason: "invalid_signature" });
+    if (Date.now() > payload.exp) return respond({ valid: false, reason: "expired" });
 
     // Also verify it hasn't been revoked
     const stored = await tokens.get(payload.jti, { type: "json" });
-    if (!stored) return cors({ valid: false, reason: "revoked" });
+    if (!stored) return respond({ valid: false, reason: "revoked" });
 
-    return cors({ valid: true, expires: payload.exp });
+    return respond({ valid: true, expires: payload.exp });
   }
 
   // --- Admin actions below require admin key ---
   if (!adminKey) {
-    return cors({ error: "Admin not configured" }, 500);
+    return respond({ error: "Admin not configured" }, 500);
   }
 
   if (body.admin_key !== adminKey) {
-    return cors({ error: "Unauthorized" }, 401);
+    return respond({ error: "Unauthorized" }, 401);
   }
 
   // --- Admin: List pending requests (auto-prune expired) ---
@@ -220,7 +215,7 @@ export default async (request, context) => {
       items.push(data);
     }
     items.sort((a, b) => b.ts - a.ts);
-    return cors({ pending: items });
+    return respond({ pending: items });
   }
 
   // --- Admin: List active tokens ---
@@ -239,16 +234,16 @@ export default async (request, context) => {
       }
     }
     items.sort((a, b) => b.created - a.created);
-    return cors({ tokens: items });
+    return respond({ tokens: items });
   }
 
   // --- Admin: Reset demo message limit ---
   if (action === "reset_limit") {
     const jti = (body.jti || "").trim();
-    if (!jti) return cors({ error: "jti required" }, 400);
+    if (!jti) return respond({ error: "jti required" }, 400);
     const countStore = getStore({ name: "chatbot-counts", consistency: "strong" });
     await countStore.setJSON(jti, { count: 0 });
-    return cors({ ok: true });
+    return respond({ ok: true });
   }
 
   // --- Admin: Approve a pending request ---
@@ -256,10 +251,10 @@ export default async (request, context) => {
     const requestId = (body.request_id || "").trim();
     const timeoutMinutes = parseInt(body.timeout_minutes) || 60;
 
-    if (!requestId) return cors({ error: "request_id required" }, 400);
+    if (!requestId) return respond({ error: "request_id required" }, 400);
 
     const req = await pending.get(requestId, { type: "json" });
-    if (!req) return cors({ error: "Request not found" }, 404);
+    if (!req) return respond({ error: "Request not found" }, 404);
 
     const jti = generateId();
     const now = Date.now();
@@ -283,23 +278,23 @@ export default async (request, context) => {
 
     await pending.delete(requestId);
 
-    return cors({ ok: true, token: signedToken, expires: exp });
+    return respond({ ok: true, token: signedToken, expires: exp });
   }
 
   // --- Admin: Deny a pending request ---
   if (action === "deny") {
     const requestId = (body.request_id || "").trim();
-    if (!requestId) return cors({ error: "request_id required" }, 400);
+    if (!requestId) return respond({ error: "request_id required" }, 400);
     await pending.delete(requestId);
-    return cors({ ok: true });
+    return respond({ ok: true });
   }
 
   // --- Admin: Revoke a specific token ---
   if (action === "revoke") {
     const jti = (body.jti || "").trim();
-    if (!jti) return cors({ error: "jti required" }, 400);
+    if (!jti) return respond({ error: "jti required" }, 400);
     await tokens.delete(jti);
-    return cors({ ok: true });
+    return respond({ ok: true });
   }
 
   // --- Admin: Emergency clear ALL ---
@@ -315,8 +310,8 @@ export default async (request, context) => {
       await tokens.delete(entry.key);
       cleared++;
     }
-    return cors({ ok: true, cleared });
+    return respond({ ok: true, cleared });
   }
 
-  return cors({ error: "Unknown action" }, 400);
+  return respond({ error: "Unknown action" }, 400);
 };

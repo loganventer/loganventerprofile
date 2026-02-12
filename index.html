@@ -42,13 +42,13 @@
     
     <!-- External Resources -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     
     <!-- Mermaid Diagrams -->
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" integrity="sha384-rbtjAdnIQE/aQJGEgXrVUlMibdfTSa4PQju4HDhN3sR2PmaKFzhEafuePsl9H/9I" crossorigin="anonymous"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             mermaid.initialize({
@@ -141,7 +141,9 @@
 </head>
 <body class="antialiased">
 
-    <canvas id="neural-canvas"></canvas>
+    <a href="#main-content" class="skip-nav">Skip to main content</a>
+
+    <canvas id="neural-canvas" aria-hidden="true"></canvas>
 
     <header class="header shadow-lg sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center max-w-7xl">
@@ -201,8 +203,8 @@
             <div class="hidden lg:flex items-center space-x-4">
                 <a href="#" class="nav-item nav-item-active" onclick="showSection('about', this)">About</a>
                 <div class="dropdown relative">
-                    <button class="nav-item focus:outline-none">Experience <i class="fas fa-chevron-down fa-xs"></i></button>
-                    <div class="dropdown-content">
+                    <button class="nav-item" aria-haspopup="true" aria-expanded="false">Experience <i class="fas fa-chevron-down fa-xs"></i></button>
+                    <div class="dropdown-content" role="menu">
                         <a href="#" onclick="showSection('exp-tih', this)">Senior AI/Platform Engineer | TIH</a>
                         <a href="#" onclick="showSection('exp-derivco', this)">Senior Software Developer | Derivco</a>
                         <a href="#" onclick="showSection('exp-dvt', this)">Senior Software Developer | DVT</a>
@@ -219,23 +221,23 @@
                     </div>
                 </div>
                 <div class="dropdown relative">
-                    <button class="nav-item focus:outline-none">Education <i class="fas fa-chevron-down fa-xs"></i></button>
-                    <div class="dropdown-content">
+                    <button class="nav-item" aria-haspopup="true" aria-expanded="false">Education <i class="fas fa-chevron-down fa-xs"></i></button>
+                    <div class="dropdown-content" role="menu">
                         <a href="#" onclick="showSection('edu-intec', this)">Diploma in C++ Programming</a>
                         <a href="#" onclick="showSection('edu-matric', this)">Grade 12 (Matric with Merit)</a>
                     </div>
                 </div>
                 <div class="dropdown relative">
-                    <button class="nav-item focus:outline-none">Skills <i class="fas fa-chevron-down fa-xs"></i></button>
-                    <div class="dropdown-content">
+                    <button class="nav-item" aria-haspopup="true" aria-expanded="false">Skills <i class="fas fa-chevron-down fa-xs"></i></button>
+                    <div class="dropdown-content" role="menu">
                         <a href="#" onclick="showSection('skills-languages', this)">Languages</a>
                         <a href="#" onclick="showSection('skills-frameworks', this)">Frameworks &amp; Methodologies</a>
                         <a href="#" onclick="showSection('skills-concepts', this)">Architectural Concepts</a>
                     </div>
                 </div>
                 <div class="dropdown relative">
-                    <button class="nav-item focus:outline-none">Projects <i class="fas fa-chevron-down fa-xs"></i></button>
-                    <div class="dropdown-content">
+                    <button class="nav-item" aria-haspopup="true" aria-expanded="false">Projects <i class="fas fa-chevron-down fa-xs"></i></button>
+                    <div class="dropdown-content" role="menu">
                         <a href="#" onclick="showSection('featured-projects', this)">Featured Projects</a>
                         <a href="#" onclick="showSection('personal-interests', this)">Personal Interests</a>
                     </div>
@@ -249,7 +251,7 @@
                 </a>
             </div>
             <div class="lg:hidden">
-                <button id="mobile-menu-button" class="text-white focus:outline-none">
+                <button id="mobile-menu-button" class="text-white" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
                     <i class="fas fa-bars fa-lg"></i>
                 </button>
             </div>
@@ -258,7 +260,7 @@
 
     <div id="mobile-menu-container">
         <div id="mobile-menu">
-            <div id="mobile-menu-close">×</div>
+            <button id="mobile-menu-close" aria-label="Close navigation menu">&times;</button>
             <div class="flex items-center justify-between mb-4">
                 <a href="#" class="block py-3 text-white text-xl" onclick="showSection('about', this); toggleMobileMenu();">About Me</a>
                 <button id="theme-toggle-mobile" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
@@ -299,7 +301,7 @@
         </div>
     </div>
 
-    <main class="container mx-auto p-6 lg:p-12 max-w-7xl">
+    <main id="main-content" class="container mx-auto p-6 lg:p-12 max-w-7xl">
         
         <section id="about" class="section active">
             <div class="content-card p-8 flow-root">
@@ -364,8 +366,8 @@
         <section id="exp-tih" class="section">
             <div class="content-card p-8">
                 <h2 class="text-3xl font-bold mb-2">Senior AI/Platform Engineer</h2>
-                <h3 class="text-xl font-semibold mb-1 text-sky-400"><a href="https://www.tihsa.co.za/" target="_blank" class="hover:underline">Telesure Investment Holdings (TIH)</a> | Aug 2025 - Present</h3>
-                <p class="text-sm text-gray-500 mb-4">Contractor via <a href="https://www.dotcomsoftware.co.za/" target="_blank" class="text-sky-400 hover:underline">DotCom Software Solutions</a></p>
+                <h3 class="text-xl font-semibold mb-1 text-sky-400"><a href="https://www.tihsa.co.za/" target="_blank" rel="noopener noreferrer" class="hover:underline">Telesure Investment Holdings (TIH)</a> | Aug 2025 - Present</h3>
+                <p class="text-sm text-gray-500 mb-4">Contractor via <a href="https://www.dotcomsoftware.co.za/" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:underline">DotCom Software Solutions</a></p>
                 <ul class="list-disc list-outside pl-5 space-y-3">
                     <li>Designing and building production AI platforms powering enterprise LLM integrations across the organization.</li>
                     <li>Architecting a production MCP (Model Context Protocol) server framework for .NET 9 with multi-transport support, session management, and automatic tool discovery.</li>
@@ -380,7 +382,7 @@
         <section id="exp-derivco" class="section">
              <div class="content-card p-8">
                 <h2 class="text-3xl font-bold mb-2">Senior Software Developer</h2>
-                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.derivco.com/" target="_blank" class="hover:underline">Derivco</a> | Nov 2018 - Jun 2025</h3>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.derivco.com/" target="_blank" rel="noopener noreferrer" class="hover:underline">Derivco</a> | Nov 2018 - Jun 2025</h3>
                 <div class="grid md:grid-cols-3 gap-8">
                     <ul class="list-disc list-outside pl-5 space-y-3 md:col-span-2">
                         <li>Led technical development of internal AI initiative, creating a dynamic prompt generation system that interprets JSON definitions to construct customizable, reusable prompts for OpenAI API integration.</li>
@@ -410,7 +412,7 @@
         <section id="exp-dvt" class="section">
             <div class="content-card p-8">
                 <h2 class="text-3xl font-bold mb-2">Senior Software Developer GMIC.Net (Consultant)</h2>
-                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.dvt.co.za/" target="_blank" class="hover:underline">Dynamic Visual Technologies (Pty) Ltd</a> | May 2016 - Nov 2018</h3>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.dvt.co.za/" target="_blank" rel="noopener noreferrer" class="hover:underline">Dynamic Visual Technologies (Pty) Ltd</a> | May 2016 - Nov 2018</h3>
                 <div class="grid md:grid-cols-3 gap-8">
                     <ul class="list-disc list-outside pl-5 space-y-3 md:col-span-2">
                         <li>Developed new features and implemented critical bug fixes as per client requirements.</li>
@@ -438,7 +440,7 @@
         <section id="exp-seecrypt" class="section">
             <div class="content-card p-8">
                 <h2 class="text-3xl font-bold mb-2">Software Developer/Windows Team Lead</h2>
-                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://seecrypt.com/" target="_blank" class="hover:underline">Seecrypt (Pty) Ltd</a> | Apr 2015 - May 2016</h3>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://seecrypt.com/" target="_blank" rel="noopener noreferrer" class="hover:underline">Seecrypt (Pty) Ltd</a> | Apr 2015 - May 2016</h3>
                 <div class="grid md:grid-cols-3 gap-8">
                     <ul class="list-disc list-outside pl-5 space-y-3 md:col-span-2">
                         <li>Developed new features and bug-fixes on the Seecrypt SC3 encrypted communications application.</li>
@@ -490,7 +492,7 @@
         <section id="exp-ud" class="section">
              <div class="content-card p-8">
                 <h2 class="text-3xl font-bold mb-2">Software Developer</h2>
-                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.udtrucks.com/southafrica" target="_blank" class="hover:underline">UD Trucks Southern Africa (Pty) Ltd</a> | Mar 2012 - May 2014</h3>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.udtrucks.com/southafrica" target="_blank" rel="noopener noreferrer" class="hover:underline">UD Trucks Southern Africa (Pty) Ltd</a> | Mar 2012 - May 2014</h3>
                 <div class="grid md:grid-cols-3 gap-8">
                     <ul class="list-disc list-outside pl-5 space-y-3 md:col-span-2">
                         <li>Attended and assisted in design meetings regarding the implementation of the UDCS system.</li>
@@ -513,7 +515,7 @@
         <section id="exp-enermatics" class="section">
             <div class="content-card p-8">
                 <h2 class="text-3xl font-bold mb-2">Software Developer</h2>
-                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.urbantechsystems.co.za/" target="_blank" class="hover:underline">Enermatics (Pty) Ltd</a> | Jun 2011 - Mar 2012</h3>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.urbantechsystems.co.za/" target="_blank" rel="noopener noreferrer" class="hover:underline">Enermatics (Pty) Ltd</a> | Jun 2011 - Mar 2012</h3>
                 <div class="grid md:grid-cols-3 gap-8">
                     <ul class="list-disc list-outside pl-5 space-y-3 md:col-span-2">
                         <li>Attended and assisted in design meetings regarding the implementation of the Wattkeeper system.</li>
@@ -536,7 +538,7 @@
         <section id="exp-infotech" class="section">
              <div class="content-card p-8">
                 <h2 class="text-3xl font-bold mb-2">Software Developer</h2>
-                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.infotech.co.za/" target="_blank" class="hover:underline">Infotech (Pty) Ltd</a> | Jun 2009 - May 2011</h3>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.infotech.co.za/" target="_blank" rel="noopener noreferrer" class="hover:underline">Infotech (Pty) Ltd</a> | Jun 2009 - May 2011</h3>
                  <div class="grid md:grid-cols-3 gap-8">
                     <ul class="list-disc list-outside pl-5 space-y-3 md:col-span-2">
                         <li>Attended and assisted in design meetings regarding the implementation of the Wattkeeper system.</li>
@@ -580,7 +582,7 @@
         <section id="exp-cot" class="section">
             <div class="content-card p-8">
                 <h2 class="text-3xl font-bold mb-2">Administrative Officer</h2>
-                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.tshwane.gov.za/" target="_blank" class="hover:underline">City of Tshwane Metropolitan Municipality</a> | Mar 2004 - Feb 2007</h3>
+                <h3 class="text-xl font-semibold mb-4 text-sky-400"><a href="https://www.tshwane.gov.za/" target="_blank" rel="noopener noreferrer" class="hover:underline">City of Tshwane Metropolitan Municipality</a> | Mar 2004 - Feb 2007</h3>
                 <div class="grid md:grid-cols-3 gap-8">
                     <ul class="list-disc list-outside pl-5 space-y-3 md:col-span-2">
                         <li>Checked and controlled payment vouchers for goods and services, ensuring all legal documents were attached and correct.</li>
@@ -1008,7 +1010,7 @@ graph LR
                 </div>
 
                 <div id="chatbot-container" class="chatbot-container">
-                    <div id="chatbot-messages" class="chatbot-messages"></div>
+                    <div id="chatbot-messages" class="chatbot-messages" role="log" aria-live="polite" aria-label="Chat messages"></div>
 
                     <div id="chatbot-chips" class="chatbot-chips">
                         <button class="chatbot-prompt-chip">What projects have you built?</button>
@@ -1026,7 +1028,7 @@ graph LR
                     </div>
 
                     <div class="chatbot-input-area">
-                        <input id="chatbot-input" class="chatbot-input" type="text" placeholder="Ask me anything..." autocomplete="off">
+                        <input id="chatbot-input" class="chatbot-input" type="text" placeholder="Ask me anything..." autocomplete="off" aria-label="Ask me anything">
                         <button id="chatbot-send" class="chatbot-send-btn" aria-label="Send message">
                             <i class="fas fa-paper-plane"></i>
                         </button>
@@ -1045,7 +1047,7 @@ graph LR
                 <h2 class="text-3xl font-bold mb-6">All References</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div>
-                        <h3 class="font-bold text-sky-400"><a href="https://www.derivco.com/" target="_blank" class="hover:underline">Derivco</a></h3>
+                        <h3 class="font-bold text-sky-400"><a href="https://www.derivco.com/" target="_blank" rel="noopener noreferrer" class="hover:underline">Derivco</a></h3>
                         <p>Chris Coetzee: <a href="tel:+27825488817" class="text-sky-400 hover:underline">+27 82 548 8817</a></p>
                         <p>Ockert Du Preez: <a href="tel:+27728290170" class="text-sky-400 hover:underline">+27 72 829 0170</a></p>
                         <p>Paul Kotze: <a href="tel:+27829017953" class="text-sky-400 hover:underline">+27 82 901 7953</a></p>
@@ -1053,20 +1055,20 @@ graph LR
                         <p>Gopi Kistasami: <a href="tel:+27836161371" class="text-sky-400 hover:underline">+27 83 616 1371</a></p>
                     </div>
                     <div>
-                        <h3 class="font-bold text-sky-400"><a href="https://www.dvt.co.za/" target="_blank" class="hover:underline">Dynamic Visual Technologies</a></h3>
+                        <h3 class="font-bold text-sky-400"><a href="https://www.dvt.co.za/" target="_blank" rel="noopener noreferrer" class="hover:underline">Dynamic Visual Technologies</a></h3>
                         <p>Khumo Jele: <a href="tel:+27814479732" class="text-sky-400 hover:underline">+27 81 447 9732</a></p>
                     </div>
                     <div>
-                        <h3 class="font-bold text-sky-400"><a href="https://seecrypt.com/" target="_blank" class="hover:underline">Seecrypt (Pty) Ltd</a></h3>
+                        <h3 class="font-bold text-sky-400"><a href="https://seecrypt.com/" target="_blank" rel="noopener noreferrer" class="hover:underline">Seecrypt (Pty) Ltd</a></h3>
                         <p>Annalinde Singh: <a href="tel:+27766404766" class="text-sky-400 hover:underline">+27 76 640 4766</a></p>
                         <p>Dino Fizzotti: <a href="tel:+447340415199" class="text-sky-400 hover:underline">+44 734 041 5199</a></p>
                     </div>
                     <div>
-                        <h3 class="font-bold text-sky-400"><a href="https://www.udtrucks.com/southafrica" target="_blank" class="hover:underline">UD Trucks</a> / Covariant Consulting</h3>
+                        <h3 class="font-bold text-sky-400"><a href="https://www.udtrucks.com/southafrica" target="_blank" rel="noopener noreferrer" class="hover:underline">UD Trucks</a> / Covariant Consulting</h3>
                         <p>Ronete McKenzie: <a href="tel:+27616822350" class="text-sky-400 hover:underline">+27 61 682 2350</a></p>
                     </div>
                     <div>
-                        <h3 class="font-bold text-sky-400"><a href="https://www.infotech.co.za/" target="_blank" class="hover:underline">Infotech</a>/<a href="https://www.urbantechsystems.co.za/" target="_blank" class="hover:underline">Enermatics</a></h3>
+                        <h3 class="font-bold text-sky-400"><a href="https://www.infotech.co.za/" target="_blank" rel="noopener noreferrer" class="hover:underline">Infotech</a>/<a href="https://www.urbantechsystems.co.za/" target="_blank" rel="noopener noreferrer" class="hover:underline">Enermatics</a></h3>
                         <p>Melissa Wittstock: <a href="tel:+27827500065" class="text-sky-400 hover:underline">+27 82 750 0065</a></p>
                     </div>
                     <div>
@@ -1074,7 +1076,7 @@ graph LR
                         <p>Maria Jacobs: <a href="tel:+27742546027" class="text-sky-400 hover:underline">+27 74 254 6027</a></p>
                     </div>
                     <div>
-                        <h3 class="font-bold text-sky-400"><a href="https://www.tshwane.gov.za/" target="_blank" class="hover:underline">City of Tshwane</a></h3>
+                        <h3 class="font-bold text-sky-400"><a href="https://www.tshwane.gov.za/" target="_blank" rel="noopener noreferrer" class="hover:underline">City of Tshwane</a></h3>
                         <p>Martie J. Matthee: <a href="tel:+27123588269" class="text-sky-400 hover:underline">+27 12 358 8269</a></p>
                     </div>
                     <div>

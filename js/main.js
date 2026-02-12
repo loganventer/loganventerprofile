@@ -151,7 +151,6 @@ window.updateMermaidTheme = function(theme) {
 };
 
 // --- Performance & Loading States ---
-let isPageLoaded = false;
 let particleSystem = null;
 let isProgrammaticNavigation = false; // Flag to prevent popstate interference
 
@@ -169,21 +168,6 @@ function initializeParticleSystem() {
     } catch (error) {
         console.error('Particle system failed to initialize:', error);
     }
-}
-
-// Show loading state
-function showLoading() {
-    const loadingEl = document.createElement('div');
-    loadingEl.id = 'loading-overlay';
-    loadingEl.innerHTML = `
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-            <div class="text-center">
-                <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-sky-400 mx-auto mb-4"></div>
-                <p class="text-white text-lg">Loading...</p>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(loadingEl);
 }
 
 // Hide loading state
@@ -210,7 +194,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Hide loading after everything is ready
     setTimeout(() => {
         hideLoading();
-        isPageLoaded = true;
     }, 500);
 
     /**
@@ -291,6 +274,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const isOpen = mobileMenuContainer.classList.toggle('menu-open');
         mobileMenu.classList.toggle('menu-open');
         document.body.classList.toggle('body-no-scroll', isOpen);
+
+        // Update aria-expanded on hamburger button
+        if (mobileMenuButton) {
+            mobileMenuButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        }
+
+        // Focus trap: move focus into menu when opening, back to button when closing
+        if (isOpen && mobileMenuClose) {
+            mobileMenuClose.focus();
+        } else if (!isOpen && mobileMenuButton) {
+            mobileMenuButton.focus();
+        }
         
         // Pause particle animation on mobile menu open for performance
         if (particleSystem && particleSystem.pauseAnimation) {
@@ -339,7 +334,40 @@ document.addEventListener('DOMContentLoaded', () => {
             if (mobileMenuContainer.classList.contains('menu-open')) {
                 toggleMobileMenu();
             }
+            // Close any open dropdown
+            document.querySelectorAll('.dropdown').forEach(d => {
+                d.classList.remove('dropdown-open');
+                const btn = d.querySelector('[aria-haspopup]');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            });
         }
+    });
+
+    // Keyboard-accessible dropdowns
+    document.querySelectorAll('.dropdown [aria-haspopup]').forEach(btn => {
+        btn.addEventListener('keydown', (e) => {
+            const dropdown = btn.closest('.dropdown');
+            if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                const isOpen = dropdown.classList.toggle('dropdown-open');
+                btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                if (isOpen) {
+                    const firstLink = dropdown.querySelector('.dropdown-content a');
+                    if (firstLink) firstLink.focus();
+                }
+            }
+        });
+
+        // Close on blur (when focus leaves the dropdown)
+        btn.closest('.dropdown').addEventListener('focusout', (e) => {
+            const dropdown = btn.closest('.dropdown');
+            setTimeout(() => {
+                if (!dropdown.contains(document.activeElement)) {
+                    dropdown.classList.remove('dropdown-open');
+                    btn.setAttribute('aria-expanded', 'false');
+                }
+            }, 0);
+        });
     });
 
     // Performance: Intersection Observer for lazy loading

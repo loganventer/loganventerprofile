@@ -235,20 +235,27 @@ class ParticleSystem {
     }
 
     start() {
+        // Respect prefers-reduced-motion: skip animation entirely
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            this._resizeCanvas();
+            return;
+        }
+
         Particle.preRenderParticles(this.config);
         this._resizeCanvas();
         this._initParticles();
         window.addEventListener('resize', this._handleResize);
         
         // Add visibility change listener for performance
-        document.addEventListener('visibilitychange', () => {
+        this._handleVisibilityChange = () => {
             this.isVisible = !document.hidden;
             if (!this.isVisible) {
                 this.pauseAnimation();
             } else {
                 this.resumeAnimation();
             }
-        });
+        };
+        document.addEventListener('visibilitychange', this._handleVisibilityChange);
         
         this._animate();
     }
@@ -317,24 +324,15 @@ class ParticleSystem {
         const area = this.canvas.width * this.canvas.height;
         const particleCount = Math.floor(area / this.config.PARTICLES_PER_PIXEL_DENSITY);
         
-        console.log(`Creating ${particleCount} particles for canvas ${this.canvas.width}x${this.canvas.height}`);
-        
         for (let i = 0; i < particleCount; i++) {
             const x = Math.random() * this.canvas.width;
             const y = Math.random() * this.canvas.height;
             const vx = (Math.random() - 0.5) * this.config.INITIAL_VELOCITY_RANGE;
             const vy = (Math.random() - 0.5) * this.config.INITIAL_VELOCITY_RANGE;
             const radius = Math.random() * (this.config.MAX_RADIUS - this.config.MIN_RADIUS) + this.config.MIN_RADIUS;
-            
-            // Debug: Log velocity for first few particles
-            if (i < this.config.DEBUG_PARTICLES_TO_LOG) {
-                console.log(`Particle ${i}: vx=${vx.toFixed(4)}, vy=${vy.toFixed(4)}`);
-            }
-            
+
             this.particlesArray.push(new Particle(x, y, vx, vy, radius, this.canvas, this.ctx, this.config));
         }
-        
-        console.log(`Created ${this.particlesArray.length} particles`);
     }
 
     _animate() {
@@ -366,7 +364,9 @@ class ParticleSystem {
         this.frameCount++;
         if (this.frameCount % this.config.PERFORMANCE_CHECK_INTERVAL === 0) {
             const currentTime = performance.now();
-            this.fps = 60000 / (currentTime - this.lastTime);
+            if (this.lastTime > 0) {
+                this.fps = (this.config.PERFORMANCE_CHECK_INTERVAL * 1000) / (currentTime - this.lastTime);
+            }
             this.lastTime = currentTime;
             
             if (this.fps < this.config.PERFORMANCE_FPS_THRESHOLD && this.particlesArray.length > 50) {
@@ -376,14 +376,21 @@ class ParticleSystem {
     }
 
     _handleConnections(qtree) {
+        // Build a Set of particles involved in active firing connections (O(1) lookups)
+        const firingParticles = new Set();
+        for (const c of this.firingConnections) {
+            firingParticles.add(c.from);
+            firingParticles.add(c.to);
+        }
+
         for (const pA of this.particlesArray) {
-            if (this.firingConnections.some(c => c.from === pA || c.to === pA)) continue;
+            if (firingParticles.has(pA)) continue;
 
             const range = new Rectangle(pA.x, pA.y, this.config.MAX_CONNECTION_DISTANCE, this.config.MAX_CONNECTION_DISTANCE);
             const nearbyParticles = qtree.query(range);
 
             for (const pB of nearbyParticles) {
-                if (pA === pB || this.firingConnections.some(c => c.from === pB || c.to === pB)) continue;
+                if (pA === pB || firingParticles.has(pB)) continue;
 
                 const dx = pA.x - pB.x;
                 const dy = pA.y - pB.y;
@@ -709,10 +716,6 @@ class Particle {
     }
 
     update() {
-        // Store old position for debugging
-        const oldX = this.x;
-        const oldY = this.y;
-        
         if (this.x + this.radius > this.canvas.width || this.x - this.radius < 0) { this.vx = -this.vx; }
         if (this.y + this.radius > this.canvas.height || this.y - this.radius < 0) { this.vy = -this.vy; }
         this.x += this.vx;
@@ -726,12 +729,5 @@ class Particle {
         }
 
         if (this.flashTTL > 0) this.flashTTL--;
-        
-        // Debug: Log movement occasionally
-        if (Math.random() < this.config.DEBUG_LOG_CHANCE) { // Very rare to avoid spam
-            console.log(`Particle moved: (${oldX.toFixed(2)}, ${oldY.toFixed(2)}) -> (${this.x.toFixed(2)}, ${this.y.toFixed(2)}) - velocity: (${this.vx.toFixed(4)}, ${this.vy.toFixed(4)})`);
-        }
-        
-        this.draw();
     }
 }

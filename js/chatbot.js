@@ -2,22 +2,19 @@
   "use strict";
 
   // --- Configuration ---
-  var PRIMARY_URL = "";
-  var FALLBACK_URL = "/.netlify/functions/chat";
+  var CHAT_URL = "/.netlify/functions/chat";
   var TOKEN_URL = "/.netlify/functions/token";
-  var HEALTH_TIMEOUT = 3000;
   var POLL_INTERVAL = 3000;
 
   // --- State ---
   var history = [];
   var streaming = false;
-  var usePrimary = null;
   var accessToken = localStorage.getItem("cb_token") || null;
   var requestId = localStorage.getItem("cb_request_id") || null;
   var pollTimer = null;
 
   // --- DOM ---
-  var container, messages, input, sendBtn, statusDot, statusText;
+  var container, messages, input, sendBtn;
   var gateOverlay, gateBtn, gateStatus;
 
   document.addEventListener("DOMContentLoaded", init);
@@ -27,8 +24,6 @@
     messages = document.getElementById("chatbot-messages");
     input = document.getElementById("chatbot-input");
     sendBtn = document.getElementById("chatbot-send");
-    statusDot = document.getElementById("chatbot-status-dot");
-    statusText = document.getElementById("chatbot-status-text");
 
     if (!container) return;
 
@@ -277,24 +272,12 @@
     contentEl.innerHTML =
       '<span class="typing-indicator"><i class="fas fa-search" style="font-size:10px;color:#64748b;margin-right:6px;"></i><span></span><span></span><span></span></span>';
 
-    if (usePrimary === null && PRIMARY_URL) {
-      usePrimary = await checkPrimaryHealth();
-    }
-
-    var url, body;
-    if (usePrimary) {
-      url = PRIMARY_URL + "/chat/stream";
-      body = JSON.stringify({ message: message, stream: true, token: accessToken });
-      setStatus(true);
-    } else {
-      url = FALLBACK_URL;
-      body = JSON.stringify({
-        message: message,
-        history: history.slice(0, -1),
-        token: accessToken,
-      });
-      setStatus(false);
-    }
+    var url = CHAT_URL;
+    var body = JSON.stringify({
+      message: message,
+      history: history.slice(0, -1),
+      token: accessToken,
+    });
 
     var TOOL_LABELS = {
       search_knowledge: "Searching knowledge base",
@@ -417,41 +400,11 @@
       contentEl.textContent = err.message.includes("Rate limit")
         ? "Too many requests. Please wait a moment."
         : "Could not reach the agent. Please try again.";
-
-      if (usePrimary) {
-        usePrimary = false;
-        setStatus(false);
-      }
     } finally {
       streaming = false;
       sendBtn.disabled = false;
       input.disabled = false;
       input.focus();
-    }
-  }
-
-  async function checkPrimaryHealth() {
-    try {
-      var controller = new AbortController();
-      var timeout = setTimeout(function () {
-        controller.abort();
-      }, HEALTH_TIMEOUT);
-      var res = await fetch(PRIMARY_URL + "/health", { signal: controller.signal });
-      clearTimeout(timeout);
-      return res.ok;
-    } catch {
-      return false;
-    }
-  }
-
-  function setStatus(isPrimary) {
-    if (!statusDot || !statusText) return;
-    if (isPrimary) {
-      statusDot.className = "chatbot-dot chatbot-dot-green";
-      statusText.textContent = "Connected to framework";
-    } else {
-      statusDot.className = "chatbot-dot chatbot-dot-gray";
-      statusText.textContent = "Powered by Claude";
     }
   }
 
@@ -461,7 +414,8 @@
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   function renderInlineMarkdown(line) {
@@ -479,8 +433,11 @@
     line = line.replace(/(?:^|(?<=\s))_(.+?)_(?=\s|$)/g, "<em>$1</em>");
     // Strikethrough: ~~text~~
     line = line.replace(/~~(.+?)~~/g, "<del>$1</del>");
-    // Links: [text](url)
-    line = line.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-sky-400 hover:underline">$1</a>');
+    // Links: [text](url) — allowlist safe URI schemes
+    line = line.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function(_, text, url) {
+      var safeUrl = /^(https?:|mailto:|#)/.test(url.trim().toLowerCase()) ? url : '#';
+      return '<a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:underline">' + text + '</a>';
+    });
     // Restore inline codes
     line = line.replace(/\x00CODE(\d+)\x00/g, function (_, idx) {
       return '<code class="chat-inline-code">' + codes[parseInt(idx)] + "</code>";
