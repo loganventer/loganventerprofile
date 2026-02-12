@@ -417,6 +417,16 @@ html {
     clear: both;
 }
 
+/* Mobile hero layout: stack profile image above content instead of floating */
+@media (max-width: 767px) {
+    #about .flow-root > .float-right {
+        float: none;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 1.5rem;
+    }
+}
+
 /* Featured Project Cards */
 .project-card {
     background: var(--bg-project);
