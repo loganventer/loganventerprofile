@@ -41,7 +41,7 @@ function filterOutput(text) {
     /system\s*prompt\s*(?:is|says|reads|contains)/i,
     /netlify\/functions\//i,
     /process\.env\./i,
-    /```[\s\S]*?(KNOWLEDGE|searchKnowledge|getProject|filterOutput|executeTool|SYSTEM_PROMPT|verifyToken|signToken|createToolRegistry|createLocalToolProvider|createMcpToolProvider|createMcpClient|assertToolProvider)/i,
+    /```[\s\S]*?(KNOWLEDGE|searchKnowledge|getProject|filterOutput|executeTool|SYSTEM_PROMPT|verifyToken|signToken|createToolRegistry|createLocalToolProvider|createMcpToolProvider|createMcpClient|assertToolProvider|createRagPipeline|loadRagIndex|buildBm25Index|scoreBm25|chunkKnowledge|reciprocalRankFusion|expandQuery|hydeRetrieval)/i,
   ];
   for (const p of leakPatterns) {
     if (p.test(text)) {

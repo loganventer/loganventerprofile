@@ -329,6 +329,10 @@ export const KNOWLEDGE = {
       title: "Microsoft Learn MCP Integration",
       description: "The chatbot integrates with the Microsoft Learn MCP (Model Context Protocol) server to provide real-time access to official Microsoft documentation, code samples, and technical references. The integration uses a SOLID-architecture tool provider system where local knowledge base tools and remote MCP tools are composed through a unified tool registry. The MCP client connects per-request using Streamable HTTP transport, discovers available tools dynamically via the tools/list protocol method, and gracefully degrades if the remote server is unavailable. This demonstrates proficiency with MCP client implementation, dependency inversion, composition-based architecture, and the iDesign layered methodology (Manager, Engine, Resource Accessor, Utility).",
     },
+    ragPipeline: {
+      title: "Hybrid RAG Pipeline",
+      description: "The chatbot's knowledge retrieval uses a hybrid RAG (Retrieval-Augmented Generation) pipeline combining BM25 scoring, HyDE (Hypothetical Document Embeddings), query expansion, and Reciprocal Rank Fusion (RRF). At build time, the knowledge base is chunked into 33 segments and a BM25 inverted index is pre-computed with TF-IDF weighting. At query time, static synonym expansion broadens the search terms, BM25 scores chunks against the expanded query, and HyDE asks Claude to generate a hypothetical answer paragraph which is then BM25-matched against chunks to capture semantic intent without dense vector embeddings. The two ranked lists are fused using RRF (k=60) to produce the top-5 results. The entire pipeline is pure JavaScript with no external embedding APIs — only Anthropic's Claude for the HyDE step. HyDE gracefully degrades with a 3-second timeout, falling back to BM25-only retrieval. This demonstrates agentic AI design patterns from O'Reilly's reference architecture: retrieval augmentation, hypothetical document embeddings, rank fusion, and query expansion.",
+    },
   },
 };
 
@@ -521,6 +525,7 @@ export function getPortfolioInfo(topic) {
     { keys: ["pwa", "offline", "service worker", "install", "manifest"], section: "pwa" },
     { keys: ["deploy", "hosting", "netlify", "domain", "server"], section: "deployment" },
     { keys: ["mcp", "microsoft", "learn", "docs", "documentation", "streamable", "tool provider", "tool registry"], section: "mcpIntegration" },
+    { keys: ["rag", "retrieval", "bm25", "hyde", "rrf", "fusion", "pipeline", "search", "query expansion", "chunk", "index"], section: "ragPipeline" },
   ];
 
   for (var m of mappings) {

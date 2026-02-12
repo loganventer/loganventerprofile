@@ -1,4 +1,5 @@
 import { searchKnowledge, getProjectDetails, getExperience, getSkillsByCategory, getPortfolioInfo } from "./knowledge.mjs";
+import { createRagPipeline } from "./rag-pipeline.mjs";
 
 const TOOLS = [
   {
@@ -58,8 +59,15 @@ const TOOLS = [
   },
 ];
 
+let pipeline = null;
+
+function getRagPipeline() {
+  if (!pipeline) pipeline = createRagPipeline();
+  return pipeline;
+}
+
 const EXECUTORS = {
-  search_knowledge: (input) => JSON.stringify(searchKnowledge(input.query)),
+  search_knowledge: (input) => getRagPipeline().search(input.query),
   get_project_details: (input) => JSON.stringify(getProjectDetails(input.project_name)),
   get_experience: (input) => JSON.stringify(getExperience(input.company)),
   get_skills: (input) => JSON.stringify(getSkillsByCategory(input.category)),

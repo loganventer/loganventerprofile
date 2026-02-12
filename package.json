@@ -2,6 +2,9 @@
   "name": "logan-venter-portfolio",
   "private": true,
   "type": "module",
+  "scripts": {
+    "build:rag": "node scripts/build-rag-index.mjs"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@modelcontextprotocol/sdk": "^1.12.0",
