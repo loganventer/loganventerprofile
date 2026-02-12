@@ -575,6 +575,29 @@ html {
     min-height: 400px;
 }
 
+/* Mobile chatbot: fill viewport, pin input visible */
+@media (max-width: 767px) {
+    #chatbot-demo .content-card {
+        padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+    }
+    #chatbot-demo .content-card > .mb-6 {
+        margin-bottom: 0.5rem;
+        padding: 0.75rem;
+    }
+    #chatbot-demo .content-card > .mb-6 h2 { font-size: 1.25rem; }
+    .chatbot-container {
+        flex: 1;
+        height: auto;
+        min-height: 0;
+        max-height: calc(100dvh - 160px);
+    }
+    .chatbot-chips { display: none; }
+}
+
 .chatbot-scroll-area {
     flex: 1;
     overflow-y: auto;
