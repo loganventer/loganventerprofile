@@ -734,6 +734,9 @@ html {
     gap: 6px;
     padding: 0 16px 12px;
 }
+@media (max-width: 767px) {
+    .chatbot-action-more { display: none; }
+}
 .chatbot-action {
     background: var(--chat-action-bg);
     border: 1px solid var(--chat-action-border);
