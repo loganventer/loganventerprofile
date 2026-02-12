@@ -384,7 +384,8 @@
               receivedText = true;
             }
             fullText += evt.text;
-            contentEl.innerHTML = renderMarkdown(fullText);
+            var displayText = fullText.replace(/\n*<<SUGGESTIONS>>[\s\S]*$/, "");
+            contentEl.innerHTML = renderMarkdown(displayText);
             if (isNearBottom()) scrollToBottom();
           } else if (evt.type === "error") {
             contentEl.textContent = "Something went wrong. Please try again.";
@@ -394,9 +395,13 @@
       }
 
       if (fullText) {
-        history.push({ role: "assistant", content: fullText });
-        contentEl.innerHTML = renderMarkdown(fullText);
+        var parsed = parseSuggestions(fullText);
+        history.push({ role: "assistant", content: parsed.text });
+        contentEl.innerHTML = renderMarkdown(parsed.text);
         renderMermaidBlocks(contentEl);
+        if (parsed.suggestions.length > 0) {
+          renderSuggestionChips(msgEl, parsed.suggestions);
+        }
       } else if (!receivedText) {
         contentEl.textContent = "No response received. Please try again.";
       }
@@ -410,6 +415,38 @@
       input.disabled = false;
       input.focus();
     }
+  }
+
+  // --- Suggestion parsing ---
+  function parseSuggestions(text) {
+    var marker = "<<SUGGESTIONS>>";
+    var idx = text.lastIndexOf(marker);
+    if (idx === -1) return { text: text, suggestions: [] };
+    var before = text.substring(0, idx).replace(/\n+$/, "");
+    var sugStr = text.substring(idx + marker.length).trim();
+    var suggestions = sugStr.split("||").map(function (s) { return s.trim(); }).filter(Boolean);
+    return { text: before, suggestions: suggestions };
+  }
+
+  function renderSuggestionChips(msgEl, suggestions) {
+    var wrapper = document.createElement("div");
+    wrapper.className = "chat-suggestions";
+    for (var i = 0; i < suggestions.length; i++) {
+      var chip = document.createElement("button");
+      chip.className = "chat-suggestion-chip";
+      chip.textContent = suggestions[i];
+      chip.addEventListener("click", (function (text) {
+        return function () {
+          if (streaming) return;
+          input.value = text;
+          handleSend();
+        };
+      })(suggestions[i]));
+      wrapper.appendChild(chip);
+    }
+    var bubble = msgEl.querySelector(".chat-msg-bubble");
+    if (bubble) bubble.appendChild(wrapper);
+    if (isNearBottom()) scrollToBottom();
   }
 
   // --- Markdown rendering ---

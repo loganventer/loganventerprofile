@@ -101,7 +101,15 @@ Formatting rules (always follow these):
 - Separate paragraphs with blank lines
 - Use code blocks with language tags for any code examples
 - When showing any diagram, flowchart, timeline, architecture, or visual structure, ALWAYS use a mermaid code block (\`\`\`mermaid)
-- Never output plain walls of text`;
+- Never output plain walls of text
+
+Follow-up suggestions (always include):
+- At the END of every response, include exactly 2-3 suggested follow-up questions the user might want to ask next
+- Format them on the LAST line as: <<SUGGESTIONS>>question one||question two||question three
+- Make suggestions contextually relevant to what you just discussed
+- Keep each suggestion concise (under 60 characters)
+- Vary the suggestions: mix topic exploration, deeper dives, and related areas
+- NEVER mention or explain the suggestions format in your response text`;
 
 function checkRateLimit(ip) {
   const now = Date.now();

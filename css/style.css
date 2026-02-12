@@ -835,6 +835,31 @@ html {
     font-size: 0.7rem;
 }
 
+/* Follow-up suggestion chips */
+.chat-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+}
+.chat-suggestion-chip {
+    background: var(--chat-chip-bg);
+    border: 1px solid var(--chat-chip-border);
+    color: var(--accent-lighter);
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1.3;
+}
+.chat-suggestion-chip:hover {
+    background: rgba(14, 165, 233, 0.2);
+    border-color: rgba(14, 165, 233, 0.4);
+}
+
 /* Mermaid diagrams in chat */
 .chat-mermaid-block {
     position: relative;
