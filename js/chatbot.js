@@ -283,7 +283,8 @@
       search_knowledge: "Searching knowledge base",
       get_project_details: "Looking up project details",
       get_experience: "Looking up work experience",
-      get_skills: "Looking up technical skills"
+      get_skills: "Looking up technical skills",
+      get_portfolio_info: "Looking up portfolio architecture"
     };
 
     try {

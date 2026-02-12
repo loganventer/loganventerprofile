@@ -283,6 +283,49 @@ export const KNOWLEDGE = {
       "Songwriting as a creative outlet",
     ],
   },
+
+  portfolio: {
+    overview: {
+      title: "Portfolio Site Overview",
+      description: "This portfolio is a static single-page site deployed on Netlify. It uses a JAMstack architecture: static HTML, CSS, and JavaScript on the frontend with Netlify serverless functions powering the backend. There is no build step or framework — the site is hand-crafted with vanilla HTML, Tailwind CSS via CDN, and plain JavaScript for maximum performance and zero build dependencies.",
+    },
+    frontend: {
+      title: "Frontend Architecture",
+      description: "The frontend is a single-page application built with vanilla HTML5, Tailwind CSS via CDN, and plain JavaScript. Navigation uses a section-based architecture where clicking menu items shows and hides content sections with smooth CSS transitions. The design is fully responsive with a slide-out mobile menu, keyboard-accessible dropdown navigation, and ARIA attributes for screen reader support. It uses the Inter font family from Google Fonts and Font Awesome for icons.",
+    },
+    theming: {
+      title: "Theme System",
+      description: "The site features a dark/light theme toggle implemented entirely through CSS custom properties on the root element, with a data-theme attribute controlling which palette is active. A small inline script in the HTML head reads the user's saved preference from localStorage before CSS loads, preventing any flash of the wrong theme. Tailwind utility classes are overridden per-theme using CSS attribute selectors. The neural network background and Mermaid diagrams also adapt their color palettes when the theme changes.",
+    },
+    neuralBackground: {
+      title: "Neural Network Background Animation",
+      description: "The animated background is a custom canvas-based particle system that renders an interactive neural network visualization. It uses a quadtree spatial index for efficient neighbor detection, allowing smooth performance even with many particles. Features include dynamic signal propagation along connections with glow effects, automatic particle density reduction when frame rates drop, visibility-based pausing when the browser tab is inactive, and prefers-reduced-motion support. The animation adapts its color palette to match the current theme.",
+    },
+    chatbot: {
+      title: "AI Chatbot Implementation",
+      description: "The chatbot is an agentic AI assistant powered by Anthropic's Claude. It runs as a serverless function that receives user messages, wraps them in security delimiters, and orchestrates multi-turn tool-calling conversations with the Claude API. The bot has access to a structured knowledge base about Logan's experience, skills, projects, and education, which it queries through tool calls before responding. Responses are streamed to the browser using Server-Sent Events and rendered with a custom Markdown parser that supports code blocks, Mermaid diagrams, lists, headings, and inline formatting.",
+    },
+    chatbotSecurity: {
+      title: "Chatbot Security Design",
+      description: "The chatbot implements multiple layers of agentic AI security. User input is sanitized and wrapped in spotlighting delimiters to prevent prompt injection. The system prompt enforces strict boundaries so the bot will not follow user instructions that contradict its guidelines, reveal its configuration, or adopt alternate personas. Tool inputs are validated for type and length. All bot output passes through a filter that detects and blocks system prompt leakage patterns. The bot is strictly grounded in its knowledge base and will not fabricate facts.",
+    },
+    accessControl: {
+      title: "Chatbot Access Control",
+      description: "Access to the chatbot is gated behind a token-based approval system. Visitors request access, which sends an email notification to the site owner. Once approved through an admin portal, a cryptographically signed token is issued using HMAC-SHA256. The token is time-limited and includes a unique identifier for revocation support. Server-side message counting enforces a per-token demo limit. All tokens and pending requests are stored in managed blob storage with strong consistency.",
+    },
+    mermaidDiagrams: {
+      title: "Mermaid Diagram Support",
+      description: "Both the project showcase cards and the chatbot support Mermaid diagrams for visualizing architectures and workflows. Diagrams are rendered client-side with a custom theme configuration. A PNG download feature captures the rendered SVG, inlines all computed styles for standalone rendering, and exports at 4x resolution on a white background. The diagram color palette adapts to the current theme with separate pastel palettes for project cards and chatbot responses.",
+    },
+    pwa: {
+      title: "Progressive Web App Features",
+      description: "The site is a Progressive Web App with a service worker that caches static assets for offline access. It includes a web app manifest for installability, Apple touch icon support, and a theme color for the browser chrome. The service worker uses a cache-first strategy for static assets while always fetching serverless function calls fresh from the network.",
+    },
+    deployment: {
+      title: "Deployment and Hosting",
+      description: "The site is hosted on Netlify with automatic deployments from Git. Serverless functions run on the Node.js runtime. The domain is loganventer.com with HTTPS enforced. Security headers including Content Security Policy, X-Frame-Options, and Referrer-Policy are configured at the hosting level. There is no build pipeline or bundler — the site deploys its source files directly.",
+    },
+  },
 };
 
 export function searchKnowledge(query) {
@@ -377,6 +420,22 @@ export function searchKnowledge(query) {
     });
   }
 
+  // Search portfolio implementation
+  if (
+    q.includes("built") ||
+    q.includes("website") ||
+    q.includes("this site") ||
+    q.includes("portfolio site") ||
+    q.includes("how does this") ||
+    q.includes("powered by") ||
+    q.includes("what powers")
+  ) {
+    results.push({
+      topic: "Portfolio Implementation",
+      content: KNOWLEDGE.portfolio.overview.description,
+    });
+  }
+
   // Fallback: return about + skills summary
   if (results.length === 0) {
     results.push({
@@ -439,4 +498,36 @@ export function getSkillsByCategory(category) {
     return { concepts: KNOWLEDGE.skills.concepts };
   }
   return KNOWLEDGE.skills;
+}
+
+export function getPortfolioInfo(topic) {
+  var q = (topic || "").toLowerCase();
+  var portfolio = KNOWLEDGE.portfolio;
+  var results = [];
+
+  var mappings = [
+    { keys: ["overview", "site", "portfolio", "built", "stack", "architecture", "how"], section: "overview" },
+    { keys: ["frontend", "html", "css", "tailwind", "navigation", "responsive", "mobile"], section: "frontend" },
+    { keys: ["theme", "dark", "light", "toggle", "color"], section: "theming" },
+    { keys: ["neural", "particle", "background", "animation", "canvas"], section: "neuralBackground" },
+    { keys: ["chatbot", "chat", "bot", "ai", "claude", "agent", "assistant"], section: "chatbot" },
+    { keys: ["security", "injection", "prompt", "filter", "guard", "safe"], section: "chatbotSecurity" },
+    { keys: ["access", "token", "auth", "gate", "approval", "login"], section: "accessControl" },
+    { keys: ["mermaid", "diagram", "chart", "visual", "flowchart", "png"], section: "mermaidDiagrams" },
+    { keys: ["pwa", "offline", "service worker", "install", "manifest"], section: "pwa" },
+    { keys: ["deploy", "hosting", "netlify", "domain", "server"], section: "deployment" },
+  ];
+
+  for (var m of mappings) {
+    if (m.keys.some(function (k) { return q.includes(k); })) {
+      var section = portfolio[m.section];
+      results.push({ topic: section.title, content: section.description });
+    }
+  }
+
+  if (results.length === 0) {
+    results.push({ topic: portfolio.overview.title, content: portfolio.overview.description });
+  }
+
+  return results;
 }
