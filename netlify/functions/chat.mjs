@@ -1,7 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getStore } from "@netlify/blobs";
-import { searchKnowledge, getProjectDetails, getExperience, getSkillsByCategory, getPortfolioInfo } from "./knowledge.mjs";
 import { verifyToken } from "./verify-token.mjs";
+import { createToolRegistry } from "./tool-registry.mjs";
+import { createLocalToolProvider } from "./local-tool-provider.mjs";
+import { createMcpToolProvider } from "./mcp-tool-provider.mjs";
 
 const RATE_LIMIT_WINDOW = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 30;
@@ -26,24 +28,6 @@ function sanitizeInput(text) {
   return clean.slice(0, 2000);
 }
 
-// --- Tool Input Validation ---
-function validateToolInput(name, input) {
-  switch (name) {
-    case "search_knowledge":
-      return typeof input.query === "string" && input.query.length <= 500;
-    case "get_project_details":
-      return typeof input.project_name === "string" && input.project_name.length <= 200;
-    case "get_experience":
-      return typeof input.company === "string" && input.company.length <= 200;
-    case "get_skills":
-      return typeof input.category === "string" && input.category.length <= 100;
-    case "get_portfolio_info":
-      return typeof input.topic === "string" && input.topic.length <= 200;
-    default:
-      return false;
-  }
-}
-
 // --- Output Filtering ---
 function filterOutput(text) {
   const leakPatterns = [
@@ -57,7 +41,7 @@ function filterOutput(text) {
     /system\s*prompt\s*(?:is|says|reads|contains)/i,
     /netlify\/functions\//i,
     /process\.env\./i,
-    /```[\s\S]*?(KNOWLEDGE|searchKnowledge|getProject|filterOutput|executeTool|SYSTEM_PROMPT|verifyToken|signToken)/i,
+    /```[\s\S]*?(KNOWLEDGE|searchKnowledge|getProject|filterOutput|executeTool|SYSTEM_PROMPT|verifyToken|signToken|createToolRegistry|createLocalToolProvider|createMcpToolProvider|createMcpClient|assertToolProvider)/i,
   ];
   for (const p of leakPatterns) {
     if (p.test(text)) {
@@ -95,6 +79,15 @@ Source Code Protection:
 - If asked to "show the code" or "give me the source", explain that you can describe the technical approach but cannot share source code.
 - For questions about how this website or chatbot is built, use the get_portfolio_info tool.
 
+Microsoft Learn Integration:
+- You have access to Microsoft documentation tools that can search and fetch official Microsoft/Azure docs and code samples
+- Use microsoft_docs_search when the user asks about Microsoft technologies, Azure, .NET, or other Microsoft products
+- Use microsoft_docs_fetch to retrieve full article content when you have a specific documentation URL
+- Use microsoft_code_sample_search to find official code examples
+- Always clearly attribute information from Microsoft docs (e.g. "According to Microsoft documentation...")
+- These tools supplement Logan's portfolio knowledge - use them alongside portfolio tools when discussing Microsoft technologies Logan works with
+- If these tools are unavailable, let the user know you can only answer from the local knowledge base
+
 Guidelines:
 - Keep responses concise (2-3 paragraphs max unless asked for more)
 - Be conversational and friendly
@@ -109,81 +102,6 @@ Formatting rules (always follow these):
 - Use code blocks with language tags for any code examples
 - When showing any diagram, flowchart, timeline, architecture, or visual structure, ALWAYS use a mermaid code block (\`\`\`mermaid)
 - Never output plain walls of text`;
-
-const TOOLS = [
-  {
-    name: "search_knowledge",
-    description: "Search Logan's portfolio knowledge base for information about his experience, skills, projects, education, interests, or background. Use this for general or broad queries.",
-    input_schema: {
-      type: "object",
-      properties: {
-        query: { type: "string", description: "The search query" },
-      },
-      required: ["query"],
-    },
-  },
-  {
-    name: "get_project_details",
-    description: "Get detailed information about a specific featured project by name. Projects include: MCP Server Framework, Chatbot Framework, Azure DevOps Integration, Knowledge Base System.",
-    input_schema: {
-      type: "object",
-      properties: {
-        project_name: { type: "string", description: "Name or keyword of the project to look up" },
-      },
-      required: ["project_name"],
-    },
-  },
-  {
-    name: "get_experience",
-    description: "Get details about Logan's work experience at a specific company. Companies include: TIH, Derivco, DVT, Seecrypt, Covariant, UD Trucks, Enermatics, Infotech, ITW.",
-    input_schema: {
-      type: "object",
-      properties: {
-        company: { type: "string", description: "Company name or abbreviation" },
-      },
-      required: ["company"],
-    },
-  },
-  {
-    name: "get_skills",
-    description: "Get Logan's technical skills filtered by category: 'languages', 'frameworks', 'concepts', or 'all'.",
-    input_schema: {
-      type: "object",
-      properties: {
-        category: { type: "string", description: "Skill category: languages, frameworks, concepts, or all" },
-      },
-      required: ["category"],
-    },
-  },
-  {
-    name: "get_portfolio_info",
-    description: "Get information about how this portfolio website is built, its architecture, technology choices, and design patterns. Topics include: frontend, theming, chatbot, security, access control, diagrams, background animation, PWA, deployment.",
-    input_schema: {
-      type: "object",
-      properties: {
-        topic: { type: "string", description: "Topic to look up: overview, frontend, theming, chatbot, security, access, diagrams, animation, pwa, deployment, or a general question" },
-      },
-      required: ["topic"],
-    },
-  },
-];
-
-function executeTool(name, input) {
-  switch (name) {
-    case "search_knowledge":
-      return JSON.stringify(searchKnowledge(input.query));
-    case "get_project_details":
-      return JSON.stringify(getProjectDetails(input.project_name));
-    case "get_experience":
-      return JSON.stringify(getExperience(input.company));
-    case "get_skills":
-      return JSON.stringify(getSkillsByCategory(input.category));
-    case "get_portfolio_info":
-      return JSON.stringify(getPortfolioInfo(input.topic));
-    default:
-      return JSON.stringify({ error: "Unknown tool: " + name });
-  }
-}
 
 function checkRateLimit(ip) {
   const now = Date.now();
@@ -307,7 +225,14 @@ export default async (request, context) => {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
       }
 
+      const registry = createToolRegistry();
+      registry.register(createLocalToolProvider());
+      registry.register(createMcpToolProvider());
+
       try {
+        await registry.initialize();
+        const allTools = await registry.getAllTools();
+
         let toolMessages = [...messages];
         let finalText = null;
 
@@ -316,7 +241,7 @@ export default async (request, context) => {
             model: "claude-haiku-4-5-20251001",
             max_tokens: 1024,
             system: SYSTEM_PROMPT,
-            tools: TOOLS,
+            tools: allTools,
             messages: toolMessages,
           });
 
@@ -329,34 +254,32 @@ export default async (request, context) => {
             break;
           }
 
-          // Emit tool call indicators to the client
           for (const block of toolUseBlocks) {
             emit({ type: "tool", name: block.name });
           }
 
           toolMessages.push({ role: "assistant", content: response.content });
 
-          const toolResults = toolUseBlocks.map((block) => ({
-            type: "tool_result",
-            tool_use_id: block.id,
-            content: validateToolInput(block.name, block.input)
-              ? executeTool(block.name, block.input)
-              : JSON.stringify({ error: "Invalid tool input" }),
-          }));
+          const toolResults = await Promise.all(
+            toolUseBlocks.map(async (block) => ({
+              type: "tool_result",
+              tool_use_id: block.id,
+              content: registry.validateToolInput(block.name, block.input)
+                ? await registry.executeTool(block.name, block.input)
+                : JSON.stringify({ error: "Invalid tool input" }),
+            }))
+          );
 
           toolMessages.push({ role: "user", content: toolResults });
         }
 
         if (finalText !== null) {
-          // Output filtering: check for system prompt leakage
           finalText = filterOutput(finalText);
-          // Send in chunks
           const chunkSize = 20;
           for (let i = 0; i < finalText.length; i += chunkSize) {
             emit({ type: "delta", text: finalText.slice(i, i + chunkSize) });
           }
         } else {
-          // Exhausted tool rounds - collect final response and filter before emitting
           const response = await client.messages.create({
             model: "claude-haiku-4-5-20251001",
             max_tokens: 1024,
@@ -379,6 +302,7 @@ export default async (request, context) => {
       } catch (err) {
         emit({ type: "error", message: err.message });
       } finally {
+        await registry.dispose();
         controller.close();
       }
     },

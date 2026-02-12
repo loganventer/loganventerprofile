@@ -284,7 +284,10 @@
       get_project_details: "Looking up project details",
       get_experience: "Looking up work experience",
       get_skills: "Looking up technical skills",
-      get_portfolio_info: "Looking up portfolio architecture"
+      get_portfolio_info: "Looking up portfolio architecture",
+      microsoft_docs_search: "Searching Microsoft docs",
+      microsoft_docs_fetch: "Fetching Microsoft article",
+      microsoft_code_sample_search: "Searching code samples"
     };
 
     try {

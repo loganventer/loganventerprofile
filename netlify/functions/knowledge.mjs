@@ -325,6 +325,10 @@ export const KNOWLEDGE = {
       title: "Deployment and Hosting",
       description: "The site is hosted on Netlify with automatic deployments from Git. Serverless functions run on the Node.js runtime. The domain is loganventer.com with HTTPS enforced. Security headers including Content Security Policy, X-Frame-Options, and Referrer-Policy are configured at the hosting level. There is no build pipeline or bundler — the site deploys its source files directly.",
     },
+    mcpIntegration: {
+      title: "Microsoft Learn MCP Integration",
+      description: "The chatbot integrates with the Microsoft Learn MCP (Model Context Protocol) server to provide real-time access to official Microsoft documentation, code samples, and technical references. The integration uses a SOLID-architecture tool provider system where local knowledge base tools and remote MCP tools are composed through a unified tool registry. The MCP client connects per-request using Streamable HTTP transport, discovers available tools dynamically via the tools/list protocol method, and gracefully degrades if the remote server is unavailable. This demonstrates proficiency with MCP client implementation, dependency inversion, composition-based architecture, and the iDesign layered methodology (Manager, Engine, Resource Accessor, Utility).",
+    },
   },
 };
 
@@ -516,6 +520,7 @@ export function getPortfolioInfo(topic) {
     { keys: ["mermaid", "diagram", "chart", "visual", "flowchart", "png"], section: "mermaidDiagrams" },
     { keys: ["pwa", "offline", "service worker", "install", "manifest"], section: "pwa" },
     { keys: ["deploy", "hosting", "netlify", "domain", "server"], section: "deployment" },
+    { keys: ["mcp", "microsoft", "learn", "docs", "documentation", "streamable", "tool provider", "tool registry"], section: "mcpIntegration" },
   ];
 
   for (var m of mappings) {
