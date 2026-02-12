@@ -303,7 +303,7 @@ export const KNOWLEDGE = {
     },
     chatbot: {
       title: "AI Chatbot Implementation",
-      description: "The chatbot is an agentic AI assistant powered by Anthropic's Claude. It runs as a serverless function that receives user messages, wraps them in security delimiters, and orchestrates multi-turn tool-calling conversations with the Claude API. The bot has access to a structured knowledge base about Logan's experience, skills, projects, and education, which it queries through tool calls before responding. Responses are streamed to the browser using Server-Sent Events and rendered with a custom Markdown parser that supports code blocks, Mermaid diagrams, lists, headings, and inline formatting.",
+      description: "The chatbot is an agentic AI assistant powered by Anthropic's Claude. It runs as a serverless function that receives user messages, wraps them in security delimiters, and orchestrates multi-turn tool-calling conversations with the Claude API. The bot has access to a structured knowledge base about Logan's experience, skills, projects, and education, which it queries through a hybrid RAG pipeline using BM25 and HyDE before responding. Responses are streamed to the browser using Server-Sent Events and rendered with a custom Markdown parser that supports code blocks, Mermaid diagrams, lists, headings, and inline formatting. After each response, the chatbot generates contextual follow-up suggestion chips that users can click to explore related topics, creating a guided conversational experience.",
     },
     chatbotSecurity: {
       title: "Chatbot Security Design",
@@ -323,7 +323,7 @@ export const KNOWLEDGE = {
     },
     deployment: {
       title: "Deployment and Hosting",
-      description: "The site is hosted on Netlify with automatic deployments from Git. Serverless functions run on the Node.js runtime. The domain is loganventer.com with HTTPS enforced. Security headers including Content Security Policy, X-Frame-Options, and Referrer-Policy are configured at the hosting level. There is no build pipeline or bundler — the site deploys its source files directly.",
+      description: "The site is hosted on Netlify with automatic deployments from Git. Serverless functions run on the Node.js runtime and are bundled with esbuild. A build step generates the pre-computed RAG index as an ES module that gets inlined into the function bundle at deploy time. The domain is loganventer.com with HTTPS enforced. Security headers including Content Security Policy, X-Frame-Options, and Referrer-Policy are configured at the hosting level.",
     },
     mcpIntegration: {
       title: "Microsoft Learn MCP Integration",
@@ -331,7 +331,7 @@ export const KNOWLEDGE = {
     },
     ragPipeline: {
       title: "Hybrid RAG Pipeline",
-      description: "The chatbot's knowledge retrieval uses a hybrid RAG (Retrieval-Augmented Generation) pipeline combining BM25 scoring, HyDE (Hypothetical Document Embeddings), query expansion, and Reciprocal Rank Fusion (RRF). At build time, the knowledge base is chunked into 33 segments and a BM25 inverted index is pre-computed with TF-IDF weighting. At query time, static synonym expansion broadens the search terms, BM25 scores chunks against the expanded query, and HyDE asks Claude to generate a hypothetical answer paragraph which is then BM25-matched against chunks to capture semantic intent without dense vector embeddings. The two ranked lists are fused using RRF (k=60) to produce the top-5 results. The entire pipeline is pure JavaScript with no external embedding APIs — only Anthropic's Claude for the HyDE step. HyDE gracefully degrades with a 3-second timeout, falling back to BM25-only retrieval. This demonstrates agentic AI design patterns from O'Reilly's reference architecture: retrieval augmentation, hypothetical document embeddings, rank fusion, and query expansion.",
+      description: "The chatbot's knowledge retrieval uses a hybrid RAG (Retrieval-Augmented Generation) pipeline combining BM25 scoring, HyDE (Hypothetical Document Embeddings), query expansion, and Reciprocal Rank Fusion (RRF). At build time, the knowledge base is chunked into segments and a BM25 inverted index is pre-computed with TF-IDF weighting, then output as an ES module that esbuild inlines into the function bundle. At query time, static synonym expansion broadens the search terms, BM25 scores chunks against the expanded query, and HyDE asks Claude to generate a hypothetical answer paragraph which is then BM25-matched against chunks to capture semantic intent without dense vector embeddings. The two ranked lists are fused using RRF (k=60) to produce the top-5 results. The entire pipeline is pure JavaScript with no external embedding APIs — only Anthropic's Claude for the HyDE step. HyDE gracefully degrades with a 3-second timeout, falling back to BM25-only retrieval. This demonstrates agentic AI design patterns from O'Reilly's reference architecture: retrieval augmentation, hypothetical document embeddings, rank fusion, and query expansion.",
     },
   },
 };
@@ -518,7 +518,7 @@ export function getPortfolioInfo(topic) {
     { keys: ["frontend", "html", "css", "tailwind", "navigation", "responsive", "mobile"], section: "frontend" },
     { keys: ["theme", "dark", "light", "toggle", "color"], section: "theming" },
     { keys: ["neural", "particle", "background", "animation", "canvas"], section: "neuralBackground" },
-    { keys: ["chatbot", "chat", "bot", "ai", "claude", "agent", "assistant"], section: "chatbot" },
+    { keys: ["chatbot", "chat", "bot", "ai", "claude", "agent", "assistant", "suggestion", "follow-up"], section: "chatbot" },
     { keys: ["security", "injection", "prompt", "filter", "guard", "safe"], section: "chatbotSecurity" },
     { keys: ["access", "token", "auth", "gate", "approval", "login"], section: "accessControl" },
     { keys: ["mermaid", "diagram", "chart", "visual", "flowchart", "png"], section: "mermaidDiagrams" },
