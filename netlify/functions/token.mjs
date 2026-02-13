@@ -80,6 +80,38 @@ async function notifyTokenRequest(data) {
   }
 }
 
+// Notify visitor that their access was approved
+async function notifyApproval(email, timeoutMinutes) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return;
+  const chatUrl = "https://loganventer.com/#chatbot-demo";
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Portfolio Bot <onboarding@resend.dev>",
+        to: [email],
+        subject: "Your chatbot access has been approved",
+        text: [
+          "Good news \u2014 your access to Logan Venter's portfolio chatbot has been approved!",
+          "",
+          `You have ${timeoutMinutes} minutes to chat.`,
+          "",
+          `Open the chatbot: ${chatUrl}`,
+          "",
+          "If you already have the page open, just refresh and you'll be connected automatically.",
+        ].join("\n"),
+      }),
+    });
+  } catch (e) {
+    console.error("Approval notification failed:", e);
+  }
+}
+
 // Rate limiting for token requests
 const requestLimits = new Map();
 function checkRequestLimit(ip) {
@@ -178,6 +210,20 @@ export default async (request, context) => {
     });
     notifyTokenRequest({ id: requestId, ip, ua: ua.substring(0, 120), ts: now });
     return respond({ request_id: requestId });
+  }
+
+  // --- Visitor: Attach email to a pending request ---
+  if (action === "submit_email") {
+    const requestId = (body.request_id || "").trim();
+    const email = (body.email || "").trim();
+    if (!requestId || !email) return respond({ error: "request_id and email required" }, 400);
+
+    const req = await pending.get(requestId, { type: "json" });
+    if (!req) return respond({ error: "Request not found" }, 404);
+
+    req.email = email;
+    await pending.setJSON(requestId, req);
+    return respond({ ok: true });
   }
 
   // --- Visitor: Poll for approval status ---
@@ -309,6 +355,11 @@ export default async (request, context) => {
       timeout_minutes: timeoutMinutes,
       signed_token: signedToken,
     });
+
+    // Notify visitor via email if they provided one
+    if (req.email) {
+      notifyApproval(req.email, timeoutMinutes);
+    }
 
     await pending.delete(requestId);
 

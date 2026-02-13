@@ -171,13 +171,91 @@
 
       requestId = data.request_id;
       localStorage.setItem("cb_request_id", requestId);
-      gateBtn.textContent = "Awaiting Approval";
-      setGateStatus("waiting", "Your request has been sent. Waiting for approval...");
-      startPolling();
+      showEmailForm();
     } catch (err) {
       setGateStatus("error", "Could not reach server. Try again.");
       gateBtn.disabled = false;
       gateBtn.textContent = "Request Access";
+    }
+  }
+
+  function showEmailForm() {
+    gateBtn.style.display = "none";
+    setGateStatus("info", "");
+
+    // Update gate text
+    var title = gateOverlay.querySelector(".chatbot-gate-title");
+    var desc = gateOverlay.querySelector(".chatbot-gate-desc");
+    if (title) title.textContent = "Almost There";
+    if (desc) desc.textContent = "Enter your email and we\u2019ll notify you as soon as access is granted.";
+
+    // Build email form
+    var form = document.createElement("div");
+    form.style.cssText = "display:flex;gap:8px;width:100%;max-width:320px;";
+
+    var emailInput = document.createElement("input");
+    emailInput.type = "email";
+    emailInput.placeholder = "you@example.com";
+    emailInput.required = true;
+    emailInput.style.cssText =
+      "flex:1;padding:10px 14px;border-radius:8px;border:1px solid var(--border-light);" +
+      "background:var(--bg-input);color:var(--text-primary);font-size:0.875rem;outline:none;";
+
+    var submitBtn = document.createElement("button");
+    submitBtn.textContent = "Submit";
+    submitBtn.className = "btn-primary";
+    submitBtn.style.cssText =
+      "padding:10px 20px;border-radius:8px;color:white;font-weight:600;font-size:0.875rem;border:none;cursor:pointer;";
+
+    form.appendChild(emailInput);
+    form.appendChild(submitBtn);
+    gateOverlay.insertBefore(form, gateStatus);
+
+    submitBtn.addEventListener("click", function () {
+      var email = emailInput.value.trim();
+      if (!email || !emailInput.validity.valid) {
+        setGateStatus("error", "Please enter a valid email.");
+        return;
+      }
+      submitEmail(email, submitBtn, emailInput);
+    });
+
+    emailInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") submitBtn.click();
+    });
+
+    emailInput.focus();
+  }
+
+  async function submitEmail(email, submitBtn, emailInput) {
+    submitBtn.disabled = true;
+    emailInput.disabled = true;
+    submitBtn.textContent = "Sending...";
+
+    try {
+      var res = await fetch(TOKEN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "submit_email", request_id: requestId, email: email }),
+      });
+
+      var data = await res.json();
+      if (!res.ok) {
+        setGateStatus("error", data.error || "Failed to submit email.");
+        submitBtn.disabled = false;
+        emailInput.disabled = false;
+        submitBtn.textContent = "Submit";
+        return;
+      }
+
+      submitBtn.parentElement.style.display = "none";
+      setGateStatus("waiting", "Thanks! We\u2019ll email you when access is granted.");
+      startPolling();
+    } catch {
+      setGateStatus("error", "Could not reach server. Try again.");
+      submitBtn.disabled = false;
+      emailInput.disabled = false;
+      submitBtn.textContent = "Submit";
     }
   }
 

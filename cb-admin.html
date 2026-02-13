@@ -154,12 +154,13 @@
                 return;
             }
 
-            var html = '<table><tr><th>ID</th><th>IP</th><th>Time</th><th>Action</th></tr>';
+            var html = '<table><tr><th>ID</th><th>IP</th><th>Email</th><th>Time</th><th>Action</th></tr>';
             list.forEach(function(item) {
                 var ago = timeAgo(item.ts);
                 html += '<tr>';
                 html += '<td class="mono">' + esc(item.id.substring(0, 8)) + '...</td>';
                 html += '<td class="mono">' + esc(item.ip) + '</td>';
+                html += '<td>' + (item.email ? esc(item.email) : '<span style="color:#6b7280">—</span>') + '</td>';
                 html += '<td>' + ago + '</td>';
                 html += '<td><div class="approve-row">';
                 html += '<select id="timeout-' + item.id + '">';
