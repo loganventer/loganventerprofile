@@ -126,7 +126,7 @@ export default async (request, context) => {
   const { pending, tokens } = getStores();
   const PENDING_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-  // --- Visitor: Request access ---
+  // --- Visitor: Request access (auto-approved, 5 min token) ---
   if (action === "request") {
     const ip = context.ip || "unknown";
     if (!checkRequestLimit(ip)) {
@@ -134,16 +134,28 @@ export default async (request, context) => {
     }
     const requestId = generateId();
     const ua = request.headers.get("user-agent") || "unknown";
-    const ts = Date.now();
-    await pending.setJSON(requestId, {
-      id: requestId,
+    const now = Date.now();
+    const AUTO_TIMEOUT = 5; // minutes
+    const exp = now + AUTO_TIMEOUT * 60 * 1000;
+    const jti = generateId();
+
+    const signedToken = await signToken(
+      { jti, sub: requestId, iat: now, exp },
+      signingSecret
+    );
+
+    await tokens.setJSON(jti, {
+      jti,
+      request_id: requestId,
       ip,
-      ua: ua.substring(0, 120),
-      ts,
-      status: "pending",
+      created: now,
+      expires: exp,
+      timeout_minutes: AUTO_TIMEOUT,
+      signed_token: signedToken,
     });
-    await notifyTokenRequest({ id: requestId, ip, ua: ua.substring(0, 120), ts });
-    return respond({ request_id: requestId });
+
+    notifyTokenRequest({ id: requestId, ip, ua: ua.substring(0, 120), ts: now });
+    return respond({ request_id: requestId, token: signedToken, expires: exp });
   }
 
   // --- Visitor: Poll for approval status ---

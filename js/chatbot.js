@@ -162,6 +162,13 @@
         return;
       }
 
+      if (data.token) {
+        accessToken = data.token;
+        localStorage.setItem("cb_token", accessToken);
+        showChat();
+        return;
+      }
+
       requestId = data.request_id;
       localStorage.setItem("cb_request_id", requestId);
       gateBtn.textContent = "Awaiting Approval";
