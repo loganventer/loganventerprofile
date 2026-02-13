@@ -168,12 +168,21 @@ export default async (request, context) => {
     }
     const requestId = generateId();
     const ua = request.headers.get("user-agent") || "unknown";
+    const deviceId = (body.device_id || "").trim();
     const now = Date.now();
 
-    // Check how many auto-approvals this IP has used
-    const autoRecord = await autoApprovals.get(ip, { type: "json" }) || { count: 0 };
+    // Check auto-approval limits for both IP and device fingerprint
+    const ipKey = "ip:" + ip;
+    const devKey = deviceId ? "dev:" + deviceId : null;
+    const ipRecord = await autoApprovals.get(ipKey, { type: "json" }) || { count: 0 };
+    const devRecord = devKey
+      ? (await autoApprovals.get(devKey, { type: "json" }) || { count: 0 })
+      : { count: 0 };
+    const canAutoApprove =
+      ipRecord.count < MAX_AUTO_APPROVALS &&
+      devRecord.count < MAX_AUTO_APPROVALS;
 
-    if (autoRecord.count < MAX_AUTO_APPROVALS) {
+    if (canAutoApprove) {
       // Auto-approve with 5-minute token
       const AUTO_TIMEOUT = 5;
       const exp = now + AUTO_TIMEOUT * 60 * 1000;
@@ -194,7 +203,8 @@ export default async (request, context) => {
         signed_token: signedToken,
       });
 
-      await autoApprovals.setJSON(ip, { count: autoRecord.count + 1 });
+      await autoApprovals.setJSON(ipKey, { count: ipRecord.count + 1 });
+      if (devKey) await autoApprovals.setJSON(devKey, { count: devRecord.count + 1 });
 
       notifyTokenRequest({ id: requestId, ip, ua: ua.substring(0, 120), ts: now });
       return respond({ request_id: requestId, token: signedToken, expires: exp });

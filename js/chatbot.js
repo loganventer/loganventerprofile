@@ -13,6 +13,13 @@
   var requestId = localStorage.getItem("cb_request_id") || null;
   var pollTimer = null;
 
+  // Persistent device fingerprint for anti-abuse tracking
+  var deviceId = localStorage.getItem("cb_device_id");
+  if (!deviceId) {
+    deviceId = crypto.randomUUID();
+    localStorage.setItem("cb_device_id", deviceId);
+  }
+
   // --- DOM ---
   var container, scrollArea, messages, input, sendBtn;
   var gateOverlay, gateBtn, gateStatus;
@@ -151,7 +158,7 @@
       var res = await fetch(TOKEN_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "request" }),
+        body: JSON.stringify({ action: "request", device_id: deviceId }),
       });
 
       var data = await res.json();
