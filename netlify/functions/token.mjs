@@ -169,18 +169,24 @@ export default async (request, context) => {
     const requestId = generateId();
     const ua = request.headers.get("user-agent") || "unknown";
     const deviceId = (body.device_id || "").trim();
+    const fingerprint = (body.fingerprint || "").trim();
     const now = Date.now();
 
-    // Check auto-approval limits for both IP and device fingerprint
+    // Check auto-approval limits for IP, device UUID, and hardware fingerprint
     const ipKey = "ip:" + ip;
     const devKey = deviceId ? "dev:" + deviceId : null;
+    const fpKey = fingerprint ? "fp:" + fingerprint : null;
     const ipRecord = await autoApprovals.get(ipKey, { type: "json" }) || { count: 0 };
     const devRecord = devKey
       ? (await autoApprovals.get(devKey, { type: "json" }) || { count: 0 })
       : { count: 0 };
+    const fpRecord = fpKey
+      ? (await autoApprovals.get(fpKey, { type: "json" }) || { count: 0 })
+      : { count: 0 };
     const canAutoApprove =
       ipRecord.count < MAX_AUTO_APPROVALS &&
-      devRecord.count < MAX_AUTO_APPROVALS;
+      devRecord.count < MAX_AUTO_APPROVALS &&
+      fpRecord.count < MAX_AUTO_APPROVALS;
 
     if (canAutoApprove) {
       // Auto-approve with 5-minute token
@@ -205,6 +211,7 @@ export default async (request, context) => {
 
       await autoApprovals.setJSON(ipKey, { count: ipRecord.count + 1 });
       if (devKey) await autoApprovals.setJSON(devKey, { count: devRecord.count + 1 });
+      if (fpKey) await autoApprovals.setJSON(fpKey, { count: fpRecord.count + 1 });
 
       notifyTokenRequest({ id: requestId, ip, ua: ua.substring(0, 120), ts: now });
       return respond({ request_id: requestId, token: signedToken, expires: exp });
