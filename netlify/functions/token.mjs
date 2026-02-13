@@ -13,7 +13,8 @@ function getAllowedOrigin(request) {
 function getStores() {
   const pending = getStore({ name: "chatbot-pending", consistency: "strong" });
   const tokens = getStore({ name: "chatbot-tokens", consistency: "strong" });
-  return { pending, tokens };
+  const autoApprovals = getStore({ name: "chatbot-auto-approvals", consistency: "strong" });
+  return { pending, tokens, autoApprovals };
 }
 
 function generateId() {
@@ -123,10 +124,11 @@ export default async (request, context) => {
   const action = (body.action || "").trim();
   const adminKey = process.env.CHATBOT_ADMIN_KEY;
   const signingSecret = process.env.CHATBOT_SIGNING_SECRET || adminKey;
-  const { pending, tokens } = getStores();
+  const { pending, tokens, autoApprovals } = getStores();
   const PENDING_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+  const MAX_AUTO_APPROVALS = 3;
 
-  // --- Visitor: Request access (auto-approved, 5 min token) ---
+  // --- Visitor: Request access ---
   if (action === "request") {
     const ip = context.ip || "unknown";
     if (!checkRequestLimit(ip)) {
@@ -135,27 +137,47 @@ export default async (request, context) => {
     const requestId = generateId();
     const ua = request.headers.get("user-agent") || "unknown";
     const now = Date.now();
-    const AUTO_TIMEOUT = 5; // minutes
-    const exp = now + AUTO_TIMEOUT * 60 * 1000;
-    const jti = generateId();
 
-    const signedToken = await signToken(
-      { jti, sub: requestId, iat: now, exp },
-      signingSecret
-    );
+    // Check how many auto-approvals this IP has used
+    const autoRecord = await autoApprovals.get(ip, { type: "json" }) || { count: 0 };
 
-    await tokens.setJSON(jti, {
-      jti,
-      request_id: requestId,
+    if (autoRecord.count < MAX_AUTO_APPROVALS) {
+      // Auto-approve with 5-minute token
+      const AUTO_TIMEOUT = 5;
+      const exp = now + AUTO_TIMEOUT * 60 * 1000;
+      const jti = generateId();
+
+      const signedToken = await signToken(
+        { jti, sub: requestId, iat: now, exp },
+        signingSecret
+      );
+
+      await tokens.setJSON(jti, {
+        jti,
+        request_id: requestId,
+        ip,
+        created: now,
+        expires: exp,
+        timeout_minutes: AUTO_TIMEOUT,
+        signed_token: signedToken,
+      });
+
+      await autoApprovals.setJSON(ip, { count: autoRecord.count + 1 });
+
+      notifyTokenRequest({ id: requestId, ip, ua: ua.substring(0, 120), ts: now });
+      return respond({ request_id: requestId, token: signedToken, expires: exp });
+    }
+
+    // Auto-approval limit reached — require manual approval
+    await pending.setJSON(requestId, {
+      id: requestId,
       ip,
-      created: now,
-      expires: exp,
-      timeout_minutes: AUTO_TIMEOUT,
-      signed_token: signedToken,
+      ua: ua.substring(0, 120),
+      ts: now,
+      status: "pending",
     });
-
     notifyTokenRequest({ id: requestId, ip, ua: ua.substring(0, 120), ts: now });
-    return respond({ request_id: requestId, token: signedToken, expires: exp });
+    return respond({ request_id: requestId });
   }
 
   // --- Visitor: Poll for approval status ---
@@ -312,15 +334,12 @@ export default async (request, context) => {
   // --- Admin: Emergency clear ALL ---
   if (action === "clear") {
     let cleared = 0;
-    const pendingList = await pending.list();
-    for (const entry of pendingList.blobs) {
-      await pending.delete(entry.key);
-      cleared++;
-    }
-    const tokenList = await tokens.list();
-    for (const entry of tokenList.blobs) {
-      await tokens.delete(entry.key);
-      cleared++;
+    for (const store of [pending, tokens, autoApprovals]) {
+      const list = await store.list();
+      for (const entry of list.blobs) {
+        await store.delete(entry.key);
+        cleared++;
+      }
     }
     return respond({ ok: true, cleared });
   }
